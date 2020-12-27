@@ -1,6 +1,8 @@
 package scheduler
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type Scheduler interface {
 	// Init 用于初始化调度器。
