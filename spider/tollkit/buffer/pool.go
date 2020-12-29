@@ -47,15 +47,15 @@ type PoolImpl struct {
 	rwlock sync.RWMutex
 }
 
-func (pool *myPool) Put(datum interface{}) (err error) {
-	if pool.Closed() {
+func (p *PoolImpl) Put(datum interface{}) (err error) {
+	if p.Closed() {
 		return ErrClosedBufferPool
 	}
 	var count uint32
-	maxCount := pool.BufferNumber() * 5
+	maxCount := p.BufferNumber() * 5
 	var ok bool
-	for buf := range pool.bufCh {
-		ok, err = pool.putData(buf, datum, &count, maxCount)
+	for buf := range p.bufCh {
+		ok, err = p.putData(buf, datum, &count, maxCount)
 		if ok || err != nil {
 			break
 		}
@@ -64,24 +64,24 @@ func (pool *myPool) Put(datum interface{}) (err error) {
 }
 
 // putData 用于向给定的缓冲器放入数据，并在必要时把缓冲器归还给池。
-func (pool *myPool) putData(
+func (p *PoolImpl) putData(
 	buf Buffer, datum interface{}, count *uint32, maxCount uint32) (ok bool, err error) {
-	if pool.Closed() {
+	if p.Closed() {
 		return false, ErrClosedBufferPool
 	}
 	defer func() {
-		pool.rwlock.RLock()
-		if pool.Closed() {
-			atomic.AddUint32(&pool.bufferNumber, ^uint32(0))
+		p.rwlock.RLock()
+		if p.Closed() {
+			atomic.AddUint32(&p.bufferNumber, ^uint32(0))
 			err = ErrClosedBufferPool
 		} else {
-			pool.bufCh <- buf
+			p.bufCh <- buf
 		}
-		pool.rwlock.RUnlock()
+		p.rwlock.RUnlock()
 	}()
 	ok, err = buf.Put(datum)
 	if ok {
-		atomic.AddUint64(&pool.total, 1)
+		atomic.AddUint64(&p.total, 1)
 		return
 	}
 	if err != nil {
@@ -93,34 +93,34 @@ func (pool *myPool) putData(
 	// 并且池中缓冲器的数量未达到最大值，
 	// 那么就尝试创建一个新的缓冲器，先放入数据再把它放入池。
 	if *count >= maxCount &&
-		pool.BufferNumber() < pool.MaxBufferNumber() {
-		pool.rwlock.Lock()
-		if pool.BufferNumber() < pool.MaxBufferNumber() {
-			if pool.Closed() {
-				pool.rwlock.Unlock()
+		p.BufferNumber() < p.MaxBufferNumber() {
+		p.rwlock.Lock()
+		if p.BufferNumber() < p.MaxBufferNumber() {
+			if p.Closed() {
+				p.rwlock.Unlock()
 				return
 			}
-			newBuf, _ := NewBuffer(pool.bufferCap)
+			newBuf, _ := NewBuffer(p.bufferCap)
 			newBuf.Put(datum)
-			pool.bufCh <- newBuf
-			atomic.AddUint32(&pool.bufferNumber, 1)
-			atomic.AddUint64(&pool.total, 1)
+			p.bufCh <- newBuf
+			atomic.AddUint32(&p.bufferNumber, 1)
+			atomic.AddUint64(&p.total, 1)
 			ok = true
 		}
-		pool.rwlock.Unlock()
+		p.rwlock.Unlock()
 		*count = 0
 	}
 	return
 }
 
-func (pool *myPool) Get() (datum interface{}, err error) {
-	if pool.Closed() {
+func (p *PoolImpl) Get() (datum interface{}, err error) {
+	if p.Closed() {
 		return nil, ErrClosedBufferPool
 	}
 	var count uint32
-	maxCount := pool.BufferNumber() * 10
-	for buf := range pool.bufCh {
-		datum, err = pool.getData(buf, &count, maxCount)
+	maxCount := p.BufferNumber() * 10
+	for buf := range p.bufCh {
+		datum, err = p.getData(buf, &count, maxCount)
 		if datum != nil || err != nil {
 			break
 		}
@@ -129,9 +129,9 @@ func (pool *myPool) Get() (datum interface{}, err error) {
 }
 
 // getData 用于从给定的缓冲器获取数据，并在必要时把缓冲器归还给池。
-func (pool *myPool) getData(
+func (p *PoolImpl) getData(
 	buf Buffer, count *uint32, maxCount uint32) (datum interface{}, err error) {
-	if pool.Closed() {
+	if p.Closed() {
 		return nil, ErrClosedBufferPool
 	}
 	defer func() {
@@ -140,24 +140,24 @@ func (pool *myPool) getData(
 		// 那么就直接关掉当前缓冲器，并不归还给池。
 		if *count >= maxCount &&
 			buf.Len() == 0 &&
-			pool.BufferNumber() > 1 {
+			p.BufferNumber() > 1 {
 			buf.Close()
-			atomic.AddUint32(&pool.bufferNumber, ^uint32(0))
+			atomic.AddUint32(&p.bufferNumber, ^uint32(0))
 			*count = 0
 			return
 		}
-		pool.rwlock.RLock()
-		if pool.Closed() {
-			atomic.AddUint32(&pool.bufferNumber, ^uint32(0))
+		p.rwlock.RLock()
+		if p.Closed() {
+			atomic.AddUint32(&p.bufferNumber, ^uint32(0))
 			err = ErrClosedBufferPool
 		} else {
-			pool.bufCh <- buf
+			p.bufCh <- buf
 		}
-		pool.rwlock.RUnlock()
+		p.rwlock.RUnlock()
 	}()
 	datum, err = buf.Get()
 	if datum != nil {
-		atomic.AddUint64(&pool.total, ^uint64(0))
+		atomic.AddUint64(&p.total, ^uint64(0))
 		return
 	}
 	if err != nil {
