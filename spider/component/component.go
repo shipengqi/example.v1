@@ -50,14 +50,6 @@ type Component interface {
 	Summary() SummaryStruct
 }
 
-type Type string
-
-const (
-	TYPE_DOWNLOADER Type = "downloader"
-	TYPE_ANAYLYZER  Type = "anaylyzer"
-	TYPE_PIPELINE   Type = "pipeline"
-)
-
 // Downloader
 // 该接口的实现类型必须是并发安全的
 type Downloader interface {

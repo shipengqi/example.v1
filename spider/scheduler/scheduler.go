@@ -29,3 +29,7 @@ type Scheduler interface {
 	// Summary 用于获取摘要实例
 	Summary() SchedSummary
 }
+
+type SchedulerImpl struct {
+
+}
