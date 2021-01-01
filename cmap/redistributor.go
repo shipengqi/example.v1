@@ -30,10 +30,9 @@ type PairRedistributor interface {
 	UpdateThreshold(pairTotal uint64, bucketNumber int)
 	// CheckBucketStatus 用于检查散列桶的状态。
 	CheckBucketStatus(pairTotal uint64, bucketSize uint64) (bucketStatus BucketStatus)
-	// Redistribe 用于实施键-元素对的再分布。
-	Redistribe(bucketStatus BucketStatus, buckets []Bucket) (newBuckets []Bucket, changed bool)
+	// Redistribute 用于实施键-元素对的再分布。
+	Redistribute(bucketStatus BucketStatus, buckets []Bucket) (newBuckets []Bucket, changed bool)
 }
-
 
 type PairRedistributorImpl struct {
 	// loadFactor 代表装载因子
@@ -50,7 +49,8 @@ type PairRedistributorImpl struct {
 // newDefaultPairRedistributor 会创建一个PairRedistributor类型的实例
 // 参数 loadFactor 代表散列桶的负载因子。
 // 参数 bucketNumber 代表散列桶的数量。
-func newDefaultPairRedistributor(loadFactor float64, bucketNumber int) PairRedistributor {
+func newDefaultPairRedistributor(
+	loadFactor float64, bucketNumber int) PairRedistributor {
 	if loadFactor <= 0 {
 		loadFactor = DEFAULT_BUCKET_LOAD_FACTOR
 	}
@@ -60,11 +60,82 @@ func newDefaultPairRedistributor(loadFactor float64, bucketNumber int) PairRedis
 	return pr
 }
 
-func (pr *PairRedistributorImpl) UpdateThreshold(pairTotal uint64, bucketNumber int) {
+func (pr *PairRedistributorImpl) CheckBucketStatus(
+	pairTotal uint64, bucketSize uint64) (bucketStatus BucketStatus) {
+	if bucketSize > DEFAULT_BUCKET_MAX_SIZE ||
+		bucketSize >= atomic.LoadUint64(&pr.upperThreshold) {
+		atomic.AddUint64(&pr.overweightBucketCount, 1)
+		bucketStatus = BUCKET_STATUS_OVERWEIGHT
+		return
+	}
+	if bucketSize == 0 {
+		atomic.AddUint64(&pr.emptyBucketCount, 1)
+	}
+	return
+}
+
+func (pr *PairRedistributorImpl) UpdateThreshold(
+	pairTotal uint64, bucketNumber int) {
 	var average float64
 	average = float64(pairTotal / uint64(bucketNumber))
 	if average < 100 {
 		average = 100
 	}
 	atomic.StoreUint64(&pr.upperThreshold, uint64(average*pr.loadFactor))
+}
+
+func (pr *PairRedistributorImpl) Redistribute(
+	bucketStatus BucketStatus, buckets []Bucket) (newBuckets []Bucket, changed bool) {
+	currentNumber := uint64(len(buckets))
+	newNumber := currentNumber
+	switch bucketStatus {
+	case BUCKET_STATUS_OVERWEIGHT:
+		if atomic.LoadUint64(&pr.overweightBucketCount)*4 < currentNumber {
+			return nil, false
+		}
+		newNumber = currentNumber << 1
+	case BUCKET_STATUS_UNDERWEIGHT:
+		if currentNumber < 100 ||
+			atomic.LoadUint64(&pr.emptyBucketCount)*4 < currentNumber {
+			return nil, false
+		}
+		newNumber = currentNumber >> 1
+		if newNumber < 2 {
+			newNumber = 2
+		}
+	default:
+		return nil, false
+	}
+	if newNumber == currentNumber {
+		atomic.StoreUint64(&pr.overweightBucketCount, 0)
+		atomic.StoreUint64(&pr.emptyBucketCount, 0)
+		return nil, false
+	}
+	var pairs []Pair
+	for _, b := range buckets {
+		for e := b.GetFirstPair(); e != nil; e = e.Next() {
+			pairs = append(pairs, e)
+		}
+	}
+	if newNumber > currentNumber {
+		for i := uint64(0); i < currentNumber; i++ {
+			buckets[i].Clear(nil)
+		}
+		for j := newNumber - currentNumber; j > 0; j-- {
+			buckets = append(buckets, newBucket())
+		}
+	} else {
+		buckets = make([]Bucket, newNumber)
+		for i := uint64(0); i < newNumber; i++ {
+			buckets[i] = newBucket()
+		}
+	}
+	for _, p := range pairs {
+		index := int(p.Hash() % newNumber)
+		b := buckets[index]
+		_, _ = b.Put(p, nil)
+	}
+	atomic.StoreUint64(&pr.overweightBucketCount, 0)
+	atomic.StoreUint64(&pr.emptyBucketCount, 0)
+	return buckets, true
 }

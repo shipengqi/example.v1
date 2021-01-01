@@ -27,10 +27,10 @@ type ConcurrentMapImpl struct {
 
 func NewConcurrentMap(concurrency int, pairRedistributor PairRedistributor) (ConcurrentMap, error) {
 	if concurrency <= 0 {
-		return nil, newIllegalParameterError("concurrency is too small")
+		return nil, newParamError("concurrency is too small")
 	}
 	if concurrency > MAX_CONCURRENCY {
-		return nil, newIllegalParameterError("concurrency is too large")
+		return nil, newParamError("concurrency is too large")
 	}
 	segments := make([]Segment, concurrency)
 	for i := 0; i < concurrency; i++ {

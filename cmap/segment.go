@@ -63,7 +63,7 @@ func (s *segment) Put(p Pair) (bool, error) {
 	ok, err := b.Put(p, nil)
 	if ok {
 		newTotal := atomic.AddUint64(&s.pairTotal, 1)
-		s.redistribute(newTotal, b.Size())
+		_ = s.redistribute(newTotal, b.Size())
 	}
 	s.lock.Unlock()
 	return ok, err
@@ -86,7 +86,7 @@ func (s *segment) Delete(key string) bool {
 	ok := b.Delete(key, nil)
 	if ok {
 		newTotal := atomic.AddUint64(&s.pairTotal, ^uint64(0))
-		s.redistribute(newTotal, b.Size())
+		_ = s.redistribute(newTotal, b.Size())
 	}
 	s.lock.Unlock()
 	return ok
@@ -103,15 +103,15 @@ func (s *segment) redistribute(pairTotal uint64, bucketSize uint64) (err error) 
 	defer func() {
 		if p := recover(); p != nil {
 			if pErr, ok := p.(error); ok {
-				err = newPairRedistributorError(pErr.Error())
+				err = newParamError(pErr.Error())
 			} else {
-				err = newPairRedistributorError(fmt.Sprintf("%s", p))
+				err = newParamError(fmt.Sprintf("%s", p))
 			}
 		}
 	}()
 	s.pairRedistributor.UpdateThreshold(pairTotal, s.bucketsLen)
 	bucketStatus := s.pairRedistributor.CheckBucketStatus(pairTotal, bucketSize)
-	newBuckets, changed := s.pairRedistributor.Redistribe(bucketStatus, s.buckets)
+	newBuckets, changed := s.pairRedistributor.Redistribute(bucketStatus, s.buckets)
 	if changed {
 		s.buckets = newBuckets
 		s.bucketsLen = len(s.buckets)

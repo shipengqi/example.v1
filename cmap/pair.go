@@ -43,7 +43,7 @@ type pair struct {
 
 func newPair(key string, element interface{}) (Pair, error) {
 	if element == nil {
-		return nil, newIllegalParameterError("element is nil")
+		return nil, newParamError("element is nil")
 	}
 
 	return &pair{
@@ -71,7 +71,7 @@ func (p *pair) Element() interface{} {
 
 func (p *pair) SetElement(element interface{}) error {
 	if element == nil {
-		return newIllegalParameterError("element is nil")
+		return newParamError("element is nil")
 	}
 	atomic.StorePointer(&p.element, unsafe.Pointer(&element))
 	return nil
@@ -92,7 +92,7 @@ func (p *pair) SetNext(nextPair Pair) error {
 	}
 	pp, ok := nextPair.(*pair)
 	if !ok {
-		return newIllegalPairTypeError(nextPair)
+		return newPairError(nextPair)
 	}
 	atomic.StorePointer(&p.next, unsafe.Pointer(pp))
 	return nil
