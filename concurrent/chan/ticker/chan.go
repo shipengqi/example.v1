@@ -25,6 +25,9 @@ func main() {
 		//	}
 		//}
 		// 使用下面的代码，就可以正常输出 End. [sender]
+		// Stop turns off a ticker. After Stop, no more ticks will be sent.
+		// Stop does not close the channel, to prevent a concurrent goroutine
+		defer ticker.Stop()
 	Loop:
 		for {
 			<-ticker.C
@@ -33,9 +36,6 @@ func main() {
 			case intChan <- 2:
 			case intChan <- 3:
 			case <-syncChan:
-				// Stop turns off a ticker. After Stop, no more ticks will be sent.
-				// Stop does not close the channel, to prevent a concurrent goroutine
-				ticker.Stop()
 				break Loop
 			}
 		}
