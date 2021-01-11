@@ -20,24 +20,30 @@ const (
 
 var logger zerolog.Logger
 
+type Config struct {
+	Level  string `ini:"LEVEL"`
+	Output string `ini:"OUTPUT"`
+	Prefix string `ini:"PREFIX"`
+}
+
 func Init(c *Config) (string, error) {
-	if c.Output() == "" {
-		c.SetOutput(DefaultLogDir)
+	if c.Output == "" {
+		c.Output = DefaultLogDir
 	}
-	if c.Level() == "" {
-		c.SetLevel(DefaultLogLevel)
+	if c.Level == "" {
+		c.Level = DefaultLogLevel
 	}
-	if c.Prefix() == "" {
-		c.SetPrefix(DefaultLogPrefix)
+	if c.Prefix == "" {
+		c.Prefix = DefaultLogPrefix
 	}
 
-	logLevel := convertLogLevel(c.Level())
+	logLevel := convertLogLevel(c.Level)
 	zerolog.SetGlobalLevel(logLevel)
 
 	// log output to files as well
 	var w io.Writer
 
-	filename, err := initLogFileName(c.Output(), c.Prefix())
+	filename, err := initLogFileName(c.Output, c.Prefix)
 	if err != nil {
 		return "", err
 	}

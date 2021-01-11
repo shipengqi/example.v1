@@ -3,6 +3,7 @@ package errno
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -10,8 +11,28 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	ERRNO_ENV_KEY_PRINT_STACK = "IS_PRINT_STACK"
+	ERRNO_ENV_KEY_STACK_SKIP  = "ERROR_STACK_SKIP"
+)
+
 // register codes.
 var _codes = make(map[int]struct{})
+var isPrintStack bool
+var stackSkip = 3
+
+func init() {
+	if os.Getenv("IS_PRINT_STACK") == "true" {
+		isPrintStack = true
+	}
+	s := os.Getenv("ERROR_STACK_SKIP")
+	if s != "" {
+		i, err := strconv.Atoi(s)
+		if err == nil {
+			stackSkip = i
+		}
+	}
+}
 
 // New new a errno.Codes by int value.
 func New(e int, msg string) Errno {
@@ -86,12 +107,15 @@ func (e *Code) Stack() string {
 	return e.data
 }
 
-func (e *Code) genStackTrace(skip int) string {
+func (e *Code) genStackTrace() string {
+	if !isPrintStack {
+		return ""
+	}
 	var buffer bytes.Buffer
 	buffer.WriteString("call stack:\n")
 	st := make([]uintptr, 32)
 	// skip the first {skip} invocations
-	count := runtime.Callers(skip, st)
+	count := runtime.Callers(stackSkip, st)
 	e.callers = st[:count]
 	frames := runtime.CallersFrames(e.callers)
 	for {
@@ -110,12 +134,12 @@ func (e *Code) genStackTrace(skip int) string {
 
 // Wrap Wrap error
 func Wrap(err error, msg string) Errno {
-	return nil
+	return wrapErr(err, msg)
 }
 
 // Wrapf Wrap error
 func Wrapf(err error, args ...interface{}) Errno {
-	return nil
+	return wrapErr(err, args...)
 }
 
 // String parse code string to Errno.
@@ -126,13 +150,12 @@ func String(e string) Errno {
 	// try error string
 	i, err := strconv.Atoi(e)
 	if err != nil {
-		return InternalServerError
+		return &Code{
+			code:    InternalServerError.Code(),
+			message: e,
+		}
 	}
-	return &Code{
-		code:    i,
-		message: "",
-		err:     nil,
-	}
+	return &Code{code: i}
 }
 
 // Cause cause from error to Errno.
@@ -148,47 +171,48 @@ func Cause(e error) Errno {
 }
 
 // EqualError equal error
-func EqualError(code Code, err error) bool {
+func EqualError(code Errno, err error) bool {
 	return Cause(err).Code() == code.Code()
 }
 
-func wrapErr(err error, code int, fmtAndArgs ...interface{}) Errno {
-	msg := fmtErrMsg(fmtAndArgs...)
+func SetPrintStack(isPrint bool) {
+	isPrintStack = isPrint
+}
+
+func SetErrorStackSkip(skip int) {
+	stackSkip = skip
+}
+
+func wrapErr(err error, args ...interface{}) Errno {
+	msg := normalize(args...)
 	if err == nil {
 		err = errors.New(msg)
 	}
 	e, ok := err.(*Code)
-	if ok {
-		if msg != "" {
-			e.message = msg
-		}
-		if code != 0 {
-			e.code = code
+	if !ok {
+		e = &Code{
+			code:    InternalServerError.Code(),
+			message: msg,
+			err:     err,
 		}
 	}
-	e = &Code{
-		code:    code,
-		message: msg,
-		err:     err,
-	}
-	e.genStackTrace(3)
+	e.genStackTrace()
 	if e.message == "" {
 		e.message = err.Error()
 	}
-
 	return e
 }
 
 // fmtErrMsg used to format error message
-func fmtErrMsg(msgs ...interface{}) string {
-	if len(msgs) > 1 {
-		return fmt.Sprintf(msgs[0].(string), msgs[1:]...)
+func normalize(args ...interface{}) string {
+	if len(args) > 1 {
+		return fmt.Sprintf(args[0].(string), args[1:]...)
 	}
-	if len(msgs) == 1 {
-		if v, ok := msgs[0].(string); ok {
+	if len(args) == 1 {
+		if v, ok := args[0].(string); ok {
 			return v
 		}
-		if v, ok := msgs[0].(error); ok {
+		if v, ok := args[0].(error); ok {
 			return v.Error()
 		}
 	}

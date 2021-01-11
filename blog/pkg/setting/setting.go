@@ -1,7 +1,7 @@
 package setting
 
 import (
-	"log"
+	"time"
 
 	"github.com/go-ini/ini"
 	"github.com/pkg/errors"
@@ -11,35 +11,68 @@ import (
 	"github.com/shipengqi/example.v1/blog/pkg/logger"
 )
 
-var settings = &Setting{}
+var settings = New()
+
+type App struct {
+	SingingKey   string `ini:"SIGNING_KEY"`
+	PageSize     int    `ini:"PAGE_SIZE"`
+	IsPrintStack bool   `ini:"IS_PRINT_STACK"`
+}
+
+type Server struct {
+	HttpPort     int           `ini:"HTTP_PORT"`
+	HttpsPort    int           `ini:"HTTPS_PORT"`
+	ReadTimeout  time.Duration `ini:"READ_TIMEOUT"`
+	WriteTimeout time.Duration `ini:"WRITE_TIMEOUT"`
+}
 
 type Setting struct {
-	RunMode      string
-	App          *app
-	Server       *server
-	DB           *orm.Config
-	Redis        *gredis.Config
-	Log          *logger.Config
+	RunMode string         `ini:"RUN_MODE"`
+	App     *App           `ini:"app"`
+	Server  *Server        `ini:"server"`
+	DB      *orm.Config    `ini:"database"`
+	Redis   *gredis.Config `ini:"redis"`
+	Log     *logger.Config `ini:"log"`
+}
+
+func New() *Setting {
+	return &Setting{
+		RunMode: "",
+		App:     &App{},
+		Server:  &Server{},
+		DB:      &orm.Config{},
+		Redis:   &gredis.Config{},
+		Log:     &logger.Config{},
+	}
 }
 
 func Settings() *Setting {
 	return settings
 }
 
-func Init() (*Setting, error) {
-	var err error
-	_, err = ini.Load("conf/app.debug.ini")
-	if err != nil {
-		return nil, errors.Wrap(err, "setting.Init, fail to parse 'conf/app.debug.ini'")
-	}
-
-	return settings, nil
+func ServerSettings() *Server {
+	return settings.Server
 }
 
-// mapTo map section
-func mapTo(cfg *ini.File, section string, v interface{}) {
-	err := cfg.Section(section).MapTo(v)
+var cfg *ini.File
+
+func Init(filename string) (*Setting, error) {
+	var err error
+	cfg, err = ini.Load(filename)
 	if err != nil {
-		log.Fatalf("Cfg.MapTo %s err: %v", section, err)
+		return nil, errors.Wrapf(err, "setting.Init, fail to parse '%s'", filename)
 	}
+	cfg.BlockMode = false
+
+	err = cfg.MapTo(settings)
+	if err != nil {
+		return nil, err
+	}
+
+	settings.Server.ReadTimeout = settings.Server.ReadTimeout * time.Second
+	settings.Server.WriteTimeout = settings.Server.WriteTimeout * time.Second
+	settings.DB.IdleTimeout = settings.DB.IdleTimeout * time.Second
+	settings.Redis.IdleTimeout = settings.Redis.IdleTimeout * time.Second
+
+	return settings, nil
 }
