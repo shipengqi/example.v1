@@ -12,7 +12,6 @@ import (
 )
 
 type Config struct {
-	TablePrefix string        `ini:"TABLE_PREFIX"`
 	DbType      string        `ini:"TYPE"`
 	DSN         string        `ini:"DSN"`          // data source name.
 	Active      int           `ini:"ACTIVE"`       // pool
@@ -33,10 +32,7 @@ func New(c *Config) (db *gorm.DB) {
 		log.Error().Msgf("db.DB() error: %v", err)
 		panic(err)
 	}
-	if sqlDB == nil {
-		log.Warn().Msg("db.DB() get nil")
-		return
-	}
+
 	// sets the maximum number of connections in the idle connection pool.
 	sqlDB.SetMaxIdleConns(c.Idle)
 	// sets the maximum number of open connections to the database.

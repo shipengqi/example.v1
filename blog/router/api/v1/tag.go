@@ -1,16 +1,18 @@
 package v1
 
 import (
-	"net/http"
-
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
-	"github.com/shipengqi/example.v1/blog/pkg/app"
+
 	"github.com/unknwon/com"
 
 	"github.com/shipengqi/example.v1/blog/model"
+	"github.com/shipengqi/example.v1/blog/pkg/app"
 	"github.com/shipengqi/example.v1/blog/pkg/errno"
+	"github.com/shipengqi/example.v1/blog/service"
 )
+
+var s *service.Service
 
 // @Summary Get multiple article tags
 // @Produce  json
@@ -23,7 +25,7 @@ func GetTags(c *gin.Context) {
 	name := c.Query("name")
 
 	maps := make(map[string]interface{})
-	data := make(map[string]interface{})
+
 
 	if name != "" {
 		maps["name"] = name
@@ -34,14 +36,8 @@ func GetTags(c *gin.Context) {
 		maps["state"] = state
 	}
 
-	data["lists"], _ = model.GetTags(0, 10, maps)
-	data["total"] = model.GetTagTotal(maps)
-
-	c.JSON(http.StatusOK, gin.H{
-		"code": errno.OK.Code(),
-		"msg":  errno.OK.Message(),
-		"data": data,
-	})
+	data := s.GetTags(maps)
+	app.SendResponse(c, errno.OK, data)
 }
 
 // @Summary Add article tag
