@@ -2,8 +2,9 @@ package errno
 
 // Common errors
 var (
-	OK                  = add(0, "OK")
+	OK                = add(0, "OK")
 
-	InternalServerError = add(-500, "Internal server error")
-	NothingFound        = add(-404, "not found") // not found
+	ErrInternalServer = add(-500, "Internal server error")
+	ErrBadRequest     = add(-400, "bad request")
+	ErrNothingFound   = add(-404, "not found") // not found
 )

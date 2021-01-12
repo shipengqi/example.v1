@@ -17,9 +17,12 @@ const (
 )
 
 // register codes.
-var _codes = make(map[int]struct{})
-var isPrintStack bool
-var stackSkip = 3
+var (
+	_codes       = make(map[int]struct{})
+
+	stackSkip    = 3
+	isPrintStack bool
+)
 
 func init() {
 	if os.Getenv("IS_PRINT_STACK") == "true" {
@@ -151,7 +154,7 @@ func String(e string) Errno {
 	i, err := strconv.Atoi(e)
 	if err != nil {
 		return &Code{
-			code:    InternalServerError.Code(),
+			code:    ErrInternalServer.Code(),
 			message: e,
 		}
 	}
@@ -170,9 +173,19 @@ func Cause(e error) Errno {
 	return String(e.Error())
 }
 
-// EqualError equal error
-func EqualError(code Errno, err error) bool {
+// Is returns true if error is a Errno error
+func Is(code Errno, err error) bool {
 	return Cause(err).Code() == code.Code()
+}
+
+// IsNothingFoundError returns true if error contains a IsNothingFoundError error
+func IsNothingFoundError(err error) bool {
+	if err, ok := err.(Errno); ok {
+		if err == ErrNothingFound {
+			return true
+		}
+	}
+	return err == ErrNothingFound
 }
 
 func SetPrintStack(isPrint bool) {
@@ -191,7 +204,7 @@ func wrapErr(err error, args ...interface{}) Errno {
 	e, ok := err.(*Code)
 	if !ok {
 		e = &Code{
-			code:    InternalServerError.Code(),
+			code:    ErrInternalServer.Code(),
 			message: msg,
 			err:     err,
 		}

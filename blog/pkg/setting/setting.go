@@ -54,11 +54,25 @@ func ServerSettings() *Server {
 	return settings.Server
 }
 
-var cfg *ini.File
+func AppSettings() *App {
+	return settings.App
+}
+
+func LogSettings() *logger.Config {
+	return settings.Log
+}
+
+func DBSettings() *orm.Config {
+	return settings.DB
+}
+
+func RedisSettings() *gredis.Config {
+	return settings.Redis
+}
+
 
 func Init(filename string) (*Setting, error) {
-	var err error
-	cfg, err = ini.Load(filename)
+	cfg, err := ini.Load(filename)
 	if err != nil {
 		return nil, errors.Wrapf(err, "setting.Init, fail to parse '%s'", filename)
 	}

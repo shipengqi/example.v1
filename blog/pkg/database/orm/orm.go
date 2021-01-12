@@ -1,12 +1,12 @@
 package orm
 
 import (
-	"strings"
 	"time"
 
 	// database driver
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
+	// _ "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 )
@@ -20,28 +20,29 @@ type Config struct {
 	IdleTimeout time.Duration `ini:"IDLE_TIMEOUT"` // connect max life time.
 }
 
-type ormLog struct{}
-
-func (l ormLog) Print(v ...interface{}) {
-	log.Info().Msgf(strings.Repeat("%v ", len(v)), v...)
-}
-
 // New new db and retry connection when has error.
 func New(c *Config) (db *gorm.DB) {
-	db, err := gorm.Open(c.DbType, c.DSN)
+	db, err := gorm.Open(mysql.Open(c.DSN), &gorm.Config{})
 	if err != nil {
 		log.Error().Msgf("db dsn(%s) error: %v", c.DSN, err)
 		panic(err)
 	}
 
-	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
-		return c.TablePrefix + defaultTableName
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Error().Msgf("db.DB() error: %v", err)
+		panic(err)
 	}
+	if sqlDB == nil {
+		log.Warn().Msg("db.DB() get nil")
+		return
+	}
+	// sets the maximum number of connections in the idle connection pool.
+	sqlDB.SetMaxIdleConns(c.Idle)
+	// sets the maximum number of open connections to the database.
+	sqlDB.SetMaxOpenConns(c.Active)
+	// sets the maximum amount of time a connection may be reused.
+	sqlDB.SetConnMaxLifetime(c.IdleTimeout)
 
-	db.SingularTable(true)
-	db.DB().SetMaxIdleConns(c.Idle)
-	db.DB().SetMaxOpenConns(c.Active)
-	db.DB().SetConnMaxLifetime(c.IdleTimeout)
-	// db.SetLogger(ormLog{})
 	return
 }
