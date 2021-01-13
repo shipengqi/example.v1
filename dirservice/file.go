@@ -6,10 +6,6 @@ import (
 	"path/filepath"
 )
 
-
-
-var fileList []FileInfo
-
 func ReadDirRecursive(path string) error {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
