@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
 	"github.com/shipengqi/example.v1/blog/pkg/errno"
 )
 
@@ -14,11 +13,12 @@ type Response struct {
 	Data interface{} `json:"data"`
 }
 
-func SendResponse(c *gin.Context, err errno.Errno, data interface{}) {
+func SendResponse(c *gin.Context, err error, data interface{}) {
+	e := errno.Cause(err)
 
 	c.JSON(http.StatusOK, Response{
-		Code: err.Code(),
-		Msg:  err.Message(),
+		Code: e.Code(),
+		Msg:  e.Message(),
 		Data: data,
 	})
 

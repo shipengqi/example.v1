@@ -9,9 +9,9 @@ type Service struct {
 	dao *dao.Dao
 }
 
-func New() (s *Service) {
+func New(c *setting.Setting) (s *Service) {
 	s = &Service{
-		dao:  dao.New(setting.Settings()),
+		dao:  dao.New(c),
 	}
 	return
 }

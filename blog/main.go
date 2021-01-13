@@ -1,13 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/shipengqi/example.v1/blog/model"
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 	"github.com/shipengqi/example.v1/blog/pkg/setting"
 	"github.com/shipengqi/example.v1/blog/router"
+	"github.com/shipengqi/example.v1/blog/service"
 )
 
 // @title Golang Gin API
@@ -16,7 +21,7 @@ import (
 // @termsOfService https://github.com/shipengqi/example.v1/tree/main/blog
 // @license.name MIT
 // @license.url https://github.com/shipengqi/example.v1/blob/main/LICENSE
-func main()  {
+func main() {
 	settings, err := setting.Init("C:\\code\\example.v1\\blog\\conf\\app.debug.ini")
 	if err != nil {
 		fmt.Println(err)
@@ -25,8 +30,9 @@ func main()  {
 	if err != nil {
 		fmt.Println(err)
 	}
-	model.Init()
-	r := router.Init()
+
+	svc := service.New(settings)
+	r := router.Init(svc)
 
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%d", 8080),
@@ -38,5 +44,38 @@ func main()  {
 
 	log.Info().Msgf("server addr %s", s.Addr)
 
-	_ = s.ListenAndServe()
+	go func() {
+		if err := s.ListenAndServe(); err != nil {
+			log.Fatal().Msgf("Listen err: %s", err)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
+	var ctx context.Context
+	var cancel context.CancelFunc
+	defer func() {
+		if cancel != nil {
+			cancel()
+		}
+	}()
+	for {
+		sig := <-c
+		log.Info().Msgf("get a signal %s", sig.String())
+		switch sig {
+		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
+			ctx, cancel = context.WithTimeout(context.Background(), 35*time.Second)
+			if err := s.Shutdown(ctx); err != nil {
+				log.Fatal().Msgf("Shutdown: %s", err)
+			}
+			log.Info().Msg("Blog server exit")
+			svc.Close()
+			time.Sleep(time.Second)
+			return
+		case syscall.SIGHUP:
+			// TODO reload
+		default:
+			return
+		}
+	}
 }

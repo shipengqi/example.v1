@@ -6,16 +6,31 @@ import (
 	"github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
+	"github.com/shipengqi/example.v1/blog/middleware"
+	"github.com/shipengqi/example.v1/blog/pkg/app"
+	"github.com/shipengqi/example.v1/blog/pkg/errno"
+	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 	"github.com/shipengqi/example.v1/blog/pkg/setting"
 	apiv1 "github.com/shipengqi/example.v1/blog/router/api/v1"
+	"github.com/shipengqi/example.v1/blog/service"
 )
 
-func Init() *gin.Engine {
+func Init(s *service.Service) *gin.Engine {
+	err := s.Ping()
+	if err != nil {
+		log.Fatal().Msgf("Ping err: %s", err)
+	}
 	r := gin.New()
+    apiv1.Init(s)
 
 	r.Use(gin.Logger())
-
 	r.Use(gin.Recovery())
+	r.Use(middleware.Logging())
+
+	// 404 Handler.
+	r.NoRoute(func(c *gin.Context) {
+		app.SendResponse(c, errno.ErrNothingFound, "incorrect route")
+	})
 
 	gin.SetMode(setting.Settings().RunMode)
 

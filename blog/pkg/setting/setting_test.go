@@ -3,7 +3,7 @@ package setting
 import (
 	"testing"
 
-	"github.com/shipengqi/example.v1/blog/pkg/database/gredis"
+	"github.com/shipengqi/example.v1/blog/pkg/cache/gredis"
 	"github.com/shipengqi/example.v1/blog/pkg/database/orm"
 	"github.com/shipengqi/example.v1/blog/pkg/logger"
 	"github.com/stretchr/testify/assert"

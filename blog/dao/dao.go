@@ -1,10 +1,9 @@
 package dao
 
 import (
-	"github.com/gomodule/redigo/redis"
 	"gorm.io/gorm"
 
-	"github.com/shipengqi/example.v1/blog/pkg/database/gredis"
+	"github.com/shipengqi/example.v1/blog/pkg/cache/gredis"
 	"github.com/shipengqi/example.v1/blog/pkg/database/orm"
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 	"github.com/shipengqi/example.v1/blog/pkg/setting"
@@ -13,7 +12,7 @@ import (
 // Dao data access object
 type Dao struct {
 	db    *gorm.DB
-	redis *redis.Pool
+	redis *gredis.Pool
 }
 
 // New create instance of Dao
@@ -34,7 +33,7 @@ func (d *Dao) Ping() (err error) {
 	if err = sqlDB.Ping(); err != nil {
 		return
 	}
-	if err = d.pingRedis(); err != nil {
+	if err = d.redis.Ping(); err != nil {
 		return
 	}
 	return
@@ -45,20 +44,13 @@ func (d *Dao) Close() {
 	if d.db != nil {
 		sqlDB, err := d.db.DB()
 		if err != nil {
+			log.Warn().Msgf("db.DB() err: %v", err)
 			return
 		}
-		log.Warn().Msgf("db.DB() err: %v", err)
 		_ = sqlDB.Close()
 	}
 
 	if d.redis != nil {
 		_ = d.redis.Close()
 	}
-}
-
-func (d *Dao) pingRedis() (err error) {
-	conn := d.redis.Get()
-	defer conn.Close()
-	_, err = conn.Do("SET", "PING", "PONG")
-	return
 }

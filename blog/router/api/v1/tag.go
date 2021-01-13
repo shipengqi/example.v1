@@ -6,13 +6,9 @@ import (
 
 	"github.com/unknwon/com"
 
-	"github.com/shipengqi/example.v1/blog/model"
 	"github.com/shipengqi/example.v1/blog/pkg/app"
 	"github.com/shipengqi/example.v1/blog/pkg/errno"
-	"github.com/shipengqi/example.v1/blog/service"
 )
-
-var s *service.Service
 
 // @Summary Get multiple article tags
 // @Produce  json
@@ -36,7 +32,11 @@ func GetTags(c *gin.Context) {
 		maps["state"] = state
 	}
 
-	data := s.GetTags(maps)
+	data, err := svc.GetTags(maps)
+	if err != nil {
+		app.SendResponse(c, err, data)
+		return
+	}
 	app.SendResponse(c, errno.OK, data)
 }
 
@@ -66,13 +66,11 @@ func AddTag(c *gin.Context) {
 		return
 	}
 
-	if model.ExistTagByName(name) {
-		app.SendResponse(c, errno.ErrExistTag, nil)
+	err := svc.AddTag(name, createdBy, state)
+	if err != nil {
+		app.SendResponse(c, err, nil)
 		return
 	}
-
-	model.AddTag(name, state, createdBy)
-
 	app.SendResponse(c, errno.OK, nil)
 }
 
@@ -107,21 +105,11 @@ func EditTag(c *gin.Context) {
 		return
 	}
 
-	if !model.ExistTagByID(id) {
-		app.SendResponse(c, errno.ErrNotExistTag, nil)
+	data, err := svc.EditTag(id, state, name, modifiedBy)
+	if err != nil {
+		app.SendResponse(c, err, data)
 		return
 	}
-
-	data := make(map[string]interface{})
-	data["modified_by"] = modifiedBy
-	if name != "" {
-		data["name"] = name
-	}
-	if state != -1 {
-		data["state"] = state
-	}
-
-	model.EditTag(id, data)
 
 	app.SendResponse(c, errno.OK, data)
 }
@@ -144,12 +132,10 @@ func DeleteTag(c *gin.Context) {
 		return
 	}
 
-	if !model.ExistTagByID(id) {
-		app.SendResponse(c, errno.ErrNotExistTag, nil)
+	err := svc.DeleteTag(id)
+	if err != nil {
+		app.SendResponse(c, err, nil)
 		return
 	}
-
-	model.DeleteTag(id)
-
 	app.SendResponse(c, errno.OK, nil)
 }
