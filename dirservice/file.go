@@ -2,40 +2,42 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
-func ReadDirRecursive(path string) error {
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		return err
-	}
+var pool = make(chan int, 5)
 
-	for _, f := range files {
+func readDirParallel(dir string, filesChan chan<- os.FileInfo, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for _, f := range readDir(dir) {
 		if f.IsDir() {
-			fileList = append(fileList, FileInfo{
-				Name:  f.Name(),
-				Size:  f.Size(),
-				IsDir: true,
-			})
-			err := ReadDirRecursive(filepath.Join(path, f.Name()))
-			if err != nil {
-				return err
-			}
+			wg.Add(1)
+			sub := filepath.Join(dir, f.Name())
+			filesChan <- f
+			go readDirParallel(sub, filesChan, wg)
 		} else {
-			fileList = append(fileList, FileInfo{
-				Name:  f.Name(),
-				Size:  f.Size(),
-				IsDir: false,
-			})
+			filesChan <- f
 		}
 	}
-
-	return nil
 }
 
-func IsExits(path string) (bool, error) {
+func readDir(path string) []os.FileInfo {
+	pool <- 1
+	defer func() {
+		<- pool
+	}()
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Printf("read path: %s, err: %s", path, err)
+		return nil
+	}
+	return files
+}
+
+func isExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true, nil
@@ -46,7 +48,7 @@ func IsExits(path string) (bool, error) {
 	return false, err
 }
 
-func IsDir(path string) (bool, error) {
+func isDir(path string) (bool, error) {
 	f, err := os.Stat(path)
 	if err != nil {
 		return false, err
@@ -57,7 +59,7 @@ func IsDir(path string) (bool, error) {
 	return true, nil
 }
 
-func GetFileInfo(path string) (os.FileInfo, error) {
+func getFileInfo(path string) (os.FileInfo, error) {
 	f, err := os.Stat(path)
 	if err != nil {
 		return nil, err
