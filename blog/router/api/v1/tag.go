@@ -10,6 +10,19 @@ import (
 	"github.com/shipengqi/example.v1/blog/pkg/errno"
 )
 
+type AddTagForm struct {
+	Name      string `form:"name" valid:"Required;MaxSize(100)"`
+	CreatedBy string `form:"created_by" valid:"Required;MaxSize(100)"`
+	State     int    `form:"state" valid:"Range(0,1)"`
+}
+
+type EditTagForm struct {
+	Name       string `form:"name" valid:"Required;MaxSize(100)"`
+	ModifiedBy string `form:"modified_by" valid:"Required;MaxSize(100)"`
+	ID         int    `form:"id" valid:"Required;Min(1)"`
+	State      int    `form:"state" valid:"Range(0,1)"`
+}
+
 // @Summary Get multiple article tags
 // @Produce  json
 // @Param name query string false "Name"
@@ -21,7 +34,6 @@ func GetTags(c *gin.Context) {
 	name := c.Query("name")
 
 	maps := make(map[string]interface{})
-
 
 	if name != "" {
 		maps["name"] = name
@@ -49,24 +61,14 @@ func GetTags(c *gin.Context) {
 // @Failure 200 {object} app.Response
 // @Router /api/v1/tags [post]
 func AddTag(c *gin.Context) {
-	name := c.Query("name")
-	state := com.StrTo(c.DefaultQuery("state", "0")).MustInt()
-	createdBy := c.Query("created_by")
+	var form AddTagForm
 
-	valid := validation.Validation{}
-	valid.Required(name, "name").Message("名称不能为空")
-	valid.MaxSize(name, 100, "name").Message("名称最长为100字符")
-	valid.Required(createdBy, "created_by").Message("创建人不能为空")
-	valid.MaxSize(createdBy, 100, "created_by").Message("创建人最长为100字符")
-	valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
-
-	if valid.HasErrors() {
-		app.MarkErrors(valid.Errors)
-		app.SendResponse(c, errno.ErrBadRequest, nil)
+	err := app.BindAndValid(c, &form)
+	if err != nil {
+		app.SendResponse(c, err, nil)
 		return
 	}
-
-	err := svc.AddTag(name, createdBy, state)
+	err = svc.AddTag(form.Name, form.CreatedBy, form.State)
 	if err != nil {
 		app.SendResponse(c, err, nil)
 		return
@@ -84,28 +86,14 @@ func AddTag(c *gin.Context) {
 // @Failure 200 {object} app.Response
 // @Router /api/v1/tags/{id} [put]
 func EditTag(c *gin.Context) {
-	id := com.StrTo(c.Param("id")).MustInt()
-	name := c.Query("name")
-	modifiedBy := c.Query("modified_by")
-
-	valid := validation.Validation{}
-	var state int = -1
-	if arg := c.Query("state"); arg != "" {
-		state = com.StrTo(arg).MustInt()
-		valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
-	}
-	valid.Required(id, "id").Message("ID不能为空")
-	valid.Required(modifiedBy, "modified_by").Message("修改人不能为空")
-	valid.MaxSize(modifiedBy, 100, "modified_by").Message("修改人最长为100字符")
-	valid.MaxSize(name, 100, "name").Message("名称最长为100字符")
-
-	if valid.HasErrors() {
-		app.MarkErrors(valid.Errors)
-		app.SendResponse(c, errno.ErrBadRequest, nil)
+	form := EditTagForm{ID: com.StrTo(c.Param("id")).MustInt()}
+	err := app.BindAndValid(c, &form)
+	if err != nil {
+		app.SendResponse(c, err, nil)
 		return
 	}
 
-	data, err := svc.EditTag(id, state, name, modifiedBy)
+	data, err := svc.EditTag(form.ID, form.State, form.Name, form.ModifiedBy)
 	if err != nil {
 		app.SendResponse(c, err, data)
 		return
@@ -124,7 +112,7 @@ func DeleteTag(c *gin.Context) {
 	id := com.StrTo(c.Param("id")).MustInt()
 
 	valid := validation.Validation{}
-	valid.Min(id, 1, "id").Message("ID必须大于0")
+	valid.Min(id, 1, "id").Message("ID must greater than 0")
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)

@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-var pool = make(chan int, 5)
+var pool = make(chan struct{}, 5)
 
 func readDirParallel(dir string, filesChan chan<- os.FileInfo, wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -25,7 +25,7 @@ func readDirParallel(dir string, filesChan chan<- os.FileInfo, wg *sync.WaitGrou
 }
 
 func readDir(path string) []os.FileInfo {
-	pool <- 1
+	pool <- struct{}{}
 	defer func() {
 		<- pool
 	}()

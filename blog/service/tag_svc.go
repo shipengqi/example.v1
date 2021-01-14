@@ -1,22 +1,41 @@
 package service
 
 import (
+	"github.com/shipengqi/example.v1/blog/model"
 	"github.com/shipengqi/example.v1/blog/pkg/errno"
+	log "github.com/shipengqi/example.v1/blog/pkg/logger"
+	"github.com/shipengqi/example.v1/blog/service/cache"
 )
 
-func (s *Service) GetTags(maps map[string]interface{}) (map[string]interface{}, error) {
-	data := make(map[string]interface{})
+func (s *Service) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
+
+	c := cache.Tag{
+		Name:     "",
+		State:    0,
+		PageNum:  0,
+		PageSize: 0,
+	}
+	key := c.GetTagsCacheKey()
+	tagsCache, err := s.dao.GetTagsCache(key)
+	if err != nil {
+		return nil, errno.Wrap(err, "get tags cache")
+	}
+
+	if tagsCache != nil {
+		log.Info().Msgf("get cache with key: %s", key)
+		return tagsCache, nil
+	}
+
 	list, err := s.dao.GetTags(0, 10, maps)
 	if err != nil {
 		return nil, errno.Wrap(err, "get tags")
 	}
-	total, err := s.dao.GetTagTotal(maps)
-	if err != nil {
-		return nil, errno.Wrap(err, "get total")
+
+	err = s.dao.SetTagsCache(key, list, 3600)
+	if err == nil {
+		log.Debug().Msgf("set cache with key: %s", key)
 	}
-	data["lists"] = list
-	data["total"] = total
-	return data, nil
+	return list, nil
 }
 
 func (s *Service) AddTag(name, createdBy string, state int) error {

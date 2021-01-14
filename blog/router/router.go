@@ -11,6 +11,7 @@ import (
 	"github.com/shipengqi/example.v1/blog/pkg/errno"
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 	"github.com/shipengqi/example.v1/blog/pkg/setting"
+	"github.com/shipengqi/example.v1/blog/router/api"
 	apiv1 "github.com/shipengqi/example.v1/blog/router/api/v1"
 	"github.com/shipengqi/example.v1/blog/service"
 )
@@ -21,7 +22,7 @@ func Init(s *service.Service) *gin.Engine {
 		log.Fatal().Msgf("Ping err: %s", err)
 	}
 	r := gin.New()
-    apiv1.Init(s)
+	api.Init(s)
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -35,6 +36,8 @@ func Init(s *service.Service) *gin.Engine {
 	gin.SetMode(setting.Settings().RunMode)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	r.POST("login", api.Login)
 
 	v1 := r.Group("/api/v1")
 	{
