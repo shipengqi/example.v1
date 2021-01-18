@@ -8,9 +8,9 @@ import (
 )
 
 type Service struct {
-	dao     dao.Dao
-	AuthSvc *identity.Svc
-	TagSvc  *tag.Svc
+	dao     dao.Interface
+	AuthSvc identity.Interface
+	TagSvc  tag.Interface
 }
 
 func New(c *setting.Setting) (s *Service) {

@@ -3,33 +3,39 @@ package jwt
 import (
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt2 "github.com/dgrijalva/jwt-go"
 	"github.com/shipengqi/example.v1/blog/pkg/utils"
 )
 
-type Jwt struct {
+type Interface interface {
+	GenerateToken(username, password string) (string, error)
+	ParseToken(token string) (*Claims, error)
+	RefreshToken(token string) (string, error)
+}
+
+type jwt struct {
 	SigningKey []byte
 }
 
-func New(signingKey string) *Jwt {
-	return &Jwt{SigningKey: []byte(signingKey)}
+func New(signingKey string) Interface {
+	return &jwt{SigningKey: []byte(signingKey)}
 }
 
 // Custom jwt claims
 type Claims struct {
-	jwt.StandardClaims
+	jwt2.StandardClaims
 
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 // GenerateToken generate tokens used for auth
-func (j *Jwt) GenerateToken(username, password string) (string, error) {
+func (j *jwt) GenerateToken(username, password string) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(time.Hour)
 
 	claims := &Claims{
-		jwt.StandardClaims{
+		jwt2.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
 			Issuer:    "example.v1",
 		},
@@ -40,11 +46,11 @@ func (j *Jwt) GenerateToken(username, password string) (string, error) {
 }
 
 // ParseToken parsing token
-func (j *Jwt) ParseToken(token string) (*Claims, error) {
-	tokenClaims, err := jwt.ParseWithClaims(
+func (j *jwt) ParseToken(token string) (*Claims, error) {
+	tokenClaims, err := jwt2.ParseWithClaims(
 		token,
 		&Claims{},
-		func(token *jwt.Token) (interface{}, error) {
+		func(token *jwt2.Token) (interface{}, error) {
 			return j.SigningKey, nil
 		},
 	)
@@ -62,7 +68,7 @@ func (j *Jwt) ParseToken(token string) (*Claims, error) {
 }
 
 // RefreshToken refresh token
-func (j *Jwt) RefreshToken(token string) (string, error) {
+func (j *jwt) RefreshToken(token string) (string, error) {
 	claims, err := j.ParseToken(token)
 	if err != nil {
 		return "", err
@@ -71,7 +77,7 @@ func (j *Jwt) RefreshToken(token string) (string, error) {
 	return j.gen(claims)
 }
 
-func (j *Jwt) gen(claims *Claims) (string, error) {
-	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+func (j *jwt) gen(claims *Claims) (string, error) {
+	tokenClaims := jwt2.NewWithClaims(jwt2.SigningMethodHS256, claims)
 	return tokenClaims.SignedString(j.SigningKey)
 }

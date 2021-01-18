@@ -10,7 +10,7 @@ import (
 	"github.com/shipengqi/example.v1/blog/pkg/setting"
 )
 
-type Dao interface {
+type Interface interface {
 	Ping() (err error)
 	Close()
 
@@ -32,7 +32,7 @@ type dao struct {
 }
 
 // New create instance of Dao
-func New(c *setting.Setting) Dao {
+func New(c *setting.Setting) Interface {
 	return &dao{
 		db:    orm.New(c.DB),
 		redis: gredis.New(c.Redis),
