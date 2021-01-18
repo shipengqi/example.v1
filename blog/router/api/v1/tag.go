@@ -7,7 +7,7 @@ import (
 	"github.com/unknwon/com"
 
 	"github.com/shipengqi/example.v1/blog/pkg/app"
-	"github.com/shipengqi/example.v1/blog/pkg/errno"
+	"github.com/shipengqi/example.v1/blog/pkg/e"
 )
 
 type AddTagForm struct {
@@ -49,7 +49,7 @@ func GetTags(c *gin.Context) {
 		app.SendResponse(c, err, data)
 		return
 	}
-	app.SendResponse(c, errno.OK, data)
+	app.SendResponse(c, e.OK, data)
 }
 
 // @Summary Add article tag
@@ -73,7 +73,7 @@ func AddTag(c *gin.Context) {
 		app.SendResponse(c, err, nil)
 		return
 	}
-	app.SendResponse(c, errno.OK, nil)
+	app.SendResponse(c, e.OK, nil)
 }
 
 // @Summary Update article tag
@@ -99,7 +99,7 @@ func EditTag(c *gin.Context) {
 		return
 	}
 
-	app.SendResponse(c, errno.OK, data)
+	app.SendResponse(c, e.OK, data)
 }
 
 // @Summary Delete article tag
@@ -116,7 +116,7 @@ func DeleteTag(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.SendResponse(c, errno.ErrBadRequest, nil)
+		app.SendResponse(c, e.ErrBadRequest, nil)
 		return
 	}
 
@@ -125,5 +125,5 @@ func DeleteTag(c *gin.Context) {
 		app.SendResponse(c, err, nil)
 		return
 	}
-	app.SendResponse(c, errno.OK, nil)
+	app.SendResponse(c, e.OK, nil)
 }

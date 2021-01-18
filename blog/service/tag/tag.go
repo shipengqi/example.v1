@@ -3,7 +3,7 @@ package tag
 import (
 	"github.com/shipengqi/example.v1/blog/dao"
 	"github.com/shipengqi/example.v1/blog/model"
-	"github.com/shipengqi/example.v1/blog/pkg/errno"
+	"github.com/shipengqi/example.v1/blog/pkg/e"
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 	"github.com/shipengqi/example.v1/blog/service/cache"
 )
@@ -27,7 +27,7 @@ func (s *Svc) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
 	key := c.GetTagsCacheKey()
 	tagsCache, err := s.dao.GetTagsCache(key)
 	if err != nil {
-		return nil, errno.Wrap(err, "get tags cache")
+		return nil, e.Wrap(err, "get tags cache")
 	}
 
 	if tagsCache != nil {
@@ -37,7 +37,7 @@ func (s *Svc) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
 
 	list, err := s.dao.GetTags(0, 10, maps)
 	if err != nil {
-		return nil, errno.Wrap(err, "get tags")
+		return nil, e.Wrap(err, "get tags")
 	}
 
 	err = s.dao.SetTagsCache(key, list, 3600)
@@ -50,11 +50,11 @@ func (s *Svc) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
 func (s *Svc) AddTag(name, createdBy string, state int) error {
 	exists, err := s.dao.ExistTagByName(name)
 	if err != nil {
-		return errno.Wrap(err, "exist tag")
+		return e.Wrap(err, "exist tag")
 	}
 
 	if !exists {
-		return errno.ErrExistTag
+		return e.ErrExistTag
 	}
 
 	return s.dao.AddTag(name, state, createdBy)
@@ -63,10 +63,10 @@ func (s *Svc) AddTag(name, createdBy string, state int) error {
 func (s *Svc) EditTag(id, state int, name, modifiedBy string) (data map[string]interface{}, err error) {
 	exists, err := s.dao.ExistTagByID(id)
 	if err != nil {
-		return nil, errno.Wrap(err, "exist tag")
+		return nil, e.Wrap(err, "exist tag")
 	}
 	if !exists {
-		return nil, errno.ErrNotExistTag
+		return nil, e.ErrNotExistTag
 	}
 	data = make(map[string]interface{})
 	data["modified_by"] = modifiedBy
@@ -79,7 +79,7 @@ func (s *Svc) EditTag(id, state int, name, modifiedBy string) (data map[string]i
 
 	err = s.dao.EditTag(id, data)
 	if err != nil {
-		return nil, errno.Wrap(err, "edit tag")
+		return nil, e.Wrap(err, "edit tag")
 	}
 	return data, nil
 }
@@ -87,10 +87,10 @@ func (s *Svc) EditTag(id, state int, name, modifiedBy string) (data map[string]i
 func (s *Svc) DeleteTag(id int) (err error) {
 	exists, err := s.dao.ExistTagByID(id)
 	if err != nil {
-		return errno.Wrap(err, "exist tag")
+		return e.Wrap(err, "exist tag")
 	}
 	if !exists {
-		return errno.ErrNotExistTag
+		return e.ErrNotExistTag
 	}
 
 	return s.dao.DeleteTag(id)

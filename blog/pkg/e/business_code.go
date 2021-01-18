@@ -1,4 +1,4 @@
-package errno
+package e
 
 // Business errors
 var (

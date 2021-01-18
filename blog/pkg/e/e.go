@@ -1,4 +1,4 @@
-package errno
+package e
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ const (
 
 // register codes.
 var (
-	_codes       = make(map[int]struct{})
+	_codes = make(map[int]struct{})
 
 	stackSkip    = 3
 	isPrintStack bool

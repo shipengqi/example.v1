@@ -17,7 +17,7 @@ func getSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	queryPath := r.URL.Query().Get("path")
-	if strings.TrimSpace(queryPath) == "" {
+	if len(strings.TrimSpace(queryPath)) == 0 {
 		http.Error(w, "parameter 'path' is required", http.StatusBadRequest)
 		return
 	}

@@ -35,7 +35,7 @@ func main()  {
 }
 
 func preCheck() error {
-	if strings.TrimSpace(rootPath) == "" {
+	if len(strings.TrimSpace(rootPath)) == 0 {
 		return errors.New("root path is invalid")
 	}
 

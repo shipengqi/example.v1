@@ -1,8 +1,8 @@
-package errno
+package e
 
 // Common errors
 var (
-	OK = add(0, "OK")
+	OK                = add(0, "OK")
 
 	ErrInternalServer = add(-500, "Internal server error")
 	ErrBadRequest     = add(-400, "Bad request")

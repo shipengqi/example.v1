@@ -1,4 +1,4 @@
-package errno
+package e
 
 import (
 	"bytes"
@@ -84,7 +84,7 @@ func TestString(t *testing.T) {
 	t.Run("String 10", func(t *testing.T) {
 		actual := String("10")
 		expected := &Code{
-			code:    10,
+			code: 10,
 		}
 		assert.Equal(t, expected, actual)
 	})
@@ -163,7 +163,7 @@ func TestWrapf(t *testing.T) {
 		assert.Equal(t, "test msg format", actual.Message())
 		assert.Equal(t, "test err", actual.RawError().Error())
 		assert.Contains(t, actual.Stack(), "call stack")
-		assert.Contains(t, actual.Stack(), "errno.(*Code).genStackTrace")
+		assert.Contains(t, actual.Stack(), ".(*Code).genStackTrace")
 	})
 }
 

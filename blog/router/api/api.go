@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/shipengqi/example.v1/blog/pkg/errno"
+	"github.com/shipengqi/example.v1/blog/pkg/e"
 
 	"github.com/shipengqi/example.v1/blog/pkg/app"
 	apiv1 "github.com/shipengqi/example.v1/blog/router/api/v1"
@@ -39,9 +39,9 @@ func Login(c *gin.Context) {
 
 	token, err := svc.AuthSvc.Login(form.Username, form.Password)
 	if err != nil {
-		app.SendResponse(c, errno.ErrUnauthorized, nil)
+		app.SendResponse(c, e.ErrUnauthorized, nil)
 		return
 	}
 	data["token"] = token
-	app.SendResponse(c, errno.OK, data)
+	app.SendResponse(c, e.OK, data)
 }

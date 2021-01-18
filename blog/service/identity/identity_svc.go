@@ -1,9 +1,9 @@
-package auth
+package identity
 
 import (
 	"github.com/dgrijalva/jwt-go"
 
-	"github.com/shipengqi/example.v1/blog/pkg/errno"
+	"github.com/shipengqi/example.v1/blog/pkg/e"
 	jwt2 "github.com/shipengqi/example.v1/blog/pkg/jwt"
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 )
@@ -22,16 +22,15 @@ func (s *Svc) Login(user, pass string) (string, error) {
 	// get role
 	token, err := s.jwt.GenerateToken(user, pass)
 	if err != nil {
-		return "", errno.Wrap(err, errno.ErrGenTokenFailed.Message())
+		return "", e.Wrap(err, e.ErrGenTokenFailed.Message())
 	}
-	// Todo
-	// return user info
+	// return token and user info
 	return token, err
 }
 
 func (s *Svc) Authenticate(token string) (claims *jwt2.Claims, err error) {
 	if token == "" {
-		return nil, errno.ErrUnauthorized
+		return nil, e.ErrUnauthorized
 	}
 
 	claims, err = s.jwt.ParseToken(token)
@@ -39,16 +38,16 @@ func (s *Svc) Authenticate(token string) (claims *jwt2.Claims, err error) {
 		if ve, ok := err.(*jwt.ValidationError); ok {
 			log.Error().Err(err).Msgf("Authenticate ValidationError")
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return nil, errno.ErrTokenMalformed
+				return nil, e.ErrTokenMalformed
 			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				return nil, errno.ErrTokenExpired
+				return nil, e.ErrTokenExpired
 			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
-				return nil, errno.ErrNotValidYet
+				return nil, e.ErrNotValidYet
 			} else {
-				return nil, errno.ErrTokenInvalid
+				return nil, e.ErrTokenInvalid
 			}
 		}
-		return nil, errno.Wrapf(err, "invalid token")
+		return nil, e.Wrapf(err, "invalid token")
 	}
 	return
 }

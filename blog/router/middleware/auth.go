@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/shipengqi/example.v1/blog/pkg/app"
-	"github.com/shipengqi/example.v1/blog/pkg/errno"
+	"github.com/shipengqi/example.v1/blog/pkg/e"
 	"github.com/shipengqi/example.v1/blog/service"
 )
 
@@ -36,7 +36,7 @@ func Authenticate(s *service.Service) gin.HandlerFunc {
 		}
 
 		if len(token) == 0 {
-			app.SendResponse(c, errno.ErrUnauthorized, nil)
+			app.SendResponse(c, e.ErrUnauthorized, nil)
 			c.Abort()
 			return
 		}

@@ -10,7 +10,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/shipengqi/example.v1/blog/pkg/app"
-	"github.com/shipengqi/example.v1/blog/pkg/errno"
+	"github.com/shipengqi/example.v1/blog/pkg/e"
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 )
 
@@ -55,7 +55,7 @@ func Logging() gin.HandlerFunc {
 
 		// Get code and message
 		var response app.Response
-		code, message := errno.OK.Code(), errno.OK.Message()
+		code, message := e.OK.Code(), e.OK.Message()
 
 		// Logging for API
 		contentType := blw.Header().Get("Content-Type")
@@ -68,7 +68,7 @@ func Logging() gin.HandlerFunc {
 		latency := end.Sub(start)
 
 		if err := json.Unmarshal(blw.body.Bytes(), &response); err != nil {
-			error2 := errno.Wrap(err, "unmarshal")
+			error2 := e.Wrap(err, "unmarshal")
 			log.Error().Err(err).Msgf("body: %s", blw.body.Bytes())
 
 			code = error2.Code()
