@@ -2,19 +2,23 @@ package service
 
 import (
 	"github.com/shipengqi/example.v1/blog/dao"
-	"github.com/shipengqi/example.v1/blog/pkg/jwt"
 	"github.com/shipengqi/example.v1/blog/pkg/setting"
+	"github.com/shipengqi/example.v1/blog/service/auth"
+	"github.com/shipengqi/example.v1/blog/service/tag"
 )
 
 type Service struct {
-	dao *dao.Dao
-	jwt *jwt.Jwt
+	dao     dao.Dao
+	AuthSvc *auth.Svc
+	TagSvc  *tag.Svc
 }
 
 func New(c *setting.Setting) (s *Service) {
+	d := dao.New(c)
 	s = &Service{
-		dao: dao.New(c),
-		jwt: jwt.New(c.App.SingingKey),
+		dao:     d,
+		AuthSvc: auth.New(c.App.SingingKey),
+		TagSvc:  tag.New(d),
 	}
 	return
 }

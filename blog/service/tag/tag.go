@@ -1,13 +1,22 @@
-package service
+package tag
 
 import (
+	"github.com/shipengqi/example.v1/blog/dao"
 	"github.com/shipengqi/example.v1/blog/model"
 	"github.com/shipengqi/example.v1/blog/pkg/errno"
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 	"github.com/shipengqi/example.v1/blog/service/cache"
 )
 
-func (s *Service) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
+type Svc struct {
+	dao dao.Dao
+}
+
+func New(d dao.Dao) *Svc {
+	return &Svc{dao: d}
+}
+
+func (s *Svc) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
 
 	c := cache.Tag{
 		Name:     "",
@@ -38,7 +47,7 @@ func (s *Service) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
 	return list, nil
 }
 
-func (s *Service) AddTag(name, createdBy string, state int) error {
+func (s *Svc) AddTag(name, createdBy string, state int) error {
 	exists, err := s.dao.ExistTagByName(name)
 	if err != nil {
 		return errno.Wrap(err, "exist tag")
@@ -51,7 +60,7 @@ func (s *Service) AddTag(name, createdBy string, state int) error {
 	return s.dao.AddTag(name, state, createdBy)
 }
 
-func (s *Service) EditTag(id, state int, name, modifiedBy string) (data map[string]interface{}, err error) {
+func (s *Svc) EditTag(id, state int, name, modifiedBy string) (data map[string]interface{}, err error) {
 	exists, err := s.dao.ExistTagByID(id)
 	if err != nil {
 		return nil, errno.Wrap(err, "exist tag")
@@ -75,7 +84,7 @@ func (s *Service) EditTag(id, state int, name, modifiedBy string) (data map[stri
 	return data, nil
 }
 
-func (s *Service) DeleteTag(id int) (err error) {
+func (s *Svc) DeleteTag(id int) (err error) {
 	exists, err := s.dao.ExistTagByID(id)
 	if err != nil {
 		return errno.Wrap(err, "exist tag")

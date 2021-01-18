@@ -24,7 +24,7 @@ type EditTagForm struct {
 }
 
 // @Summary Get multiple article tags
-// @Produce  json
+// @Produce application/json
 // @Param name query string false "Name"
 // @Param state query int false "State"
 // @Success 200 {object} app.Response
@@ -44,7 +44,7 @@ func GetTags(c *gin.Context) {
 		maps["state"] = state
 	}
 
-	data, err := svc.GetTags(maps)
+	data, err := svc.TagSvc.GetTags(maps)
 	if err != nil {
 		app.SendResponse(c, err, data)
 		return
@@ -53,7 +53,7 @@ func GetTags(c *gin.Context) {
 }
 
 // @Summary Add article tag
-// @Produce  json
+// @Produce application/json
 // @Param name body string true "Name"
 // @Param state body int false "State"
 // @Param created_by body int false "CreatedBy"
@@ -68,7 +68,7 @@ func AddTag(c *gin.Context) {
 		app.SendResponse(c, err, nil)
 		return
 	}
-	err = svc.AddTag(form.Name, form.CreatedBy, form.State)
+	err = svc.TagSvc.AddTag(form.Name, form.CreatedBy, form.State)
 	if err != nil {
 		app.SendResponse(c, err, nil)
 		return
@@ -77,7 +77,7 @@ func AddTag(c *gin.Context) {
 }
 
 // @Summary Update article tag
-// @Produce  json
+// @Produce application/json
 // @Param id path int true "ID"
 // @Param name body string true "Name"
 // @Param state body int false "State"
@@ -93,7 +93,7 @@ func EditTag(c *gin.Context) {
 		return
 	}
 
-	data, err := svc.EditTag(form.ID, form.State, form.Name, form.ModifiedBy)
+	data, err := svc.TagSvc.EditTag(form.ID, form.State, form.Name, form.ModifiedBy)
 	if err != nil {
 		app.SendResponse(c, err, data)
 		return
@@ -103,7 +103,7 @@ func EditTag(c *gin.Context) {
 }
 
 // @Summary Delete article tag
-// @Produce  json
+// @Produce application/json
 // @Param id path int true "ID"
 // @Success 200 {object} app.Response
 // @Failure 200 {object} app.Response
@@ -120,7 +120,7 @@ func DeleteTag(c *gin.Context) {
 		return
 	}
 
-	err := svc.DeleteTag(id)
+	err := svc.TagSvc.DeleteTag(id)
 	if err != nil {
 		app.SendResponse(c, err, nil)
 		return

@@ -9,7 +9,7 @@ import (
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 )
 
-func (d *Dao) SetTagsCache(key string, data interface{}, exp int) error {
+func (d *dao) SetTagsCache(key string, data interface{}, exp int) error {
 
 	if err := d.redis.Set(key, data, exp); err != nil {
 		log.Error().Err(err).Msgf("set cache with key: %s", key)
@@ -19,7 +19,7 @@ func (d *Dao) SetTagsCache(key string, data interface{}, exp int) error {
 	return nil
 }
 
-func (d *Dao) GetTagsCache(key string) ([]model.Tag, error) {
+func (d *dao) GetTagsCache(key string) ([]model.Tag, error) {
 	var (
 		tags []model.Tag
 		err  error
@@ -41,7 +41,7 @@ func (d *Dao) GetTagsCache(key string) ([]model.Tag, error) {
 	return nil, err
 }
 
-func (d *Dao) GetTags(pageNum int, pageSize int, maps interface{}) ([]model.Tag, error) {
+func (d *dao) GetTags(pageNum int, pageSize int, maps interface{}) ([]model.Tag, error) {
 	var (
 		tags []model.Tag
 		err  error
@@ -60,7 +60,7 @@ func (d *Dao) GetTags(pageNum int, pageSize int, maps interface{}) ([]model.Tag,
 	return tags, nil
 }
 
-func (d *Dao) GetTagTotal(maps interface{}) (int64, error) {
+func (d *dao) GetTagTotal(maps interface{}) (int64, error) {
 	var count int64
 	if err := d.db.Model(&model.Tag{}).Where(maps).Count(&count).Error; err != nil {
 		return 0, err
@@ -71,7 +71,7 @@ func (d *Dao) GetTagTotal(maps interface{}) (int64, error) {
 
 
 
-func (d *Dao) AddTag(name string, state int, createdBy string) error {
+func (d *dao) AddTag(name string, state int, createdBy string) error {
 	tag := &model.Tag{
 		Name:      name,
 		CreatedBy: createdBy,
@@ -84,7 +84,7 @@ func (d *Dao) AddTag(name string, state int, createdBy string) error {
 	return nil
 }
 
-func (d *Dao) DeleteTag(id int) error {
+func (d *dao) DeleteTag(id int) error {
 	if err := d.db.Where("id = ?", id).Delete(&model.Tag{}).Error; err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func (d *Dao) DeleteTag(id int) error {
 	return nil
 }
 
-func (d *Dao) EditTag(id int, data interface{}) error {
+func (d *dao) EditTag(id int, data interface{}) error {
 	if err := d.db.Model(&model.Tag{}).Where("id = ?", id).Updates(data).Error; err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (d *Dao) EditTag(id int, data interface{}) error {
 	return nil
 }
 
-func (d *Dao) ExistTagByName(name string) (bool, error) {
+func (d *dao) ExistTagByName(name string) (bool, error) {
 	var tag model.Tag
 	err := d.db.Select("id").Where("name = ?", name).First(&tag).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -113,7 +113,7 @@ func (d *Dao) ExistTagByName(name string) (bool, error) {
 	return false, nil
 }
 
-func (d *Dao) ExistTagByID(id int) (bool, error) {
+func (d *dao) ExistTagByID(id int) (bool, error) {
 	var tag model.Tag
 	err := d.db.Select("id").Where("id = ?", id).First(&tag).Error
 	if err != nil && err != gorm.ErrRecordNotFound {

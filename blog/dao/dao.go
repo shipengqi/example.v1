@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"github.com/shipengqi/example.v1/blog/model"
 	"gorm.io/gorm"
 
 	"github.com/shipengqi/example.v1/blog/pkg/cache/gredis"
@@ -9,23 +10,37 @@ import (
 	"github.com/shipengqi/example.v1/blog/pkg/setting"
 )
 
+type Dao interface {
+	Ping() (err error)
+	Close()
+
+	SetTagsCache(key string, data interface{}, exp int) error
+	GetTagsCache(key string) ([]model.Tag, error)
+	GetTags(pageNum int, pageSize int, maps interface{}) ([]model.Tag, error)
+	GetTagTotal(maps interface{}) (int64, error)
+	AddTag(name string, state int, createdBy string) error
+	DeleteTag(id int) error
+	EditTag(id int, data interface{}) error
+	ExistTagByName(name string) (bool, error)
+	ExistTagByID(id int) (bool, error)
+}
+
 // Dao data access object
-type Dao struct {
+type dao struct {
 	db    *gorm.DB
-	redis *gredis.Pool
+	redis gredis.Pool
 }
 
 // New create instance of Dao
-func New(c *setting.Setting) (d *Dao) {
-	d = &Dao{
+func New(c *setting.Setting) Dao {
+	return &dao{
 		db:    orm.New(c.DB),
 		redis: gredis.New(c.Redis),
 	}
-	return
 }
 
 // Ping dao.
-func (d *Dao) Ping() (err error) {
+func (d *dao) Ping() (err error) {
 	sqlDB, err := d.db.DB()
 	if err != nil {
 		return
@@ -40,7 +55,7 @@ func (d *Dao) Ping() (err error) {
 }
 
 // Close dao.
-func (d *Dao) Close() {
+func (d *dao) Close() {
 	if d.db != nil {
 		sqlDB, err := d.db.DB()
 		if err != nil {

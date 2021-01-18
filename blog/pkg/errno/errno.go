@@ -25,10 +25,10 @@ var (
 )
 
 func init() {
-	if os.Getenv("IS_PRINT_STACK") == "true" {
+	if os.Getenv(ERRNO_ENV_KEY_PRINT_STACK) == "true" {
 		isPrintStack = true
 	}
-	s := os.Getenv("ERROR_STACK_SKIP")
+	s := os.Getenv(ERRNO_ENV_KEY_STACK_SKIP)
 	if s != "" {
 		i, err := strconv.Atoi(s)
 		if err == nil {

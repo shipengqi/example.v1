@@ -70,7 +70,6 @@ func RedisSettings() *gredis.Config {
 	return settings.Redis
 }
 
-
 func Init(filename string) (*Setting, error) {
 	cfg, err := ini.Load(filename)
 	if err != nil {
@@ -86,6 +85,7 @@ func Init(filename string) (*Setting, error) {
 	settings.Server.ReadTimeout = settings.Server.ReadTimeout * time.Second
 	settings.Server.WriteTimeout = settings.Server.WriteTimeout * time.Second
 	settings.DB.IdleTimeout = settings.DB.IdleTimeout * time.Second
+	settings.DB.SlowThreshold = settings.DB.IdleTimeout * time.Millisecond
 	settings.Redis.IdleTimeout = settings.Redis.IdleTimeout * time.Second
 
 	return settings, nil

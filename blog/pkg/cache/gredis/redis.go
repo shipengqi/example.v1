@@ -9,6 +9,18 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+type Pool interface {
+	Ping() (err error)
+	Close() (err error)
+
+	SetString(key string, data string, exp int) error
+	Set(key string, data interface{}, exp int) error
+	Exists(key string) bool
+	Get(key string) ([]byte, error)
+	Delete(key string) (bool, error)
+	LikeDeletes(key string) error
+}
+
 type Config struct {
 	Host        string        `ini:"HOST"`
 	Password    string        `ini:"PASSWORD"`
@@ -17,13 +29,13 @@ type Config struct {
 	IdleTimeout time.Duration `ini:"IDLE_TIMEOUT"`
 }
 
-type Pool struct {
+type pool struct {
 	conf  *Config
 	coons *redis.Pool
 }
 
-func New(c *Config) *Pool {
-	pool := &redis.Pool{
+func New(c *Config) Pool {
+	p := &redis.Pool{
 		MaxIdle:     c.MaxIdle,
 		MaxActive:   c.MaxActive,
 		IdleTimeout: c.IdleTimeout,
@@ -50,13 +62,13 @@ func New(c *Config) *Pool {
 		},
 	}
 
-	return &Pool{
+	return &pool{
 		conf:  c,
-		coons: pool,
+		coons: p,
 	}
 }
 
-func (p *Pool) SetString(key string, data string, exp int) error {
+func (p *pool) SetString(key string, data string, exp int) error {
 	conn := p.coons.Get()
 	defer conn.Close()
 
@@ -68,7 +80,7 @@ func (p *Pool) SetString(key string, data string, exp int) error {
 	return nil
 }
 
-func (p *Pool) Set(key string, data interface{}, exp int) error {
+func (p *pool) Set(key string, data interface{}, exp int) error {
 	conn := p.coons.Get()
 	defer conn.Close()
 
@@ -85,7 +97,7 @@ func (p *Pool) Set(key string, data interface{}, exp int) error {
 	return nil
 }
 
-func (p *Pool) Exists(key string) bool {
+func (p *pool) Exists(key string) bool {
 	conn := p.coons.Get()
 	defer conn.Close()
 
@@ -97,7 +109,7 @@ func (p *Pool) Exists(key string) bool {
 	return exists
 }
 
-func (p *Pool) Get(key string) ([]byte, error) {
+func (p *pool) Get(key string) ([]byte, error) {
 	conn := p.coons.Get()
 	defer conn.Close()
 
@@ -109,14 +121,14 @@ func (p *Pool) Get(key string) ([]byte, error) {
 	return reply, nil
 }
 
-func (p *Pool) Delete(key string) (bool, error) {
+func (p *pool) Delete(key string) (bool, error) {
 	conn := p.coons.Get()
 	defer conn.Close()
 
 	return redis.Bool(conn.Do("DEL", key))
 }
 
-func (p *Pool) LikeDeletes(key string) error {
+func (p *pool) LikeDeletes(key string) error {
 	conn := p.coons.Get()
 	defer conn.Close()
 
@@ -135,7 +147,7 @@ func (p *Pool) LikeDeletes(key string) error {
 	return nil
 }
 
-func (p *Pool) Ping() (err error) {
+func (p *pool) Ping() (err error) {
 	conn := p.coons.Get()
 	defer conn.Close()
 
@@ -144,6 +156,6 @@ func (p *Pool) Ping() (err error) {
 	return
 }
 
-func (p *Pool) Close() (err error) {
+func (p *pool) Close() (err error) {
 	return p.coons.Close()
 }

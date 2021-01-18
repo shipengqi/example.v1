@@ -21,6 +21,13 @@ func Init(s *service.Service) {
 	apiv1.Init(s)
 }
 
+// @Summary Login
+// @Produce application/json
+// @Param username formData string true "Username"
+// @Param password formData string true "Password"
+// @Success 200 {object} app.Response
+// @Failure 200 {object} app.Response
+// @Router /login [post]
 func Login(c *gin.Context) {
 	var form LoginForm
 	data := make(map[string]string)
@@ -30,7 +37,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := svc.Login(form.Username, form.Password)
+	token, err := svc.AuthSvc.Login(form.Username, form.Password)
 	if err != nil {
 		app.SendResponse(c, errno.ErrUnauthorized, nil)
 		return

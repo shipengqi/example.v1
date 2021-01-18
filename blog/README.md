@@ -101,6 +101,8 @@ to create additional configuration files or rewrite existing ones.
 
 ### Swagger
 
+[swaggo/swag official doc](https://github.com/swaggo/swag/blob/master/README_zh-CN.md).
+
 Download swag:
 ```bash
 go get -u github.com/swaggo/swag/cmd/swag

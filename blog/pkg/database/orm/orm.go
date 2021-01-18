@@ -1,27 +1,66 @@
 package orm
 
 import (
+	"context"
 	"time"
 
+	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 	// database driver
 	// _ "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-
-	log "github.com/shipengqi/example.v1/blog/pkg/logger"
+	ol "gorm.io/gorm/logger"
 )
 
 type Config struct {
-	DbType      string        `ini:"TYPE"`
-	DSN         string        `ini:"DSN"`          // data source name.
-	Active      int           `ini:"ACTIVE"`       // pool
-	Idle        int           `ini:"IDLE"`         // pool
-	IdleTimeout time.Duration `ini:"IDLE_TIMEOUT"` // connect max life time.
+	DbType        string        `ini:"TYPE"`
+	DSN           string        `ini:"DSN"`            // data source name.
+	Active        int           `ini:"ACTIVE"`         // pool
+	Idle          int           `ini:"IDLE"`           // pool
+	IdleTimeout   time.Duration `ini:"IDLE_TIMEOUT"`   // connect max life time.
+	SlowThreshold time.Duration `ini:"SLOW_THRESHOLD"` // slow log threshold
+}
+
+// ----------------------------------------------------------------------------
+// Implements orm logger interface
+type ormLogger struct {
+	slowThreshold time.Duration
+}
+
+func (o *ormLogger) LogMode(ol.LogLevel) ol.Interface {
+	return o
+}
+
+func (o *ormLogger) Info(ctx context.Context, str string, args ...interface{}) {
+	log.Info().Msgf(str, args)
+}
+
+func (o *ormLogger) Warn(ctx context.Context, str string, args ...interface{}) {
+	log.Warn().Msgf(str, args)
+}
+
+func (o *ormLogger) Error(ctx context.Context, str string, args ...interface{}) {
+	log.Error().Msgf(str, args)
+}
+
+func (o *ormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+	elapsed := time.Since(begin)
+	sql, _ := fc()
+	isSlow := false
+	if elapsed > o.slowThreshold {
+		isSlow = true
+	}
+	log.Trace().Msgf("SLOW: %t, Elapsed: %.f ms, SQL: %s", isSlow, float64(elapsed.Nanoseconds())/1e6, sql)
 }
 
 // New new db and retry connection when has error.
 func New(c *Config) (db *gorm.DB) {
-	db, err := gorm.Open(mysql.Open(c.DSN), &gorm.Config{})
+	if c.SlowThreshold == 0 {
+		c.SlowThreshold = 200 * time.Millisecond
+	}
+	db, err := gorm.Open(mysql.Open(c.DSN), &gorm.Config{
+		Logger: &ormLogger{slowThreshold: c.SlowThreshold},
+	})
 	if err != nil {
 		log.Error().Msgf("db dsn(%s) error: %v", c.DSN, err)
 		panic(err)

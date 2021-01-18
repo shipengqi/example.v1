@@ -27,6 +27,7 @@ func Init(s *service.Service) *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(middleware.Logging())
+	r.Use(middleware.Authenticate(s))
 
 	// 404 Handler.
 	r.NoRoute(func(c *gin.Context) {

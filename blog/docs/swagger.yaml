@@ -111,4 +111,25 @@ paths:
           schema:
             $ref: '#/definitions/app.Response'
       summary: Update article tag
+  /login:
+    post:
+      parameters:
+      - description: Username
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Login
 swagger: "2.0"

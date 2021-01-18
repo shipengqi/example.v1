@@ -50,18 +50,7 @@ func (j *Jwt) ParseToken(token string) (*Claims, error) {
 	)
 
 	if err != nil {
-		if ve, ok := err.(*jwt.ValidationError); ok {
-			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return nil, TokenMalformed
-			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				// Token is expired
-				return nil, TokenExpired
-			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
-				return nil, TokenNotValidYet
-			} else {
-				return nil, TokenInvalid
-			}
-		}
+		return nil, err
 	}
 	if tokenClaims != nil {
 		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {

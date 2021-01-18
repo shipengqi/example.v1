@@ -5,9 +5,9 @@ type User struct {
 
 	Username string
 	Password string
-	Sex      string
 	Phone    string
 	Email    string
+	Sex      uint8
 }
 
 // TableName overwrite table name `users` to `blog_user`
