@@ -49,8 +49,10 @@ func (o *ormLogger) Trace(ctx context.Context, begin time.Time, fc func() (strin
 	isSlow := false
 	if elapsed > o.slowThreshold {
 		isSlow = true
+		log.Warn().Msgf("SLOW: %t, Elapsed: %.f ms, SQL: %s", isSlow, float64(elapsed.Nanoseconds())/1e6, sql)
+	} else {
+		log.Trace().Msgf("SLOW: %t, Elapsed: %.f ms, SQL: %s", isSlow, float64(elapsed.Nanoseconds())/1e6, sql)
 	}
-	log.Trace().Msgf("SLOW: %t, Elapsed: %.f ms, SQL: %s", isSlow, float64(elapsed.Nanoseconds())/1e6, sql)
 }
 
 // New new db and retry connection when has error.
