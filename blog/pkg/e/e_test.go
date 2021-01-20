@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"math/rand"
 	"testing"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -105,6 +105,33 @@ func TestCause(t *testing.T) {
 	t.Run("Cause internal server err", func(t *testing.T) {
 		actual := Cause(ErrInternalServer)
 		assert.Equal(t, ErrInternalServer, actual)
+	})
+
+	t.Run("Cause wrapped err", func(t *testing.T) {
+		actual := Cause(errors.Wrap(ErrForbidden, "wrapped"))
+		assert.Equal(t, ErrForbidden, actual)
+	})
+
+	t.Run("Cause e.Wrap err", func(t *testing.T) {
+		actual := Cause(Wrap(ErrForbidden, "wrapped"))
+		assert.Equal(t, ErrForbidden, actual)
+	})
+
+	t.Run("Cause wrapped native err", func(t *testing.T) {
+		err := errors.Wrap(errors.New("native err"), "wrapped")
+		actual := Cause(err)
+		assert.Equal(t, &Code{
+			code:    ErrInternalServer.Code(),
+			message: "wrapped: native err",
+			err:     nil,
+		}, actual)
+		is := Is(ErrInternalServer, err)
+		assert.Equal(t, true, is)
+	})
+
+	t.Run("errors.Cause wrapped err", func(t *testing.T) {
+		actual := errors.Cause(errors.Wrap(ErrForbidden, "wrapped"))
+		assert.Equal(t, ErrForbidden, actual)
 	})
 }
 
