@@ -64,7 +64,7 @@ func TestEqualError(t *testing.T) {
 	})
 
 	t.Run("EqualError ErrInternalServer", func(t *testing.T) {
-		actual := Is(ErrInternalServer, errors.New("internal err"))
+		actual := Is(errors.New("internal err"), ErrInternalServer)
 		assert.Equal(t, true, actual)
 	})
 }
@@ -125,7 +125,7 @@ func TestCause(t *testing.T) {
 			message: "wrapped: native err",
 			err:     nil,
 		}, actual)
-		is := Is(ErrInternalServer, err)
+		is := Is(err, ErrInternalServer)
 		assert.Equal(t, true, is)
 	})
 

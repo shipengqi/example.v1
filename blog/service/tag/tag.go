@@ -14,6 +14,7 @@ type Interface interface {
 	EditTag(id, state int, name, modifiedBy string) (data map[string]interface{}, err error)
 	DeleteTag(id int) (err error)
 }
+
 type tag struct {
 	dao dao.Interface
 }

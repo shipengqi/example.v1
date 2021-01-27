@@ -174,7 +174,7 @@ func Cause(e error) Errno {
 }
 
 // Is returns true if error is a Errno error
-func Is(code Errno, err error) bool {
+func Is(err error, code Errno) bool {
 	return Cause(err).Code() == code.Code()
 }
 

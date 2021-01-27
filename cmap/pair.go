@@ -35,7 +35,7 @@ type Pair interface {
 }
 
 type pair struct {
-	key string
+	key     string
 	hash    uint64
 	element unsafe.Pointer
 	next    unsafe.Pointer
@@ -47,8 +47,8 @@ func newPair(key string, element interface{}) (Pair, error) {
 	}
 
 	return &pair{
-		key:  key,
-		hash: hash(key),
+		key:     key,
+		hash:    hash(key),
 		element: unsafe.Pointer(&element),
 	}, nil
 }
