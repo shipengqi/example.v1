@@ -71,6 +71,67 @@ v, ok := <-ch // case ch <- v
 
 当 select 中仅包含两个 case，并且其中一个是 default 时，Go 语言的编译器就会认为这是一次非阻塞的收发操作。
 
+Channel 的发送过程，当 case 中表达式的类型是 OSEND 时，编译器会使用条件语句和 [runtime.selectnbsend](https://github.com/golang/go/blob/41d8e61a6b9d8f9db912626eb2bbc535e929fefc/src/runtime/chan.go#L686) 函数改写代码：
+
+```go
+select {
+case ch <- i:
+    ...
+default:
+    ...
+}
+
+if selectnbsend(ch, i) {
+    ...
+} else {
+    ...
+}
+```
+
+```go
+func selectnbsend(c *hchan, elem unsafe.Pointer) (selected bool) {
+	return chansend(c, elem, false, getcallerpc())
+}
+```
+
+向 `runtime.chansend` 函数传入了非阻塞，所以在**不存在接收方或者缓冲区空间不足时，当前 Goroutine 都不会阻塞而是会直接返回**。
+
+从 Channel 中接收数据可能会返回一个或者两个值，所以接收数据的情况会比发送稍显复杂
+
+```go
+// 改写前
+select {
+case v <- ch: // case v, ok <- ch:
+    ......
+default:
+    ......
+}
+
+// 改写后
+if selectnbrecv(&v, ch) { // if selectnbrecv2(&v, &ok, ch) {
+    ...
+} else {
+    ...
+}
+```
+
+返回值数量不同会导致使用函数的不同，两个用于非阻塞接收消息的函数 `runtime.selectnbrecv` 和 `runtime.selectnbrecv2` 只是对 `runtime.chanrecv`
+返回值的处理稍有不同：
+
+```go
+func selectnbrecv(elem unsafe.Pointer, c *hchan) (selected bool) {
+	selected, _ = chanrecv(c, elem, false)
+	return
+}
+
+func selectnbrecv2(elem unsafe.Pointer, received *bool, c *hchan) (selected bool) {
+	selected, *received = chanrecv(c, elem, false)
+	return
+}
+```
+
+与 `runtime.chansend` 一样，[runtime.chanrecv]() 也提供了一个 block 参数用于控制这次接收是否阻塞。
+
 ## 常见流程 
 
 在默认的情况下，编译器会使用如下的流程处理 select 语句：
@@ -102,3 +163,49 @@ if chosen == 2 {
     break
 }
 ```
+
+最重要的就是用于选择待执行 case 的运行时函数 [runtime.selectgo](https://github.com/golang/go/blob/41d8e61a6b9d8f9db912626eb2bbc535e929fefc/src/runtime/select.go#L121)
+
+执行过程：
+
+1. 执行一些必要的初始化操作并确定 case 的处理顺序；
+2. 在循环中根据 case 的类型做出不同的处理；
+
+`runtime.selectgo` 函数首先会进行执行必要的初始化操作并决定处理 case 的两个顺序 — 轮询顺序 `pollOrder` 和加锁顺序 `lockOrder`：
+
+```go
+func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
+    cas1 := (*[1 << 16]scase)(unsafe.Pointer(cas0))
+    order1 := (*[1 << 17]uint16)(unsafe.Pointer(order0))
+
+    ncases := nsends + nrecvs
+    scases := cas1[:ncases:ncases]
+    pollorder := order1[:ncases:ncases]
+    lockorder := order1[ncases:][:ncases:ncases]
+
+    norder := 0
+    for i := range scases {
+        cas := &scases[i]
+    }
+
+    for i := 1; i < ncases; i++ {
+        j := fastrandn(uint32(i + 1))
+        pollorder[norder] = pollorder[j]
+        pollorder[j] = uint16(i)
+        norder++
+    }
+    pollorder = pollorder[:norder]
+    lockorder = lockorder[:norder]
+
+    // 根据 Channel 的地址排序确定加锁顺序
+    ...
+    sellock(scases, lockorder)
+    ...
+}
+```
+
+runtime.selectgo 函数的主循环，它会分三个阶段查找或者等待某个 Channel 准备就绪：
+
+查找是否已经存在准备就绪的 Channel，即可以执行收发操作；
+将当前 Goroutine 加入 Channel 对应的收发队列上并等待其他 Goroutine 的唤醒；
+当前 Goroutine 被唤醒之后找到满足条件的 Channel 并进行处理；

@@ -8,6 +8,7 @@ import (
 	// database driver
 	// _ "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	ol "gorm.io/gorm/logger"
 )
@@ -55,14 +56,21 @@ func (o *ormLogger) Trace(ctx context.Context, begin time.Time, fc func() (strin
 	}
 }
 
-// New new db and retry connection when has error.
+// NewMySQL new MySQL db and retry connection when has error.
 func New(c *Config) (db *gorm.DB) {
+	var err error
 	if c.SlowThreshold == 0 {
 		c.SlowThreshold = 200 * time.Millisecond
 	}
-	db, err := gorm.Open(mysql.Open(c.DSN), &gorm.Config{
+	ormConf := &gorm.Config{
 		Logger: &ormLogger{slowThreshold: c.SlowThreshold},
-	})
+	}
+	if c.DbType == "postgre" {
+		db, err = gorm.Open(postgres.Open(c.DSN), ormConf)
+	} else {
+		db, err = gorm.Open(mysql.Open(c.DSN), ormConf)
+	}
+
 	if err != nil {
 		log.Error().Msgf("db dsn(%s) error: %v", c.DSN, err)
 		panic(err)

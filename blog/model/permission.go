@@ -3,6 +3,8 @@ package model
 type Permission struct {
 	Model
 
+	ResourceId  int
+	OperationId int
 	Name        string
 	Description string
 }

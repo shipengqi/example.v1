@@ -22,13 +22,13 @@ import (
 // @license.name MIT
 // @license.url https://github.com/shipengqi/example.v1/blob/main/LICENSE
 func main() {
-	settings, err := setting.Init("C:\\code\\example.v1\\blog\\conf\\app.debug.ini")
+	settings, err := setting.Init("D:\\code\\example.v1\\blog\\conf\\app.debug.ini")
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	_, err = log.Init(settings.Log)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	svc := service.New(settings)
