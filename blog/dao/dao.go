@@ -25,6 +25,7 @@ type Interface interface {
 	ExistTagByID(id int) (bool, error)
 
 	GetUserRbac(userid uint) (*model.UserRBAC, error)
+	GetPermissionsWithRoles(roles []model.Role) ([]model.UserPermission, error)
 	AddUser(name, pass, phone, email string) error
 	GetUser(username string) (*model.User, error)
 }

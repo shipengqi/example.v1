@@ -2,15 +2,22 @@ package dao
 
 import "github.com/shipengqi/example.v1/blog/model"
 
-type userRow struct {
-	GroupId   uint   `json:"group_id"`
-	RoleId    uint   `json:"role_id"`
-	GroupName string `json:"group_name"`
-	RoleName  string `json:"role_name"`
-}
-
 func (d *dao) GetUserRbac(userid uint) (*model.UserRBAC, error) {
 
+	// var gu model.GroupUser
+	// rows, err := d.db.Model(gu).
+	// 	Select(
+	// 		"blog_group.name as group_name",
+	// 		"blog_group.id as group_id",
+	// 		"blog_role.name as role_name",
+	// 		"blog_role.id as role_id",
+	// 	).
+	// 	Joins("JOIN blog_group ON blog_group.id = blog_group_user.group_id").
+	// 	Joins("JOIN blog_group_role ON blog_group_role.group_id = blog_group.id").
+	// 	Joins("JOIN blog_role ON blog_role.id = blog_group_role.role_id").
+	// 	Where("blog_group_user.user_id = ?", userid).Rows()
+
+	// Query Raw SQL
 	rows, err := d.db.Raw("select blog_group.name as group_name, "+
 		"blog_group.id as group_id, "+
 		"blog_role.name as role_name, "+
@@ -30,25 +37,62 @@ func (d *dao) GetUserRbac(userid uint) (*model.UserRBAC, error) {
 		Roles:  []model.Role{},
 	}
 	for rows.Next() {
-		r := userRow{}
-		if err := rows.Scan(&r.GroupName, &r.GroupId, &r.RoleName, &r.RoleId); err != nil {
+		var groupId, roleId uint
+		var groupName, roleName string
+
+		if err := rows.Scan(&groupName, &groupId, &roleName, &roleId); err != nil {
 			return nil, err
 		}
 		ui.Roles = append(ui.Roles, model.Role{
 			Model: model.Model{
-				ID: r.RoleId,
+				ID: roleId,
 			},
-			Name: r.RoleName,
+			Name: roleName,
 		})
 
 		ui.Groups = append(ui.Groups, model.Group{
 			Model: model.Model{
-				ID: r.GroupId,
+				ID: groupId,
 			},
-			Name: r.GroupName,
+			Name: groupName,
 		})
 	}
 	return ui, nil
+}
+
+func (d *dao) GetPermissionsWithRoles(roles []model.Role) ([]model.UserPermission, error) {
+	var ups []model.UserPermission
+	for i := range roles {
+		if roles[i].Deleted || roles[i].Locked {
+			continue
+		}
+		var rp model.RolePermission
+		rows, err := d.db.Model(rp).
+			Select(
+				"blog_resource.url as resource_url",
+				"blog_operation.name as operation_name",
+			).
+			Joins("JOIN blog_permission ON blog_permission.id = blog_role_permission.permission_id").
+			Joins("JOIN blog_resource ON blog_resource.id = blog_permission.resource_id").
+			Joins("JOIN blog_operation ON blog_operation.id = blog_permission.operation_id").
+			Where("blog_role_permission.role_id = ?", roles[i].ID).Rows()
+		if err != nil {
+			return nil, err
+		}
+
+
+		for rows.Next() {
+			var url string
+			var method string
+			if err := rows.Scan(&url, &method); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			ups = append(ups, model.UserPermission{URL: url, Method: method})
+		}
+		rows.Close()
+	}
+	return ups, nil
 }
 
 func (d *dao) GetUser(username string) (*model.User, error) {

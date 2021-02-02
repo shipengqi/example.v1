@@ -7,7 +7,6 @@ import (
 
 	"github.com/shipengqi/example.v1/blog/pkg/app"
 	"github.com/shipengqi/example.v1/blog/pkg/e"
-	"github.com/shipengqi/example.v1/blog/pkg/jwt"
 	"github.com/shipengqi/example.v1/blog/service"
 )
 
@@ -25,7 +24,7 @@ func Authenticate(s *service.Service) gin.HandlerFunc {
 		xToken := c.GetHeader("X-AUTH-TOKEN")
 		if len(xToken) > 0 {
 			token = xToken
-		} else if len(authorization) >0 {
+		} else if len(authorization) > 0 {
 			// get the token part
 			_, _ = fmt.Sscanf(authorization, "Bearer %s", &token)
 		} else {
@@ -47,30 +46,14 @@ func Authenticate(s *service.Service) gin.HandlerFunc {
 			return
 		}
 		c.Set("auth_claims", claims)
-		c.Next()
-	}
-}
 
-func Authorize(s *service.Service) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		claims, ok := c.Get("auth_claims")
-		if !ok {
-			app.SendResponse(c, e.ErrClaimsType, nil)
-			c.Abort()
-			return
-		}
-		j, ok := claims.(*jwt.Claims)
-		if !ok {
-			app.SendResponse(c, e.ErrClaimsType, nil)
-			c.Abort()
-			return
-		}
-		err := s.AuthSvc.Authorize(j)
+		err = s.AuthSvc.Authorize(claims, c.Request.URL.Path, c.Request.Method)
 		if err != nil {
 			app.SendResponse(c, err, nil)
 			c.Abort()
 			return
 		}
+
 		c.Next()
 	}
 }

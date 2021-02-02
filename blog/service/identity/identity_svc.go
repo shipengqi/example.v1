@@ -1,6 +1,8 @@
 package identity
 
 import (
+	"strconv"
+
 	jwt2 "github.com/dgrijalva/jwt-go"
 	"github.com/shipengqi/example.v1/blog/dao"
 	"github.com/shipengqi/example.v1/blog/model"
@@ -14,7 +16,7 @@ import (
 type Interface interface {
 	Login(user, pass string) (string, *model.UserRBAC, error)
 	Authenticate(token string) (claims *jwt.Claims, err error)
-	Authorize(claims *jwt.Claims) error
+	Authorize(claims *jwt.Claims, url, method string) error
 }
 
 type identity struct {
@@ -40,7 +42,7 @@ func (i *identity) Login(user, pass string) (string, *model.UserRBAC, error) {
 	if info.Locked {
 		return "", nil, e.ErrUserLocked
 	}
-	if utils.EncodeMD5WithSalt(info.Password) != utils.EncodeMD5WithSalt(pass) {
+	if info.Password != utils.EncodeMD5WithSalt(pass) {
 		return "", nil, e.ErrPassWrong
 	}
 	token, err := i.jwt.GenerateToken(user, pass, int(info.ID))
@@ -79,14 +81,30 @@ func (i *identity) Authenticate(token string) (claims *jwt.Claims, err error) {
 	return
 }
 
-func (i *identity) Authorize(claims *jwt.Claims) error {
-	_, err := utils.DecodeXOR(claims.UID, string(i.jwt.GetSigningKey()))
+func (i *identity) Authorize(claims *jwt.Claims, url, method string) error {
+	userId, err := utils.DecodeXOR(claims.UID, string(i.jwt.GetSigningKey()))
 	if err != nil {
 		return e.ErrTokenInvalid
 	}
-	// _, err = i.dao.GetFullUserInfo(userId)
-	// if err != nil {
-	// 	return e.Wrapf(err, "Authorize")
-	// }
+	id, _ := strconv.Atoi(userId)
+	rbac, err := i.dao.GetUserRbac(uint(id))
+	if err != nil {
+		return err
+	}
+
+	permissions, err := i.dao.GetPermissionsWithRoles(rbac.Roles)
+	if err != nil {
+		return err
+	}
+	denied := true
+	for k := range permissions {
+		if permissions[k].URL == url && permissions[k].Method == method {
+			denied = false
+			break
+		}
+	}
+	if denied {
+		return e.ErrForbidden
+	}
 	return nil
 }

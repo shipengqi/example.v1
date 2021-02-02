@@ -13,3 +13,8 @@ type UserRBAC struct {
 	Groups []Group
 	Roles  []Role
 }
+
+type UserPermission struct {
+	URL    string
+	Method string
+}
