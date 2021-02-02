@@ -18,11 +18,15 @@ type Interface interface {
 	GetTagsCache(key string) ([]model.Tag, error)
 	GetTags(pageNum int, pageSize int, maps interface{}) ([]model.Tag, error)
 	GetTagTotal(maps interface{}) (int64, error)
-	AddTag(name string, state int, createdBy string) error
+	AddTag(name string, createdBy string) error
 	DeleteTag(id int) error
 	EditTag(id int, data interface{}) error
 	ExistTagByName(name string) (bool, error)
 	ExistTagByID(id int) (bool, error)
+
+	GetUserRbac(userid uint) (*model.UserRBAC, error)
+	AddUser(name, pass, phone, email string) error
+	GetUser(username string) (*model.User, error)
 }
 
 // Dao data access object

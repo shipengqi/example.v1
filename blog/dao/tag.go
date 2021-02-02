@@ -69,13 +69,10 @@ func (d *dao) GetTagTotal(maps interface{}) (int64, error) {
 	return count, nil
 }
 
-
-
-func (d *dao) AddTag(name string, state int, createdBy string) error {
+func (d *dao) AddTag(name string, createdBy string) error {
 	tag := &model.Tag{
 		Name:      name,
 		CreatedBy: createdBy,
-		State:     state,
 	}
 	if err := d.db.Create(tag).Error; err != nil {
 		return err
@@ -125,5 +122,3 @@ func (d *dao) ExistTagByID(id int) (bool, error) {
 
 	return false, nil
 }
-
-

@@ -30,18 +30,21 @@ func Init(s *service.Service) {
 // @Router /login [post]
 func Login(c *gin.Context) {
 	var form LoginForm
-	data := make(map[string]string)
+	data := make(map[string]interface{})
 	err := app.BindAndValid(c, &form)
 	if err != nil {
 		app.SendResponse(c, err, nil)
 		return
 	}
 
-	token, err := svc.AuthSvc.Login(form.Username, form.Password)
+	token, rbac, err := svc.AuthSvc.Login(form.Username, form.Password)
 	if err != nil {
-		app.SendResponse(c, e.ErrUnauthorized, nil)
+		app.SendResponse(c, err, nil)
 		return
 	}
 	data["token"] = token
+	data["groups"] = rbac.Groups
+	data["roles"] = rbac.Roles
+	c.SetCookie("X-AUTH-TOKEN", token, 3600, "", "", true, true)
 	app.SendResponse(c, e.OK, data)
 }

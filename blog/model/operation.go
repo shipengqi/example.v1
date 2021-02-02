@@ -3,8 +3,8 @@ package model
 type Operation struct {
 	Model
 
-	Name        string
-	Description string
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 // TableName overwrite table name to `blog_operation`

@@ -3,8 +3,9 @@ package model
 type Resource struct {
 	Model
 
-	Name        string
-	Description string
+	Name        string `json:"name"`
+	URL         string `json:"url"`
+	Description string `json:"description"`
 }
 
 // TableName overwrite table name to `blog_resource`

@@ -19,7 +19,7 @@ func New(c *setting.Setting) (s *Service) {
 	d := dao.New(c)
 	s = &Service{
 		dao:     d,
-		AuthSvc: identity.New(c.App.SingingKey),
+		AuthSvc: identity.New(c.App.SingingKey, d),
 		TagSvc:  tag.New(d),
 		RBAC:    rbac.New(d),
 	}

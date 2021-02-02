@@ -2,24 +2,23 @@ package middleware
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/shipengqi/example.v1/blog/pkg/app"
 	"github.com/shipengqi/example.v1/blog/pkg/e"
+	"github.com/shipengqi/example.v1/blog/pkg/jwt"
 	"github.com/shipengqi/example.v1/blog/service"
 )
 
 func Authenticate(s *service.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		path := c.Request.URL.Path
-
 		// Skip for the login request and swagger.
-		if path == "/login" || strings.HasPrefix(path, "/swagger") {
-			c.Next()
-			return
-		}
+		// path := c.Request.URL.Path
+		// if path == "/login" || strings.HasPrefix(path, "/swagger") {
+		// 	   c.Next()
+		// 	   return
+		// }
 
 		var token string
 		authorization := c.GetHeader("Authorization")
@@ -48,6 +47,30 @@ func Authenticate(s *service.Service) gin.HandlerFunc {
 			return
 		}
 		c.Set("auth_claims", claims)
+		c.Next()
+	}
+}
+
+func Authorize(s *service.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims, ok := c.Get("auth_claims")
+		if !ok {
+			app.SendResponse(c, e.ErrClaimsType, nil)
+			c.Abort()
+			return
+		}
+		j, ok := claims.(*jwt.Claims)
+		if !ok {
+			app.SendResponse(c, e.ErrClaimsType, nil)
+			c.Abort()
+			return
+		}
+		err := s.AuthSvc.Authorize(j)
+		if err != nil {
+			app.SendResponse(c, err, nil)
+			c.Abort()
+			return
+		}
 		c.Next()
 	}
 }

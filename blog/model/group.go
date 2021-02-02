@@ -3,8 +3,9 @@ package model
 type Group struct {
 	Model
 
-	Name        string
-	Description string
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Locked      bool   `json:"locked"`
 }
 
 // TableName overwrite table name `groups` to `blog_group`

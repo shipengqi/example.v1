@@ -29,3 +29,19 @@ func main() {
 	rwm.Lock()
 	fmt.Println("locked for writing")
 }
+
+// Output:
+//try to lock for reading g[2]
+//locked for reading g[2]
+//try to lock for reading g[1]
+//locked for reading g[1]
+//try to lock for reading g[0]
+//locked for reading g[0]
+//try to lock for writing
+//try to unlock for reading g[2]
+//unlocked for reading g[2]
+//try to unlock for reading g[1]
+//unlocked for reading g[1]
+//try to unlock for reading g[0]
+//unlocked for reading g[0]
+//locked for writing

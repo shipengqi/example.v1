@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/shipengqi/example.v1/blog/pkg/e"
 )
 
@@ -14,11 +15,11 @@ type Response struct {
 }
 
 func SendResponse(c *gin.Context, err error, data interface{}) {
-	e := e.Cause(err)
+	errno := e.Cause(err)
 
 	c.JSON(http.StatusOK, Response{
-		Code: e.Code(),
-		Msg:  e.Message(),
+		Code: errno.Code(),
+		Msg:  errno.Message(),
 		Data: data,
 	})
 

@@ -2,6 +2,9 @@ package identity
 
 import (
 	jwt2 "github.com/dgrijalva/jwt-go"
+	"github.com/shipengqi/example.v1/blog/dao"
+	"github.com/shipengqi/example.v1/blog/model"
+	"github.com/shipengqi/example.v1/blog/pkg/utils"
 
 	"github.com/shipengqi/example.v1/blog/pkg/e"
 	"github.com/shipengqi/example.v1/blog/pkg/jwt"
@@ -9,28 +12,47 @@ import (
 )
 
 type Interface interface {
-	Login(user, pass string) (string, error)
+	Login(user, pass string) (string, *model.UserRBAC, error)
 	Authenticate(token string) (claims *jwt.Claims, err error)
+	Authorize(claims *jwt.Claims) error
 }
 
 type identity struct {
 	jwt jwt.Interface
+	dao dao.Interface
 }
 
-func New(signingKey string) Interface {
-	return &identity{jwt: jwt.New(signingKey)}
+func New(signingKey string, d dao.Interface) Interface {
+	return &identity{jwt: jwt.New(signingKey), dao: d}
 }
 
-func (i *identity) Login(user, pass string) (string, error) {
-	// find user
-	// verify user credential
-	// get role
-	token, err := i.jwt.GenerateToken(user, pass)
+func (i *identity) Login(user, pass string) (string, *model.UserRBAC, error) {
+	info, err := i.dao.GetUser(user)
 	if err != nil {
-		return "", e.Wrap(err, e.ErrGenTokenFailed.Message())
+		return "", nil, e.Wrap(err, e.ErrInternalServer.Message())
 	}
-	// return token and user info
-	return token, err
+	if len(info.Username) == 0 {
+		return "", nil, e.ErrNothingFound
+	}
+	if info.Deleted {
+		return "", nil, e.ErrUserDeleted
+	}
+	if info.Locked {
+		return "", nil, e.ErrUserLocked
+	}
+	if utils.EncodeMD5WithSalt(info.Password) != utils.EncodeMD5WithSalt(pass) {
+		return "", nil, e.ErrPassWrong
+	}
+	token, err := i.jwt.GenerateToken(user, pass, int(info.ID))
+	if err != nil {
+		return "", nil, err
+	}
+
+	rbac, err := i.dao.GetUserRbac(info.ID)
+	if err != nil {
+		return "", nil, err
+	}
+	return token, rbac, nil
 }
 
 func (i *identity) Authenticate(token string) (claims *jwt.Claims, err error) {
@@ -55,4 +77,16 @@ func (i *identity) Authenticate(token string) (claims *jwt.Claims, err error) {
 		return nil, e.Wrapf(err, "invalid token")
 	}
 	return
+}
+
+func (i *identity) Authorize(claims *jwt.Claims) error {
+	_, err := utils.DecodeXOR(claims.UID, string(i.jwt.GetSigningKey()))
+	if err != nil {
+		return e.ErrTokenInvalid
+	}
+	// _, err = i.dao.GetFullUserInfo(userId)
+	// if err != nil {
+	// 	return e.Wrapf(err, "Authorize")
+	// }
+	return nil
 }

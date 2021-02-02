@@ -5,7 +5,7 @@ import (
 )
 
 type Interface interface {
-
+	AddUser(name, pass, phone, email string) error
 }
 
 type rbac struct {
@@ -14,4 +14,8 @@ type rbac struct {
 
 func New(d dao.Interface) Interface {
 	return &rbac{dao: d}
+}
+
+func (r *rbac) AddUser(name, pass, phone, email string) error {
+	return r.dao.AddUser(name, pass, phone, email)
 }

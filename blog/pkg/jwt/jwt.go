@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"strconv"
 	"time"
 
 	jwt2 "github.com/dgrijalva/jwt-go"
@@ -8,39 +9,46 @@ import (
 )
 
 type Interface interface {
-	GenerateToken(username, password string) (string, error)
+	GenerateToken(username, password string, id int) (string, error)
 	ParseToken(token string) (*Claims, error)
 	RefreshToken(token string) (string, error)
+	GetSigningKey() []byte
 }
 
 type jwt struct {
-	SigningKey []byte
+	signingKey []byte
 }
 
 func New(signingKey string) Interface {
-	return &jwt{SigningKey: []byte(signingKey)}
+	return &jwt{signingKey: []byte(signingKey)}
 }
 
 // Custom jwt claims
 type Claims struct {
 	jwt2.StandardClaims
 
+	UID      string `json:"uid"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
+func (j *jwt) GetSigningKey() []byte {
+	return j.signingKey
+}
+
 // GenerateToken generate tokens used for auth
-func (j *jwt) GenerateToken(username, password string) (string, error) {
+func (j *jwt) GenerateToken(username, password string, id int) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(time.Hour)
 
 	claims := &Claims{
-		jwt2.StandardClaims{
+		StandardClaims: jwt2.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
 			Issuer:    "example.v1",
 		},
-		utils.EncodeMD5(username),
-		utils.EncodeMD5(password),
+		UID:      utils.EncodeXOR(strconv.Itoa(id), string(j.signingKey)),
+		Username: utils.EncodeMD5(username),
+		Password: utils.EncodeMD5(password),
 	}
 	return j.gen(claims)
 }
@@ -51,7 +59,7 @@ func (j *jwt) ParseToken(token string) (*Claims, error) {
 		token,
 		&Claims{},
 		func(token *jwt2.Token) (interface{}, error) {
-			return j.SigningKey, nil
+			return j.signingKey, nil
 		},
 	)
 
@@ -79,5 +87,5 @@ func (j *jwt) RefreshToken(token string) (string, error) {
 
 func (j *jwt) gen(claims *Claims) (string, error) {
 	tokenClaims := jwt2.NewWithClaims(jwt2.SigningMethodHS256, claims)
-	return tokenClaims.SignedString(j.SigningKey)
+	return tokenClaims.SignedString(j.signingKey)
 }

@@ -27,7 +27,6 @@ func Init(s *service.Service) *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(middleware.Logging())
-	r.Use(middleware.Authenticate(s))
 
 	// 404 Handler.
 	r.NoRoute(func(c *gin.Context) {
@@ -38,9 +37,10 @@ func Init(s *service.Service) *gin.Engine {
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	r.POST("login", api.Login)
+	r.POST("/login", api.Login)
 
 	v1 := r.Group("/api/v1")
+	v1.Use(middleware.Authenticate(s))
 	{
 		v1.GET("/tags", apiv1.GetTags)
 		v1.POST("/tags", apiv1.AddTag)
@@ -53,6 +53,11 @@ func Init(s *service.Service) *gin.Engine {
 		v1.PUT("/articles/:id", apiv1.EditArticle)
 		v1.DELETE("/articles/:id", apiv1.DeleteArticle)
 		v1.POST("/articles/poster/generate", apiv1.GenerateArticlePoster)
+
+		v1.GET("/users", apiv1.GetUsers)
+		v1.POST("/users", apiv1.AddUser)
+		v1.PUT("/users/:id", apiv1.EditUser)
+		v1.DELETE("/users/:id", apiv1.DeleteUser)
 	}
 
 	return r

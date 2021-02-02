@@ -13,7 +13,7 @@ import (
 type AddTagForm struct {
 	Name      string `form:"name" valid:"Required;MaxSize(100)"`
 	CreatedBy string `form:"created_by" valid:"Required;MaxSize(100)"`
-	State     int    `form:"state" valid:"Range(0,1)"`
+	// State     int    `form:"state" valid:"Range(0,1)"`
 }
 
 type EditTagForm struct {
@@ -55,7 +55,6 @@ func GetTags(c *gin.Context) {
 // @Summary Add article tag
 // @Produce application/json
 // @Param name body string true "Name"
-// @Param state body int false "State"
 // @Param created_by body int false "CreatedBy"
 // @Success 200 {object} app.Response
 // @Failure 200 {object} app.Response
@@ -68,7 +67,7 @@ func AddTag(c *gin.Context) {
 		app.SendResponse(c, err, nil)
 		return
 	}
-	err = svc.TagSvc.AddTag(form.Name, form.CreatedBy, form.State)
+	err = svc.TagSvc.AddTag(form.Name, form.CreatedBy)
 	if err != nil {
 		app.SendResponse(c, err, nil)
 		return

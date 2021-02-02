@@ -10,7 +10,7 @@ import (
 
 type Interface interface {
 	GetTags(maps map[string]interface{}) ([]model.Tag, error)
-	AddTag(name, createdBy string, state int) error
+	AddTag(name, createdBy string) error
 	EditTag(id, state int, name, modifiedBy string) (data map[string]interface{}, err error)
 	DeleteTag(id int) (err error)
 }
@@ -54,7 +54,7 @@ func (t *tag) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
 	return list, nil
 }
 
-func (t *tag) AddTag(name, createdBy string, state int) error {
+func (t *tag) AddTag(name, createdBy string) error {
 	exists, err := t.dao.ExistTagByName(name)
 	if err != nil {
 		return e.Wrap(err, "exist tag")
@@ -64,7 +64,7 @@ func (t *tag) AddTag(name, createdBy string, state int) error {
 		return e.ErrExistTag
 	}
 
-	return t.dao.AddTag(name, state, createdBy)
+	return t.dao.AddTag(name, createdBy)
 }
 
 func (t *tag) EditTag(id, state int, name, modifiedBy string) (data map[string]interface{}, err error) {
