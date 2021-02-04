@@ -10,23 +10,29 @@ import (
 	"github.com/shipengqi/example.v1/blog/pkg/e"
 )
 
-type AddTagForm struct {
+type AddTagRequest struct {
 	Name      string `form:"name" valid:"Required;MaxSize(100)"`
 	CreatedBy string `form:"created_by" valid:"Required;MaxSize(100)"`
 	// State     int    `form:"state" valid:"Range(0,1)"`
 }
 
-type EditTagForm struct {
+type AddTagResponse struct {
+	Name      string `json:"name"`
+}
+
+type EditTagRequest struct {
 	Name       string `form:"name" valid:"Required;MaxSize(100)"`
 	ModifiedBy string `form:"modified_by" valid:"Required;MaxSize(100)"`
 	ID         int    `form:"id" valid:"Required;Min(1)"`
-	State      int    `form:"state" valid:"Range(0,1)"`
+}
+
+type EditTagResponse struct {
+	Name      string `json:"name"`
 }
 
 // @Summary Get multiple article tags
 // @Produce application/json
 // @Param name query string false "Name"
-// @Param state query int false "State"
 // @Success 200 {object} app.Response
 // @Failure 200 {object} app.Response
 // @Router /api/v1/tags [get]
@@ -37,11 +43,6 @@ func GetTags(c *gin.Context) {
 
 	if name != "" {
 		maps["name"] = name
-	}
-	var state = -1
-	if arg := c.Query("state"); arg != "" {
-		state = com.StrTo(arg).MustInt()
-		maps["state"] = state
 	}
 
 	data, err := svc.TagSvc.GetTags(maps)
@@ -60,7 +61,7 @@ func GetTags(c *gin.Context) {
 // @Failure 200 {object} app.Response
 // @Router /api/v1/tags [post]
 func AddTag(c *gin.Context) {
-	var form AddTagForm
+	var form AddTagRequest
 
 	err := app.BindAndValid(c, &form)
 	if err != nil {
@@ -85,14 +86,14 @@ func AddTag(c *gin.Context) {
 // @Failure 200 {object} app.Response
 // @Router /api/v1/tags/{id} [put]
 func EditTag(c *gin.Context) {
-	form := EditTagForm{ID: com.StrTo(c.Param("id")).MustInt()}
+	form := EditTagRequest{ID: com.StrTo(c.Param("id")).MustInt()}
 	err := app.BindAndValid(c, &form)
 	if err != nil {
 		app.SendResponse(c, err, nil)
 		return
 	}
 
-	data, err := svc.TagSvc.EditTag(form.ID, form.State, form.Name, form.ModifiedBy)
+	data, err := svc.TagSvc.EditTag(form.ID, form.Name, form.ModifiedBy)
 	if err != nil {
 		app.SendResponse(c, err, data)
 		return

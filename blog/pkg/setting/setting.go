@@ -14,9 +14,16 @@ import (
 var settings = New()
 
 type App struct {
-	SingingKey   string `ini:"SIGNING_KEY"`
-	PageSize     int    `ini:"PAGE_SIZE"`
-	IsPrintStack bool   `ini:"IS_PRINT_STACK"`
+	SingingKey     string   `ini:"SIGNING_KEY"`
+	PingCron       string   `ini:"PING_CRON"`
+	RootEndpoint   string   `ini:"ROOT_ENDPOINT"`
+	ExportSavePath string   `ini:"EXPORT_SAVE_PATH"`
+	FileRootPath   string   `ini:"FILE_ROOT_PATH"`
+	ImageSavePath  string   `ini:"IMAGE_SAVE_PATH"`
+	ImageAllowExt  []string `ini:"IMAGE_ALLOW_EXT"`
+	ImageMaxSize   int      `ini:"IMAGE_MAX_SIZE"`
+	PageSize       int      `ini:"PAGE_SIZE"`
+	IsPrintStack   bool     `ini:"IS_PRINT_STACK"`
 }
 
 type Server struct {

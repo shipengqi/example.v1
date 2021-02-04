@@ -26,7 +26,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	_, err = log.Init(settings.Log)
+	filename, err := log.Init(settings.Log)
 	if err != nil {
 		panic(err)
 	}
@@ -69,6 +69,7 @@ func main() {
 				log.Fatal().Msgf("Shutdown: %s", err)
 			}
 			log.Info().Msg("Blog server exit")
+			log.Info().Msgf("Additional logging details can be found in:\n    %s", filename)
 			svc.Close()
 			time.Sleep(time.Second)
 			return

@@ -11,8 +11,6 @@ Golang examples.
 - map
 - grpc
 - grpc-gateway
-- blog article
-- blog rbac
 - standard pkg examples
   - compare and set
   - context

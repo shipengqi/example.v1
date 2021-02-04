@@ -29,40 +29,10 @@ mysql> create database blog;
 Query OK, 1 row affected (1.48 sec)
 mysql> use blog;
 Database changed
-mysql> show tables;
-Empty set (0.01 sec)
-
-mysql> CREATE TABLE `blog_tag` (
-    ->   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-    ->   `name` varchar(100) DEFAULT '' COMMENT '',
-    ->   `created_at` int(10) unsigned DEFAULT '0' COMMENT '',
-    ->   `created_by` varchar(100) DEFAULT '' COMMENT '',
-    ->   `updated_at` int(10) unsigned DEFAULT '0' COMMENT '',
-    ->   `modified_by` varchar(100) DEFAULT '' COMMENT '',
-    ->   `deleted_at` int(10) unsigned DEFAULT '0' COMMENT '',
-    ->   `state` tinyint(3) unsigned DEFAULT '1' COMMENT ' 01',
-    ->   PRIMARY KEY (`id`)
-    -> ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='';
-Query OK, 0 rows affected, 6 warnings (4.10 sec)
-
-mysql> CREATE TABLE `blog_article` (
-    ->   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-    ->   `tag_id` int(10) unsigned DEFAULT '0' COMMENT 'ID',
-    ->   `title` varchar(100) DEFAULT '' COMMENT '',
-    ->   `desc` varchar(255) DEFAULT '' COMMENT '',
-    ->   `content` text COMMENT '',
-    ->   `cover_image_url` varchar(255) DEFAULT '' COMMENT '',
-    ->   `created_at` int(10) unsigned DEFAULT '0' COMMENT '',
-    ->   `created_by` varchar(100) DEFAULT '' COMMENT '',
-    ->   `updated_at` int(10) unsigned DEFAULT '0' COMMENT '',
-    ->   `modified_by` varchar(255) DEFAULT '' COMMENT '',
-    ->   `deleted_at` int(10) unsigned DEFAULT '0',
-    ->   `state` tinyint(3) unsigned DEFAULT '1' COMMENT '',
-    ->   PRIMARY KEY (`id`)
-    -> ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='';
-Query OK, 0 rows affected, 7 warnings (0.11 sec)
 
 ```
+
+Create tables, use `blog/docs/sql/blog.sql`.
 
 ### Redis
 

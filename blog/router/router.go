@@ -1,8 +1,11 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/shipengqi/example.v1/blog/docs"
+	"github.com/shipengqi/example.v1/blog/pkg/upload"
 	"github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
@@ -35,6 +38,9 @@ func Init(s *service.Service) *gin.Engine {
 
 	gin.SetMode(setting.Settings().RunMode)
 
+	// images static file server
+	r.StaticFS("/images", http.Dir(upload.GetImageFullPath()))
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.POST("/login", api.Login)
@@ -58,6 +64,8 @@ func Init(s *service.Service) *gin.Engine {
 		v1.POST("/users", apiv1.AddUser)
 		v1.PUT("/users/:id", apiv1.EditUser)
 		v1.DELETE("/users/:id", apiv1.DeleteUser)
+
+		v1.POST("/images", apiv1.UploadImage)
 	}
 
 	return r

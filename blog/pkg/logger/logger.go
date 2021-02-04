@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/shipengqi/example.v1/blog/pkg/utils"
 )
 
 const (
@@ -62,11 +63,10 @@ func Init(c *Config) (string, error) {
 }
 
 func initLogFileName(out, prefix string) (string, error) {
-	if !isExist(out) {
-		if err := os.MkdirAll(out, 0644); err != nil {
-			return "", err
-		}
+	if err := utils.IsNotExistMkDir(out); err != nil {
+		return "", err
 	}
+
 	logFileName := filepath.Join(out, fmt.Sprintf("%s.%s.log", prefix, time.Now().Format("20060102150405")))
 	return logFileName, nil
 }

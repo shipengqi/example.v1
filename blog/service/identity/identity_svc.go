@@ -2,6 +2,7 @@ package identity
 
 import (
 	"strconv"
+	"strings"
 
 	jwt2 "github.com/dgrijalva/jwt-go"
 	"github.com/shipengqi/example.v1/blog/dao"
@@ -98,7 +99,7 @@ func (i *identity) Authorize(claims *jwt.Claims, url, method string) error {
 	}
 	denied := true
 	for k := range permissions {
-		if permissions[k].URL == url && permissions[k].Method == method {
+		if strings.HasPrefix(url, permissions[k].URL) && permissions[k].Method == method {
 			denied = false
 			break
 		}

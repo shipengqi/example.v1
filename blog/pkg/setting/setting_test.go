@@ -40,11 +40,7 @@ func TestInit(t *testing.T) {
 	}
 	expected.DB = &orm.Config{
 		DbType:      "mysql",
-		User:        "root",
-		Password:    "123456",
-		Host:        "16.155.194.49:33061",
-		Name:        "blog",
-		TablePrefix: "blog_",
+		DSN:        "root",
 	}
 	expected.Redis = &gredis.Config{
 		Host:        "16.155.194.49:6379",

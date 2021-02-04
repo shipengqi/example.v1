@@ -16,7 +16,8 @@ CREATE TABLE `blog_article`
     `created_at`      int(10) unsigned DEFAULT '0' COMMENT '创建时间',
     `updated_at`      int(10) unsigned DEFAULT '0' COMMENT '修改时间',
     `deleted_at`      int(10) unsigned DEFAULT '0' COMMENT '删除时间',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    KEY               IDX_TAG_ID (`tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='文章管理';
 
 -- ----------------------------
@@ -174,7 +175,9 @@ INSERT INTO `blog_role` (`id`, `name`, `description`)
 VALUES ('1', 'admin', 'default admin role');
 
 INSERT INTO `blog_resource` (`id`, `url`, `name`, `description`)
-VALUES ('1', '/tags', 'tags', 'blog tags');
+VALUES ('1', '/api/v1//tags', 'tags', 'blog tags'),
+       ('2', '/api/v1//users', 'users', 'blog users'),
+       ('3', '/api/v1//images', 'images', 'upload images');
 
 INSERT INTO `blog_operation` (`id`, `name`, `description`)
 VALUES ('1', 'POST', 'post method'),
@@ -183,10 +186,15 @@ VALUES ('1', 'POST', 'post method'),
        ('4', 'DELETE', 'delete method');
 
 INSERT INTO `blog_permission` (`id`, `resource_id`, `operation_id`)
-VALUES ('1', '1', '1'),
-       ('2', '1', '2'),
-       ('3', '1', '3'),
-       ('4', '1', '4');
+VALUES ('1', '1'),
+       ('1', '2'),
+       ('1', '3'),
+       ('2', '1'),
+       ('2', '2'),
+       ('2', '3'),
+       ('3', '1'),
+       ('3', '2'),
+       ('3', '3');
 
 INSERT INTO `blog_group_user` (`id`, `group_id`, `user_id`)
 VALUES ('1', '1', '1');
@@ -194,7 +202,13 @@ VALUES ('1', '1', '1');
 INSERT INTO `blog_group_role` (`id`, `group_id`, `role_id`)
 VALUES ('1', '1', '1');
 
-INSERT INTO `blog_role_permission` (`id`, `role_id`, `permission_id`)
-VALUES ('1', '1', '1'),
-       ('2', '1', '2'),
-       ('3', '1', '3');
+INSERT INTO `blog_role_permission` (`role_id`, `permission_id`)
+VALUES ('1', '1'),
+       ('1', '2'),
+       ('1', '3'),
+       ('1', '5'),
+       ('1', '6'),
+       ('1', '7'),
+       ('1', '9'),
+       ('1', '10'),
+       ('1', '11');
