@@ -175,9 +175,10 @@ INSERT INTO `blog_role` (`id`, `name`, `description`)
 VALUES ('1', 'admin', 'default admin role');
 
 INSERT INTO `blog_resource` (`id`, `url`, `name`, `description`)
-VALUES ('1', '/api/v1//tags', 'tags', 'blog tags'),
-       ('2', '/api/v1//users', 'users', 'blog users'),
-       ('3', '/api/v1//images', 'images', 'upload images');
+VALUES ('1', '/api/v1/tags', 'tags', 'blog tags'),
+       ('2', '/api/v1/users', 'users', 'blog users'),
+       ('3', '/api/v1/images', 'images', 'upload images'),
+       ('4', '/api/v1/articles', 'articles', 'blog articles');
 
 INSERT INTO `blog_operation` (`id`, `name`, `description`)
 VALUES ('1', 'POST', 'post method'),
@@ -185,16 +186,23 @@ VALUES ('1', 'POST', 'post method'),
        ('3', 'PUT', 'put method'),
        ('4', 'DELETE', 'delete method');
 
-INSERT INTO `blog_permission` (`id`, `resource_id`, `operation_id`)
+INSERT INTO `blog_permission` (`resource_id`, `operation_id`)
 VALUES ('1', '1'),
        ('1', '2'),
        ('1', '3'),
+       ('1', '4'),
        ('2', '1'),
        ('2', '2'),
        ('2', '3'),
+       ('2', '4'),
        ('3', '1'),
        ('3', '2'),
-       ('3', '3');
+       ('3', '3'),
+       ('3', '4'),
+       ('4', '1'),
+       ('4', '2'),
+       ('4', '3'),
+       ('4', '4');
 
 INSERT INTO `blog_group_user` (`id`, `group_id`, `user_id`)
 VALUES ('1', '1', '1');
@@ -211,4 +219,7 @@ VALUES ('1', '1'),
        ('1', '7'),
        ('1', '9'),
        ('1', '10'),
-       ('1', '11');
+       ('1', '11'),
+       ('1', '13'),
+       ('1', '14'),
+       ('1', '15');

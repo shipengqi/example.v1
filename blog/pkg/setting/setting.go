@@ -17,6 +17,8 @@ type App struct {
 	SingingKey     string   `ini:"SIGNING_KEY"`
 	PingCron       string   `ini:"PING_CRON"`
 	RootEndpoint   string   `ini:"ROOT_ENDPOINT"`
+	FontSavePath   string   `ini:"FONT_SAVE_PATH"`
+	QrCodeSavePath string   `ini:"QRCODE_SAVE_PATH"`
 	ExportSavePath string   `ini:"EXPORT_SAVE_PATH"`
 	FileRootPath   string   `ini:"FILE_ROOT_PATH"`
 	ImageSavePath  string   `ini:"IMAGE_SAVE_PATH"`

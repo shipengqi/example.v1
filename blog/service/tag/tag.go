@@ -8,6 +8,7 @@ import (
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/shipengqi/example.v1/blog/pkg/export"
+	"github.com/shipengqi/example.v1/blog/pkg/setting"
 	"github.com/shipengqi/example.v1/blog/pkg/utils"
 	"github.com/tealeg/xlsx"
 
@@ -21,11 +22,11 @@ import (
 const EXPORT_EXT = "xlsx"
 
 type Interface interface {
-	GetTags(maps map[string]interface{}) ([]model.Tag, error)
+	GetTags(maps map[string]interface{}, page int) ([]model.Tag, error)
 	AddTag(name, createdBy string) error
 	EditTag(id int, name, modifiedBy string) (data map[string]interface{}, err error)
 	DeleteTag(id int) (err error)
-	Export() (string, error)
+	Export(name string) (string, error)
 	Import(r io.Reader) error
 }
 
@@ -37,13 +38,19 @@ func New(d dao.Interface) Interface {
 	return &tag{dao: d}
 }
 
-func (t *tag) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
+func (t *tag) GetTags(maps map[string]interface{}, page int) ([]model.Tag, error) {
 
+	var name string
+	if n, ok := maps["name"].(string); ok {
+		name = n
+	}
+
+	pageNum := t.getPage(page)
 	c := cache.Tag{
-		Name:     "",
+		Name:     name,
 		State:    0,
-		PageNum:  0,
-		PageSize: 0,
+		PageNum:  pageNum,
+		PageSize: setting.AppSettings().PageSize,
 	}
 	key := c.GetTagsCacheKey()
 	tagsCache, err := t.dao.GetTagsCache(key)
@@ -51,46 +58,12 @@ func (t *tag) GetTags(maps map[string]interface{}) ([]model.Tag, error) {
 		return nil, e.Wrap(err, "get tags cache")
 	}
 
-	if tagsCache != nil {
+	if tagsCache != nil && len(tagsCache) != 0 {
 		log.Info().Msgf("get cache with key: %s", key)
 		return tagsCache, nil
 	}
 
-	list, err := t.dao.GetTags(0, 10, maps)
-	if err != nil {
-		return nil, e.Wrap(err, "get tags")
-	}
-
-	err = t.dao.SetTagsCache(key, list, 3600)
-	if err == nil {
-		log.Debug().Msgf("set cache with key: %s", key)
-	}
-	return list, nil
-}
-
-func (t *tag) GetAll() ([]model.Tag, error) {
-
-	c := cache.Tag{
-		Name:     "",
-		State:    0,
-		PageNum:  0,
-		PageSize: 0,
-	}
-	key := c.GetTagsCacheKey()
-	tagsCache, err := t.dao.GetTagsCache(key)
-	if err != nil {
-		return nil, e.Wrap(err, "get tags cache")
-	}
-
-	if tagsCache != nil {
-		log.Info().Msgf("get cache with key: %s", key)
-		return tagsCache, nil
-	}
-
-	list, err := t.dao.GetTags(0, 10, map[string]interface{}{
-		"deleted":  false,
-		"disabled": false,
-	})
+	list, err := t.dao.GetTags(pageNum, setting.AppSettings().PageSize, maps)
 	if err != nil {
 		return nil, e.Wrap(err, "get tags")
 	}
@@ -148,11 +121,25 @@ func (t *tag) DeleteTag(id int) (err error) {
 	return t.dao.DeleteTag(id)
 }
 
-func (t *tag) Export() (string, error) {
-	tags, err := t.GetAll()
+func (t *tag) Export(name string) (string, error) {
+	maps := t.getMaps(name)
+	tags, err := t.GetTags(maps, 0)
 	if err != nil {
 		return "", err
 	}
+
+	// f := excelize.NewFile()
+	// Create a new sheet.
+	// index := f.NewSheet("Sheet2")
+	// Set value of a cell.
+	// f.SetCellValue("Sheet2", "A2", "Hello world.")
+	// f.SetCellValue("Sheet1", "B2", 100)
+	// Set active sheet of the workbook.
+	// f.SetActiveSheet(index)
+	// Save spreadsheet by the given path.
+	// if err := f.SaveAs("Book1.xlsx"); err != nil {
+	// 	fmt.Println(err)
+	// }
 
 	xlsFile := xlsx.NewFile()
 	sheet, err := xlsFile.AddSheet("Tag Information")
@@ -195,7 +182,7 @@ func (t *tag) Export() (string, error) {
 		return "", err
 	}
 
-	err = xlsFile.Save(dirFullPath + filename)
+	err = xlsFile.Save(fmt.Sprintf("%s/%s", dirFullPath, filename))
 	if err != nil {
 		return "", err
 	}
@@ -210,6 +197,7 @@ func (t *tag) Import(r io.Reader) error {
 	}
 
 	rows := file.GetRows("Tag Information")
+	// remove duplicate name from file and database
 	for i, row := range rows {
 		if i > 0 {
 			var data []string
@@ -221,8 +209,32 @@ func (t *tag) Import(r io.Reader) error {
 			}
 			err := t.dao.AddTag(data[1], data[2])
 			if err != nil {
-
+				log.Warn().Err(err).Msgf("add cell: %s", data[1])
 			}
 		}
 	}
+
+	return nil
+}
+
+
+// getPage get page parameters
+func (t *tag) getPage(page int) int {
+	result := 0
+	if page > 0 {
+		result = (page - 1) * setting.AppSettings().PageSize
+	}
+
+	return result
+}
+
+func (t *tag) getMaps(name string) map[string]interface{} {
+	maps := make(map[string]interface{})
+	maps["deleted_at"] = false
+
+	if len(name) > 0 {
+		maps["name"] = name
+	}
+
+	return maps
 }

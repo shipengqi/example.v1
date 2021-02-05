@@ -1,10 +1,13 @@
 package utils
 
 import (
+	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"os"
 	"path/filepath"
+
+	"github.com/pkg/errors"
 )
 
 func GetSize(f multipart.File) (int, error) {
@@ -53,5 +56,25 @@ func Open(name string, flag int, perm os.FileMode) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
+	return f, nil
+}
+
+// MustOpen maximize trying to open the file
+func MustOpen(filePath, filename string) (*os.File, error) {
+	perm := CheckPermission(filePath)
+	if perm == true {
+		return nil, errors.Errorf("file.CheckPermission Permission denied file: %s", filePath)
+	}
+
+	err := IsNotExistMkDir(filePath)
+	if err != nil {
+		return nil, errors.Errorf("file.IsNotExistMkDir file: %s, err: %v", filePath, err)
+	}
+
+	f, err := Open(fmt.Sprintf("%s/%s", filePath, filename), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return nil, errors.Errorf("file.Open src: %s, err: %v", filename, err)
+	}
+
 	return f, nil
 }

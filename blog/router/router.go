@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/shipengqi/example.v1/blog/docs"
+	"github.com/shipengqi/example.v1/blog/pkg/export"
+	"github.com/shipengqi/example.v1/blog/pkg/qrcode"
 	"github.com/shipengqi/example.v1/blog/pkg/upload"
 	"github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
@@ -38,8 +40,10 @@ func Init(s *service.Service) *gin.Engine {
 
 	gin.SetMode(setting.Settings().RunMode)
 
-	// images static file server
+	// static file server
 	r.StaticFS("/images", http.Dir(upload.GetImageFullPath()))
+	r.StaticFS("/export", http.Dir(export.GetExcelFullPath()))
+	r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -52,6 +56,8 @@ func Init(s *service.Service) *gin.Engine {
 		v1.POST("/tags", apiv1.AddTag)
 		v1.PUT("/tags/:id", apiv1.EditTag)
 		v1.DELETE("/tags/:id", apiv1.DeleteTag)
+		v1.POST("/tags/export", apiv1.ExportTag)
+		v1.POST("/tags/import", apiv1.ImportTag)
 
 		v1.GET("/articles", apiv1.GetArticles)
 		v1.GET("/articles/:id", apiv1.GetArticle)

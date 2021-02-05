@@ -25,7 +25,11 @@ func (d *dao) GetUserRbac(userid uint) (*model.UserRBAC, error) {
 		"join blog_group ON blog_group.id = blog_group_user.group_id "+
 		"join blog_group_role ON blog_group_role.group_id = blog_group.id "+
 		"join blog_role ON blog_role.id = blog_group_role.role_id "+
-		"where blog_group_user.user_id = ?", userid).Rows()
+		"where blog_group_user.user_id = ? and " +
+		"blog_group.locked = false and " +
+		"blog_group.deleted = false and " +
+		"blog_role.locked = false and " +
+		"blog_role.deleted = false", userid).Rows()
 	if err != nil {
 		return nil, err
 	}

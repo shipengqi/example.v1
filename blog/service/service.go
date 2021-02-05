@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/robfig/cron"
-
 	"github.com/shipengqi/example.v1/blog/dao"
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"
 	"github.com/shipengqi/example.v1/blog/pkg/setting"
@@ -12,8 +11,8 @@ import (
 )
 
 type Service struct {
-	dao     dao.Interface
 	cron    *cron.Cron
+	dao     dao.Interface
 	AuthSvc identity.Interface
 	TagSvc  tag.Interface
 	RBAC    rbac.Interface

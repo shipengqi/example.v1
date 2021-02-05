@@ -9,10 +9,10 @@ Golang examples.
 - panic
 - slice
 - map
-- grpc
-- grpc-gateway
 - standard pkg examples
   - compare and set
   - context
 - test examples
 - examples table
+- grpc
+- grpc-gateway

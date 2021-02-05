@@ -55,6 +55,12 @@ func (i *identity) Login(user, pass string) (string, *model.UserRBAC, error) {
 	if err != nil {
 		return "", nil, err
 	}
+
+	rbac.U = model.User{
+		Username: info.Username,
+		Phone:    info.Phone,
+		Email:    info.Email,
+	}
 	return token, rbac, nil
 }
 

@@ -4,10 +4,10 @@ type User struct {
 	Model
 
 	Username string `json:"username"`
-	Password string `json:"password"`
-	Phone    string `json:"phone"`
-	Email    string `json:"email"`
-	Locked   bool   `json:"locked"`
+	Password string `json:"password,omitempty"`
+	Phone    string `json:"phone,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Locked   bool   `json:"locked,omitempty"`
 }
 
 // TableName overwrite table name `users` to `blog_user`

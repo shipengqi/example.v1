@@ -1,13 +1,15 @@
 package v1
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
-
 	"github.com/unknwon/com"
 
 	"github.com/shipengqi/example.v1/blog/pkg/app"
 	"github.com/shipengqi/example.v1/blog/pkg/e"
+	"github.com/shipengqi/example.v1/blog/pkg/export"
 )
 
 type AddTagRequest struct {
@@ -17,7 +19,7 @@ type AddTagRequest struct {
 }
 
 type AddTagResponse struct {
-	Name      string `json:"name"`
+	Name string `json:"name"`
 }
 
 type EditTagRequest struct {
@@ -27,7 +29,16 @@ type EditTagRequest struct {
 }
 
 type EditTagResponse struct {
-	Name      string `json:"name"`
+	Name string `json:"name"`
+}
+
+type ExportTagRequest struct {
+	Name string `form:"name" valid:"MaxSize(100)"`
+}
+
+type ExportTagResponse struct {
+	ExportUrl     string `json:"export_url"`
+	ExportSaveUrl string `json:"export_save_url"`
 }
 
 // @Summary Get multiple article tags
@@ -44,8 +55,8 @@ func GetTags(c *gin.Context) {
 	if name != "" {
 		maps["name"] = name
 	}
-
-	data, err := svc.TagSvc.GetTags(maps)
+	page := com.StrTo(c.Query("page")).MustInt()
+	data, err := svc.TagSvc.GetTags(maps, page)
 	if err != nil {
 		app.SendResponse(c, err, data)
 		return
@@ -125,5 +136,52 @@ func DeleteTag(c *gin.Context) {
 		app.SendResponse(c, err, nil)
 		return
 	}
+	app.SendResponse(c, e.OK, nil)
+}
+
+// @Summary Export tags
+// @Produce  json
+// @Param name body string false "Name"
+// @Success 200 {object} app.Response
+// @Failure 200 {object} app.Response
+// @Router /api/v1/tags/export [post]
+func ExportTag(c *gin.Context) {
+	form := ExportTagRequest{}
+	err := app.BindAndValid(c, &form)
+	if err != nil {
+		app.SendResponse(c, err, nil)
+		return
+	}
+	filename, err := svc.TagSvc.Export(form.Name)
+	if err != nil {
+		app.SendResponse(c, err, nil)
+		return
+	}
+
+	app.SendResponse(c, e.OK, ExportTagResponse{
+		ExportUrl: export.GetExcelFullUrl(filename),
+		ExportSaveUrl: fmt.Sprintf("%s/%s", export.GetExcelPath(), filename),
+	})
+}
+
+// @Summary Import tags
+// @Produce  json
+// @Param file body file true "Excel File"
+// @Success 200 {object} app.Response
+// @Failure 200 {object} app.Response
+// @Router /api/v1/tags/import [post]
+func ImportTag(c *gin.Context) {
+	file, _, err := c.Request.FormFile("file")
+	if err != nil {
+		app.SendResponse(c, e.Wrap(e.ErrMultiFormErr, err.Error()), nil)
+		return
+	}
+
+	err = svc.TagSvc.Import(file)
+	if err != nil {
+		app.SendResponse(c, err, nil)
+		return
+	}
+
 	app.SendResponse(c, e.OK, nil)
 }
