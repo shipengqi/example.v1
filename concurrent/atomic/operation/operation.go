@@ -1,7 +1,34 @@
 package main
 
+
 // 互斥锁是一种数据结构，用来让一个线程执行程序的关键部分，完成互斥的 "多个" 操作。
 // 原子操作是针对某个值的 "单个" 互斥操作。
+//
+// 原子的增加或减少
+//
+// - func AddInt32(addr \*int32, delta int32) (new int32)
+// - func AddInt64(addr \*int64, delta int64) (new int64)
+// - func AddUint32(addr \*uint32, delta uint32) (new uint32)
+// - func AddUint64(addr \*uint64, delta uint64) (new uint64)
+// - func AddUintptr(addr \*uintptr, delta uintptr) (new uintptr)
+//
+// 原子的读取操作
+//
+// - func LoadInt32(addr \*int32) (val int32)
+// - func LoadInt64(addr \*int64) (val int64)
+// - func LoadPointer(addr \*unsafe.Pointer) (val unsafe.Pointer)
+// - func LoadUint32(addr \*uint32) (val uint32)
+// - func LoadUint64(addr \*uint64) (val uint64)
+// - func LoadUintptr(addr \*uintptr) (val uintptr)
+//
+// 原子的写入操作
+//
+// - func StoreInt32(addr \*int32, val int32)
+// - func StoreInt64(addr \*int64, val int64)
+// - func StorePointer(addr \*unsafe.Pointer, val unsafe.Pointer)
+// - func StoreUint32(addr \*uint32, val uint32)
+// - func StoreUint64(addr \*uint64, val uint64)
+// - func StoreUintptr(addr \*uintptr, val uintptr)
 
 import (
 	"fmt"
