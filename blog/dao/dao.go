@@ -1,9 +1,9 @@
 package dao
 
 import (
-	"github.com/shipengqi/example.v1/blog/model"
 	"gorm.io/gorm"
 
+	"github.com/shipengqi/example.v1/blog/model"
 	"github.com/shipengqi/example.v1/blog/pkg/cache/gredis"
 	"github.com/shipengqi/example.v1/blog/pkg/database/orm"
 	log "github.com/shipengqi/example.v1/blog/pkg/logger"

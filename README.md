@@ -29,6 +29,8 @@ Golang examples.
 | 23 bufio 包 | standardpkg/io/bufiodemo |
 | 24 rand 包 | standardpkg/rand |
 | 25 expvar 包 | standardpkg/expvar |
+| 26 sort 包 | standardpkg/data/sort |
+| xx test | test |
 
 ## todo
 
@@ -38,7 +40,6 @@ Golang examples.
 - slice
 - map
 - golang learn
-- https://github.com/hyper0x/Golang_Puzzlers  
-- test examples
+- https://github.com/hyper0x/Golang_Puzzlers
 - grpc
 - grpc-gateway
