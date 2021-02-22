@@ -17,7 +17,7 @@ func main() {
 	syncChan := make(chan struct{})
 	ticker := time.NewTicker(time.Second)
 	go func() {
-		//for _ = range ticker.C { // Stop 不会关闭 chan，所以这里会一直阻塞下去，End. [sender] 不会输出
+		//for _ = range ticker.C { // ticker.Stop 不会关闭 chan，所以这里会一直阻塞下去，End. [sender] 不会输出
 		//	select {
 		//	case intChan <- 1:
 		//	case intChan <- 2:
@@ -25,6 +25,7 @@ func main() {
 		//	}
 		//}
 		// 使用下面的代码，就可以正常输出 End. [sender]
+
 		// Stop turns off a ticker. After Stop, no more ticks will be sent.
 		// Stop does not close the channel, to prevent a concurrent goroutine
 		defer ticker.Stop()

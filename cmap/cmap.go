@@ -16,7 +16,7 @@ type ConcurrentMap interface {
 
 // concurrency 并发量，也代表了 segments 的长度
 // 散列段，每个散列段要提供对其包含的键值对的读写操作，通过锁来保证并发安全性。
-// 多个散列段就由多个互斥锁保护。这样的加锁方式叫做 分段锁。分段锁可以降低互斥锁带来的开销，同时保护资源。
+// 多个散列段就由多个互斥锁保护。这样的加锁方式叫做 "分段锁"。分段锁可以降低互斥锁带来的开销，同时保护资源。
 // 因为同一时刻同一个散列段中的键值对只能被一个 goroutine 进行读写。但是不同的散列段可以并发访问。
 // 如果 concurrency 为 16，那么就可以有 16 个 goroutine 并发访问 ConcurrentMap。
 type ConcurrentMapImpl struct {

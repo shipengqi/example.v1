@@ -30,7 +30,12 @@ Golang examples.
 | 24 rand 包 | standardpkg/rand |
 | 25 expvar 包 | standardpkg/expvar |
 | 26 sort 包 | standardpkg/data/sort |
-| xx test | test |
+| xx testify 包 | test/testify |
+| xx http test | test/httptest |
+| xx main test | test/maintest |
+| xx parallel test | test/paralleltest |
+| xx test coverage | test/cover |
+| xx benchmark test | test/benchmarktest |
 
 ## todo
 
@@ -43,3 +48,6 @@ Golang examples.
 - https://github.com/hyper0x/Golang_Puzzlers
 - grpc
 - grpc-gateway
+- https://github.com/lifei6671/interview-go
+- https://github.com/thinkeridea/go-extend
+- https://github.com/tmrts/go-patterns

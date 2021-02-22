@@ -13,6 +13,7 @@ import (
 // 下面的示例只是控制 3 个 goroutine，通知 3 个 goroutine 结束，需要分别对 3 个 goroutine 发送信号，也就是要发送三次。
 // 或者针对每个 goroutine 初始化一个 chan，分别发送结束信号。
 // 这就是 chan+select 的局限性
+
 var stop = make(chan struct{})
 
 func main() {

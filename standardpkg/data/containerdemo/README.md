@@ -45,3 +45,63 @@ type List
     func (l *List) PushFrontList(other *List) // 在队列头部插入接上新队列
     func (l *List) Remove(e *Element) interface{} // 删除某个元素
 ```
+
+##  堆
+
+`container` 包的堆使用的数据结构是最小二叉树。即根节点比左边子树和右边子树的所有值都小。go 的堆包只是实现了一个接口：
+
+```go
+type Interface interface {
+    sort.Interface
+    Push(x interface{}) // add x as element Len()
+    Pop() interface{}   // remove and return element Len() - 1.
+}
+```
+
+这个堆结构继承自 sort.Interface, 回顾下 sort.Interface，它需要实现三个方法
+
+
+除了堆接口定义的两个方法：
+
+```go
+Push(x interface{})
+Pop() interface{}
+```
+
+还继承了 `sort.Interface`, 需要实现三个方法：
+
+```go
+Len() int
+Less(i, j int) bool
+Swap(i, j int)
+```
+
+示例：
+```go
+type IntHeap []int
+
+func (h IntHeap) Len() int           { return len(h) }
+func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
+func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *IntHeap) Push(x interface{}) {
+	*h = append(*h, x.(int))
+}
+
+func (h *IntHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
+}
+
+func main() {
+	h := &IntHeap{2, 1, 5}
+	heap.Init(h)
+	heap.Push(h, 3)
+	for h.Len() > 0 {
+		fmt.Printf("%d \n", heap.Pop(h))
+    }
+}
+```
