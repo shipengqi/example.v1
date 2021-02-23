@@ -48,7 +48,25 @@ type List
 
 ##  堆
 
-`container` 包的堆使用的数据结构是最小二叉树。即根节点比左边子树和右边子树的所有值都小。go 的堆包只是实现了一个接口：
+### 什么是堆
+堆（Heap，也叫优先队列）是计算机科学中一类特殊的数据结构的统称。**堆通常是一个可以被看做一棵树的数组对象**。
+
+堆具有以下特性：
+- 任意节点小于（或大于）它的所有后裔，最小元（或最大元）在堆的根上（堆序性）。
+- 堆总是一棵完全树。即除了最底层，其他层的节点都被元素填满，且最底层尽可能地从左到右填入。
+
+将根节点最大的堆叫做最大堆或大根堆，根节点最小的堆叫做最小堆或小根堆。
+
+### heap 包提供的方法
+
+1. `func Init(h Interface)` 对 heap 进行初始化（堆化），生成小根堆（或大根堆）
+2. `func Pop(h Interface) interface{}` 往堆里面插入元素
+3. `func Push(h Interface, x interface{})` 从堆顶 pop 出元素
+4. `func Remove(h Interface, i int) interface{}` 从指定位置删除数据，并返回删除的数据
+5. `func Fix(h Interface, i int)` 从 i 位置数据发生改变后，对堆再平衡，优先级队列使用到了该方法
+5. `type Interface`
+
+`Interface` 接口：
 
 ```go
 type Interface interface {
@@ -57,9 +75,6 @@ type Interface interface {
     Pop() interface{}   // remove and return element Len() - 1.
 }
 ```
-
-这个堆结构继承自 sort.Interface, 回顾下 sort.Interface，它需要实现三个方法
-
 
 除了堆接口定义的两个方法：
 
@@ -76,7 +91,9 @@ Less(i, j int) bool
 Swap(i, j int)
 ```
 
-示例：
+**通过对 `heap.Interface` 中的 `Less` 方法的不同实现，来实现最大堆和最小堆**。
+
+下面是最小堆的示例：
 ```go
 type IntHeap []int
 
@@ -104,4 +121,45 @@ func main() {
 		fmt.Printf("%d \n", heap.Pop(h))
     }
 }
+```
+
+如果要实现最大堆，只需要修改 `Less` 方法的实现：
+
+```go
+func (h IntHeap) Less(i, j int) bool { return h[i] > h[j] }
+```
+
+## 环
+
+`Ring` 类型代表环形链表的一个元素，同时也代表链表本身。
+
+```go
+type Ring struct {
+	next, prev *Ring
+	Value      interface{}
+}
+```
+
+初始化环的时候，需要定义好环的大小，然后对环的每个元素进行赋值。环还提供一个 `Do` 方法，能遍历一遍环，对每个元素执行
+一个 `function`。
+
+ring 提供的方法有
+
+```go
+type Ring
+    func New(n int) *Ring // 创建一个长度为 n 的环形链表
+    func (r *Ring) Do(f func(interface{})) // 遍历环形链表中的每一个元素 x 进行 f(x) 操作
+    func (r *Ring) Len() int // 获取环形链表长度
+    
+    // Link 连接 r 和 s，并返回 r 原本的后继元素 r.Next()。r 不能为空。
+    // 如果 r 和 s 在同一环形链表中，则删除 r 和 s 之间的元素，
+    // 被删除的元素组成一个新的环形链表，返回值为该环形链表的指针（即删除前，r->Next() 表示的元素）
+    // 如果 r 和 s 不在同一个环形链表中，则将 s 插入到 r 后面，返回值为插入 s 后，
+    // s 最后一个元素的下一个元素（即插入前，r->Next() 表示的元素）
+    func (r *Ring) Link(s *Ring) *Ring
+
+    func (r *Ring) Move(n int) *Ring // 返回移动 n 个位置（n>=0 向前移动，n<0 向后移动）后的元素
+    func (r *Ring) Next() *Ring // 返回下一个元素
+    func (r *Ring) Prev() *Ring // 返回前一个元素
+    func (r *Ring) Unlink(n int) *Ring // 删除 r 后面的 n % r.Len() 个元素，如果 n % r.Len() == 0，不修改 r。
 ```
