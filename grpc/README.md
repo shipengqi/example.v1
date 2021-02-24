@@ -116,7 +116,7 @@ protoc --version
 protoc: error while loading shared libraries: libprotobuf.so.15: cannot open shared object file: No such file or directory
 ```
 
-Protocol Buffers Libraries的默认安装路径在 `/usr/local/lib`。而我们安装了一个新的动态链接库，`ldconfig` 一般在系统启动时运行，所以现在
+Protocol Buffers Libraries 的默认安装路径在 `/usr/local/lib`。而我们安装了一个新的动态链接库，`ldconfig` 一般在系统启动时运行，所以现在
 会找不到这个 lib，因此我们要手动执行 `ldconfig`，让动态链接库为系统所共享，它是一个动态链接库管理命令。
 
 ### Protoc Plugin
@@ -147,7 +147,7 @@ protoc --go_out=plugins=grpc:. *.proto
 $ protoc --go_out=. *.proto
 ```
 
-## gRPC-gateway
+### gRPC-gateway
 
 ```bash
 go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
@@ -488,3 +488,83 @@ $ go run client/client.go
 
 
 ## gRPC TLS
+
+不带证书的 client：
+
+```go
+conn, err := grpc.Dial(":"+PORT, grpc.WithInsecure())
+```
+
+`grpc.WithInsecure()` 方法
+
+```go
+func WithInsecure() DialOption {
+	return newFuncDialOption(func(o *dialOptions) {
+		o.insecure = true
+	})
+}
+```
+
+`DialOption` 禁用了安全传输。
+
+### 证书生成
+
+#### 私钥
+
+```
+openssl ecparam -genkey -name secp384r1 -out server.key
+```
+
+#### 自签公钥
+
+```
+openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
+```
+
+填写信息：
+
+```
+Country Name (2 letter code) []:
+State or Province Name (full name) []:
+Locality Name (eg, city) []:
+Organization Name (eg, company) []:
+Organizational Unit Name (eg, section) []:
+Common Name (eg, fully qualified host name) []:grpc-example
+Email Address []:
+```
+
+注意：**Common Name 和 `credentials.NewClientTLSFromFile("../../conf/server.pem", "grpc-example")` 中
+的 server name 一致**，否则校验会失败。
+
+### client
+
+```go
+	c, err := credentials.NewClientTLSFromFile("../../conf/server.pem", "grpc-example")
+	if err != nil {
+		log.Fatalf("credentials.NewClientTLSFromFile err: %v", err)
+	}
+
+	conn, err := grpc.Dial(":"+PORT, grpc.WithTransportCredentials(c))
+```
+
+### server
+
+```go
+	c, err := credentials.NewServerTLSFromFile("../../conf/server.pem", "../../conf/server.key")
+	if err != nil {
+		log.Fatalf("credentials.NewServerTLSFromFile err: %v", err)
+	}
+
+	server := grpc.NewServer(grpc.Creds(c))
+```
+
+运行 `go run client.go` 输出：
+```bash
+$ go run client.go
+2021/02/24 17:52:16 resp: Hello, gRPC Server
+```
+
+Client 是基于 Server 端的证书和服务名称来建立请求的。这样的话，就需要将 Server 的证书通过各种手段给到 Client 端，
+否则是无法完成这项任务的。
+
+为了保证证书的可靠性和有效性，需要引入 CA 颁发的根证书。

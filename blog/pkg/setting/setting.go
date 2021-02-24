@@ -14,6 +14,7 @@ import (
 var settings = New()
 
 type App struct {
+	Salt           string   `ini:"SALT"`
 	SingingKey     string   `ini:"SIGNING_KEY"`
 	PingCron       string   `ini:"PING_CRON"`
 	RootEndpoint   string   `ini:"ROOT_ENDPOINT"`

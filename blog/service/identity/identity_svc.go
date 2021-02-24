@@ -7,6 +7,7 @@ import (
 	jwt2 "github.com/dgrijalva/jwt-go"
 	"github.com/shipengqi/example.v1/blog/dao"
 	"github.com/shipengqi/example.v1/blog/model"
+	"github.com/shipengqi/example.v1/blog/pkg/setting"
 	"github.com/shipengqi/example.v1/blog/pkg/utils"
 
 	"github.com/shipengqi/example.v1/blog/pkg/e"
@@ -35,7 +36,7 @@ func (i *identity) Login(user, pass string) (string, *model.UserRBAC, error) {
 		return "", nil, e.Wrap(err, e.ErrInternalServer.Message())
 	}
 	if len(info.Username) == 0 {
-		return "", nil, e.ErrNothingFound
+		return "", nil, e.ErrUserNotFound
 	}
 	if info.Deleted {
 		return "", nil, e.ErrUserDeleted
@@ -43,7 +44,7 @@ func (i *identity) Login(user, pass string) (string, *model.UserRBAC, error) {
 	if info.Locked {
 		return "", nil, e.ErrUserLocked
 	}
-	if info.Password != utils.EncodeMD5WithSalt(pass) {
+	if info.Password != utils.EncodeMD5WithSalt(pass, setting.AppSettings().Salt) {
 		return "", nil, e.ErrPassWrong
 	}
 	token, err := i.jwt.GenerateToken(user, pass, int(info.ID))

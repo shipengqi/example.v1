@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 
-	pb "github.com/shipengqi/example.v1/grpc/stream/proto"
+	pb "github.com/shipengqi/example.v1/grpc/02_stream/proto"
 	"google.golang.org/grpc"
 )
 

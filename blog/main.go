@@ -22,7 +22,8 @@ import (
 // @license.name MIT
 // @license.url https://github.com/shipengqi/example.v1/blob/main/LICENSE
 func main() {
-	settings, err := setting.Init("D:\\code\\example.v1\\blog\\conf\\app.debug.ini")
+
+	settings, err := setting.Init("C:\\code\\example.v1\\blog\\conf\\app.debug.ini")
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +36,7 @@ func main() {
 	r := router.Init(svc)
 
 	s := &http.Server{
-		Addr:           fmt.Sprintf(":%d", 8080),
+		Addr:           fmt.Sprintf(":%d", settings.Server.HttpPort),
 		Handler:        r,
 		ReadTimeout:    setting.ServerSettings().ReadTimeout,
 		WriteTimeout:   setting.ServerSettings().WriteTimeout,

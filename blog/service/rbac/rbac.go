@@ -2,6 +2,8 @@ package rbac
 
 import (
 	"github.com/shipengqi/example.v1/blog/dao"
+	"github.com/shipengqi/example.v1/blog/pkg/setting"
+	"github.com/shipengqi/example.v1/blog/pkg/utils"
 )
 
 type Interface interface {
@@ -17,5 +19,6 @@ func New(d dao.Interface) Interface {
 }
 
 func (r *rbac) AddUser(name, pass, phone, email string) error {
-	return r.dao.AddUser(name, pass, phone, email)
+	encoded := utils.EncodeMD5WithSalt(pass, setting.AppSettings().Salt)
+	return r.dao.AddUser(name, encoded, phone, email)
 }

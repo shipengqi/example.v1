@@ -12,9 +12,9 @@ import (
 
 func Authenticate(s *service.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Skip for the login request and swagger.
+		// Skip for the login request.
 		// path := c.Request.URL.Path
-		// if path == "/login" || strings.HasPrefix(path, "/swagger") {
+		// if path == "/api/v1/users" {
 		// 	   c.Next()
 		// 	   return
 		// }

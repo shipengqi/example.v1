@@ -36,6 +36,8 @@ Golang examples.
 | xx parallel test | test/paralleltest |
 | xx test coverage | test/cover |
 | xx benchmark test | test/benchmarktest |
+| xx 字符串拼接 | syntax/stringsjoin |
+| xx https servser 和 client | standardpkg/tlscs |
 
 ## todo
 

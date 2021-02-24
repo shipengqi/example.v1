@@ -15,6 +15,7 @@ var (
 	ErrTokenMalformed = add(-4012, "Token malformed")
 	ErrNotValidYet    = add(-4013, "Token not valid yet")
 	ErrTokenInvalid   = add(-4014, "Invalid token")
+	ErrUserNotFound   = add(-4041, "User not found")
 	ErrUserLocked     = add(-5001, "User is locked")
 	ErrUserDeleted    = add(-5002, "User is deleted")
 	ErrPassWrong      = add(-5003, "Password is wrong")

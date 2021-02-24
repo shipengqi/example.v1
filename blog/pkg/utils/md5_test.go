@@ -35,7 +35,7 @@ func TestEncodeMD5WithSalt(t *testing.T) {
 	}
 
 	for i := range cases {
-		res := EncodeMD5WithSalt(cases[i].input)
+		res := EncodeMD5WithSalt(cases[i].input, "llsfhfhhf$jjfklsjn52522@@44ddddsdfsiwotpvbnusf")
 		assert.Equal(t, cases[i].expected, res)
 	}
 

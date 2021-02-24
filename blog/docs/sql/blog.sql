@@ -166,7 +166,7 @@ CREATE TABLE `blog_role_permission`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `blog_user` (`id`, `username`, `password`, `phone`)
-VALUES ('1', 'admin', 'Admin@111', '15666666666');
+VALUES ('1', 'admin', 'b6b8393f648ccf7acbb601eca83edcb9', '15666666666');
 
 INSERT INTO `blog_group` (`id`, `name`, `description`)
 VALUES ('1', 'provider', 'default admin group');
