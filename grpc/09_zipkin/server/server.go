@@ -9,8 +9,11 @@ import (
 	"log"
 	"net"
 
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	stdopentracing "github.com/opentracing/opentracing-go"
+	zipkinot "github.com/openzipkin-contrib/zipkin-go-opentracing"
 	"github.com/openzipkin/zipkin-go"
-	zipkingrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
+	zipkinreporter "github.com/openzipkin/zipkin-go/reporter"
 	zipkinhttp "github.com/openzipkin/zipkin-go/reporter/http"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -30,11 +33,13 @@ const (
 
 	SERVICE_NAME              = "zipkin_server"
 	ZIPKIN_HTTP_ENDPOINT      = "http://shccdfrh75vm8.hpeswlab.net:9411/api/v2/spans"
-	ZIPKIN_RECORDER_HOST_PORT = "localhost:9000"
+	ZIPKIN_RECORDER_HOST_PORT = "localhost:8081"
 )
 
 func main() {
-	tracer := getTracer()
+	tracer, repoter := getTracer()
+	defer repoter.Close()
+
 	// do other bootstrapping stuff...
 	cert, err := tls.LoadX509KeyPair("../../ssl/server/server.crt", "../../ssl/server/server.key")
 	if err != nil {
@@ -59,10 +64,9 @@ func main() {
 	// 创建 grpc Server 对象
 	server := grpc.NewServer(
 		grpc.Creds(c),
-		grpc.StatsHandler(zipkingrpc.NewServerHandler(tracer)),
-		// grpc.UnaryInterceptor(
-		// 	otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()),
-		// ),
+		grpc.UnaryInterceptor(
+			otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()),
+		),
 	)
 	// 注册 SearchService
 	pb.RegisterSearchServiceServer(server, &SearchService{})
@@ -78,10 +82,11 @@ func main() {
 	}
 }
 
-func getTracer() *zipkin.Tracer {
+func getTracer() (stdopentracing.Tracer, zipkinreporter.Reporter) {
 	// set up a span reporter
 	reporter := zipkinhttp.NewReporter(ZIPKIN_HTTP_ENDPOINT)
-	defer reporter.Close()
+	// 在这里的 defer 在函数返回时错误的关闭 repoter
+	// defer reporter.Close()
 
 	// create our local service endpoint
 	endpoint, err := zipkin.NewEndpoint(SERVICE_NAME, ZIPKIN_RECORDER_HOST_PORT)
@@ -92,7 +97,7 @@ func getTracer() *zipkin.Tracer {
 	// set-up our sampling strategy
 	// sampler := zipkin.NewModuloSampler(1)
 	// initialize the tracer
-	tracer, err := zipkin.NewTracer(
+	zipkinTracer, err := zipkin.NewTracer(
 		reporter,
 		zipkin.WithLocalEndpoint(endpoint),
 		// zipkin.WithSampler(sampler),
@@ -103,10 +108,10 @@ func getTracer() *zipkin.Tracer {
 	}
 
 	// use zipkin-go-opentracing to wrap our tracer
-	// tracer := zipkinot.Wrap(nativeTracer)
+	tracer := zipkinot.Wrap(zipkinTracer)
 
 	// optionally set as Global OpenTracing tracer instance
 	// opentracing.SetGlobalTracer(tracer)
 
-	return tracer
+	return tracer, reporter
 }
