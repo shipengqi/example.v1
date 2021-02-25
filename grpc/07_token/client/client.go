@@ -15,6 +15,20 @@ import (
 
 const PORT = "9001"
 
+// Auth 实现了 PerRPCCredentials 接口
+type Auth struct {
+	AppKey    string
+	AppSecret string
+}
+
+func (a *Auth) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	return map[string]string{"app_key": a.AppKey, "app_secret": a.AppSecret}, nil
+}
+
+func (a *Auth) RequireTransportSecurity() bool {
+	return true
+}
+
 func main() {
 	cert, err := tls.LoadX509KeyPair("../../ssl/client/client.crt", "../../ssl/client/client.key")
 	if err != nil {
@@ -37,8 +51,14 @@ func main() {
 		RootCAs:      certPool,
 	})
 
+	auth := Auth{
+		AppKey:    "example",
+		AppSecret: "123456",
+	}
+
 	// 创建与 server 的连接
-	conn, err := grpc.Dial(fmt.Sprintf(":%s", PORT), grpc.WithTransportCredentials(c))
+	// 用到了 grpc.WithPerRPCCredentials
+	conn, err := grpc.Dial(fmt.Sprintf(":%s", PORT), grpc.WithTransportCredentials(c), grpc.WithPerRPCCredentials(&auth))
 	if err != nil {
 		log.Fatalf("grpc.Dial err: %v", err)
 	}
@@ -52,3 +72,13 @@ func main() {
 	}
 	log.Printf("resp: %s", resp.GetResponse())
 }
+
+// AppSecret: "1234565",
+// $ go run client.go
+// Output:
+// 2021/02/25 16:03:15 client.Search err: rpc error: code = Unauthenticated desc = 自定义认证 Token 无效
+
+// AppSecret: "123456",
+// $ go run client.go
+// Output:
+// 2021/02/25 16:04:46 resp: Hello, gRPC Server

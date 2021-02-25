@@ -568,3 +568,354 @@ Client 是基于 Server 端的证书和服务名称来建立请求的。这样�
 否则是无法完成这项任务的。
 
 为了保证证书的可靠性和有效性，需要引入 CA 颁发的根证书。
+
+### 根证书
+
+根证书（root certificate）是属于根证书颁发机构（CA）的公钥证书。我们可以通过验证 CA 的签名从而信任 CA ，任何人都可以得到 CA 的证书（含公钥），
+用以验证它所签发的证书（客户端、服务端）
+
+它包含的文件如下：
+
+- 公钥
+- 密钥
+
+### 生成 Key
+
+```
+# 生成 CA Key
+openssl genrsa -out ca.key 2048
+
+# 生成 CA 证书
+openssl req -new -x509 -days 7200 -key ca.key -out ca.crt
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) []:
+State or Province Name (full name) []:
+Locality Name (eg, city) []:
+Organization Name (eg, company) []:
+Organizational Unit Name (eg, section) []:
+Common Name (eg, fully qualified host name) []:grpc-example
+Email Address []:
+
+# 生成 CSR
+# CSR 是 Cerificate Signing Request 的英文缩写，为证书请求文件。
+# 主要作用是 CA 会利用 CSR 文件进行签名使得攻击者无法伪装或篡改原有证书
+openssl req -new -key server.key -out server.csr
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) []:
+State or Province Name (full name) []:
+Locality Name (eg, city) []:
+Organization Name (eg, company) []:
+Organizational Unit Name (eg, section) []:
+Common Name (eg, fully qualified host name) []:grpc-example
+Email Address []:
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+
+# 基于 CA 签发 server 证书
+openssl x509 -req -sha256 -CA ca.crt -CAkey ca.key -CAcreateserial -days 3650 -in server.csr -out server.crt
+
+# 生成 client Key
+openssl ecparam -genkey -name secp384r1 -out client.key
+
+# 生成 client CSR
+openssl req -new -key client.key -out client.csr
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:CN
+State or Province Name (full name) []:
+Locality Name (eg, city) [Default City]:Shanghai
+Organization Name (eg, company) [Default Company Ltd]:MF
+Organizational Unit Name (eg, section) []:RA
+Common Name (eg, your name or your server's hostname) []:grpc-example
+Email Address []:
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+An optional company name []:
+
+# 基于 CA 签发 client 证书
+openssl x509 -req -sha256 -CA ca.crt -CAkey ca.key -CAcreateserial -days 3650 -in client.csr -out client.crt
+```
+
+#### 整理目录
+
+将生成的一堆文件，请按照以下目录结构存放：
+
+```
+$ tree ssl 
+ssl
+├── ca
+│   ├── ca.crt
+│   ├── ca.key
+│   └── ca.srl
+├── client
+│   ├── client.crt
+│   ├── client.csr
+│   └── client.key
+└── server
+    ├── server.crt
+    ├── server.csr
+    └── server.key
+```
+
+
+### server
+
+```go
+    // 从证书相关文件中读取和解析信息，得到证书公钥、密钥对
+	cert, err := tls.LoadX509KeyPair("../../ssl/server/server.crt", "../../ssl/server/server.key")
+	if err != nil {
+		log.Fatalf("tls.LoadX509KeyPair err: %v", err)
+	}
+    // 创建一个新的、空的 CertPool
+	certPool := x509.NewCertPool()
+	ca, err := ioutil.ReadFile("../../ssl/ca/ca.crt")
+	if err != nil {
+		log.Fatalf("ioutil.ReadFile err: %v", err)
+	}
+    // 尝试解析所传入的 PEM 编码的证书。如果解析成功会将其加到 CertPool 中，便于后面的使用
+	if ok := certPool.AppendCertsFromPEM(ca); !ok {
+		log.Fatalf("certPool.AppendCertsFromPEM err")
+	}
+
+	c := credentials.NewTLS(&tls.Config{
+		Certificates: []tls.Certificate{cert},        // 设置证书链，允许包含一个或多个
+		ClientAuth:   tls.RequireAndVerifyClientCert, // 必须校验客户端的证书
+		ClientCAs:    certPool,                       // 设置根证书的集合，校验方式使用 ClientAuth 中设定的模式
+	})
+	// 创建 grpc Server 对象
+	server := grpc.NewServer(grpc.Creds(c))
+```
+
+`ClientAuth` 可以填的参数:
+
+```go
+const (
+	NoClientCert ClientAuthType = iota
+	RequestClientCert
+	RequireAnyClientCert
+	VerifyClientCertIfGiven
+	RequireAndVerifyClientCert
+)
+```
+
+### client
+
+```go
+	cert, err := tls.LoadX509KeyPair("../../ssl/client/client.crt", "../../ssl/client/client.key")
+	if err != nil {
+		log.Fatalf("tls.LoadX509KeyPair err: %v", err)
+	}
+
+	certPool := x509.NewCertPool()
+	ca, err := ioutil.ReadFile("../../ssl/ca/ca.crt")
+	if err != nil {
+		log.Fatalf("ioutil.ReadFile err: %v", err)
+	}
+
+	if ok := certPool.AppendCertsFromPEM(ca); !ok {
+		log.Fatalf("certPool.AppendCertsFromPEM err")
+	}
+
+	c := credentials.NewTLS(&tls.Config{
+		Certificates: []tls.Certificate{cert},
+		ServerName:   "grpc-example",
+		RootCAs:      certPool,
+	})
+	
+	// 创建与 server 的连接
+	conn, err := grpc.Dial(fmt.Sprintf(":%s", PORT), grpc.WithTransportCredentials(c))
+```
+
+
+## 拦截器
+gRPC 中，可分为两种 RPC 方法，与拦截器的对应关系是：
+
+- 普通方法：一元拦截器（`grpc.UnaryInterceptor`）
+- 流方法：流拦截器（`grpc.StreamInterceptor`）
+
+### grpc.UnaryInterceptor
+
+```go
+func UnaryInterceptor(i UnaryServerInterceptor) ServerOption {
+	return func(o *options) {
+		if o.unaryInt != nil {
+			panic("The unary server interceptor was already set and may not be reset.")
+		}
+		o.unaryInt = i
+	}
+}
+```
+函数原型：
+```go
+type UnaryServerInterceptor func(ctx context.Context, req interface{}, info *UnaryServerInfo, handler UnaryHandler) (resp interface{}, err error)
+```
+
+通过查看源码可得知，要完成一个拦截器需要实现 `UnaryServerInterceptor` 方法。形参如下：
+
+- `ctx context.Context`：请求上下文
+- `req interface{}`：RPC 方法的请求参数
+- `info *UnaryServerInfo`：RPC 方法的所有信息
+- `handler UnaryHandler`：RPC 方法本身
+
+### grpc.StreamInterceptor
+
+```go
+func StreamInterceptor(i StreamServerInterceptor) ServerOption
+```
+
+函数原型：
+```go
+type StreamServerInterceptor func(srv interface{}, ss ServerStream, info *StreamServerInfo, handler StreamHandler) error
+```
+
+StreamServerInterceptor 与 UnaryServerInterceptor 形参的意义是一样的。
+
+### 如何实现多个拦截器
+
+另外，可以发现 gRPC 本身居然只能设置一个拦截器，要实现多个拦截器，可以采用开源
+项目 [go-grpc-middleware](https://github.com/grpc-ecosystem/go-grpc-middleware) 。
+
+```go
+import "github.com/grpc-ecosystem/go-grpc-middleware"
+
+myServer := grpc.NewServer(
+    grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+        ...
+    )),
+    grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+       ...
+    )),
+)
+```
+
+## http
+
+gRPC 的协议是基于 HTTP/2 的，因此应用程序能够在单个 TCP 端口上提供 HTTP/1.1 和 gRPC 接口服务（两种不同的流量）
+
+```go
+	http.ListenAndServeTLS(fmt.Sprintf(":%s", PORT), certFile, keyFile,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// 检测请求协议是否为 HTTP/2
+			// 判断 Content-Type 是否为 application/grpc（gRPC 的默认标识位）
+			// 根据协议的不同转发到不同的服务处理
+			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+				server.ServeHTTP(w, r)
+			} else {
+				mux.ServeHTTP(w, r)
+			}
+
+			return
+		}),
+	)
+```
+
+## 认证
+
+```
+type PerRPCCredentials interface {
+    GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error)
+    RequireTransportSecurity() bool
+}
+```
+
+在 gRPC 中默认定义了 `PerRPCCredentials`，是 gRPC 默认提供用于自定义认证的接口，它的作用是将所需的安全认证信息添加到每个 RPC 方法的上下
+文中。其包含 2 个方法：
+
+- `GetRequestMetadata`：获取当前请求认证所需的元数据（metadata）
+- `RequireTransportSecurity`：是否需要基于 TLS 认证进行安全传输
+
+
+## Deadline
+
+gRPC Deadlines 的用法。
+
+
+当未设置 Deadlines 时，将采用默认的 DEADLINE_EXCEEDED（这个时间非常大）
+
+如果产生了阻塞等待，就会造成大量正在进行的请求都会被保留，并且所有请求都有可能达到最大超时
+
+这会使服务面临资源耗尽的风险，例如内存，这会增加服务的延迟，或者在最坏的情况下可能导致整个进程崩溃
+
+
+## 链路追踪
+
+OpenTracing 通过提供平台无关、厂商无关的API，使得开发人员能够方便的添加（或更换）追踪系统的实现
+
+不过 OpenTracing 并不是标准。因为 CNCF 不是官方标准机构，但是它的目标是致力为分布式追踪创建更标准的 API 和工具
+
+### Topic
+
+#### Trace
+
+一个 trace 代表了一个事务或者流程在（分布式）系统中的执行过程
+
+#### Span
+
+一个 span 代表在分布式系统中完成的单个工作单元。也包含其他 span 的 “引用”，这允许将多个 spans 组合成一个完整的 Trace
+
+每个 span 根据 OpenTracing 规范封装以下内容：
+
+- 操作名称
+- 开始时间和结束时间
+- key:value span Tags
+- key:value span Logs
+- SpanContext
+
+#### Tags
+
+Span tags（跨度标签）可以理解为用户自定义的 Span 注释。便于查询、过滤和理解跟踪数据
+
+#### Logs
+
+Span logs（跨度日志）可以记录 Span 内特定时间或事件的日志信息。主要用于捕获特定 Span 的日志信息以及应用程序本身的其他调试或信息输出
+
+#### SpanContext
+
+SpanContext 代表跨越进程边界，传递到子级 Span 的状态。常在追踪示意图中创建上下文时使用
+
+#### Baggage Items
+
+Baggage Items 可以理解为 trace 全局运行中额外传输的数据集合
+
+### Zipkin
+
+[Zipkin](https://github.com/openzipkin/zipkin) 是分布式追踪系统。它的作用是收集解决微服务架构中的延迟问题所需的时序数据。它管理这些数据的收集和查找
+
+Zipkin 的设计基于 [Google Dapper](https://research.google/pubs/pub36356/) 论文。
+
+跟踪系统中通常有四个组件，Zipkin 包括：
+
+- Recorder(记录器)：记录跟踪数据
+- Reporter (or collecting agent)(报告器或收集代理)：从记录器收集数据并将数据发送到 UI 程序
+- Tracer：生成跟踪数据
+- UI：负责在图形 UI 中显示跟踪数据
+
+#### 运行
+
+```bash
+docker run -d -p 9411:9411 openzipkin/zipkin
+```
+
+### gRPC + Opentracing + Zipkin
+实现 gRPC 通过 Opentracing 标准 API 对接 Zipkin，再通过 Zipkin 去查看数据

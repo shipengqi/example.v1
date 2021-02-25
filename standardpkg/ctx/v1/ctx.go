@@ -24,6 +24,12 @@ import (
 //
 // 注意，通过调用 context.WithValue 函数得到的 Context 值是不可撤销的。撤销信号在被传播时，若遇到它们则会直接跨过，并试图将信号直接传给它们的子值。
 //
+// WithTimeout 很常见的另外一个方法，是便捷操作。实际上是对于 WithDeadline 的封装
+//
+// func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
+//	    return WithDeadline(parent, time.Now().Add(timeout))
+// }
+//
 // WithValue 函数在产生新的 Context 值（以下简称含数据的Context值）的时候需要三个参数，即：父值、键和值。与“字典对于键的约束”类似，这里键的类型必须是可判等的。
 // 不过，这种 Context 值并不是用字典来存储键和值的，后两者只是被简单地存储在前者的相应字段中而已。
 //

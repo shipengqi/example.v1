@@ -8,9 +8,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/shipengqi/example.v1/grpc/03_simple_tls/proto"
 )
@@ -19,6 +22,15 @@ type SearchService struct{}
 
 func (s *SearchService) Search(ctx context.Context, r *pb.SearchRequest) (*pb.SearchResponse, error) {
 	log.Println("get request: ", r.GetRequest())
+	// 检测  Client 是否已经结束
+	for i := 0; i < 5; i++  {
+		if ctx.Err() == context.Canceled {
+			return nil, status.Errorf(codes.Canceled, "SearchService.Search canceled")
+		}
+
+		// 这里使 client 超时
+		time.Sleep(1 * time.Second)
+	}
 	return &pb.SearchResponse{Response: "Hello, " + r.GetRequest() + " Server"}, nil
 }
 

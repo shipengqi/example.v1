@@ -10,10 +10,43 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/shipengqi/example.v1/grpc/03_simple_tls/proto"
 )
+
+type Auth struct {
+	appKey    string
+	appSecret string
+}
+
+func (a *Auth) Check(ctx context.Context) error {
+	// 调用 metadata.FromIncomingContext 从上下文中获取 metadata
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return status.Errorf(codes.Unauthenticated, "自定义认证 Token 失败")
+	}
+
+	var (
+		appKey    string
+		appSecret string
+	)
+	if value, ok := md["app_key"]; ok {
+		appKey = value[0]
+	}
+	if value, ok := md["app_secret"]; ok {
+		appSecret = value[0]
+	}
+
+	if appKey != "example" || appSecret != "123456" {
+		return status.Errorf(codes.Unauthenticated, "自定义认证 Token 无效")
+	}
+
+	return nil
+}
 
 type SearchService struct{}
 
@@ -23,6 +56,7 @@ func (s *SearchService) Search(ctx context.Context, r *pb.SearchRequest) (*pb.Se
 }
 
 const PORT = "9001"
+var auth *Auth
 
 func main()  {
 	cert, err := tls.LoadX509KeyPair("../../ssl/server/server.crt", "../../ssl/server/server.key")
@@ -45,8 +79,10 @@ func main()  {
 		ClientAuth:   tls.RequireAndVerifyClientCert,
 		ClientCAs:    certPool,
 	})
+
+	auth = &Auth{}
 	// 创建 grpc Server 对象
-	server := grpc.NewServer(grpc.Creds(c))
+	server := grpc.NewServer(grpc.Creds(c), grpc.UnaryInterceptor(AuthenticateInterceptor))
 	// 注册 SearchService
 	pb.RegisterSearchServiceServer(server, &SearchService{})
 
@@ -61,3 +97,12 @@ func main()  {
 	}
 }
 
+func AuthenticateInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	log.Printf("Auth method: %s, %v", info.FullMethod, req)
+	if err := auth.Check(ctx); err != nil {
+		return nil, err
+	}
+	resp, err := handler(ctx, req)
+	log.Printf("gRPC method: %s, %v", info.FullMethod, resp)
+	return resp, err
+}

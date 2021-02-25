@@ -13,7 +13,10 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/golang/protobuf v1.4.2
 	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
+	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/json-iterator/go v1.1.10
+	github.com/openzipkin-contrib/zipkin-go-opentracing v0.4.5
 	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron v1.2.0
 	github.com/rs/zerolog v1.20.0
@@ -23,6 +26,7 @@ require (
 	github.com/swaggo/gin-swagger v1.3.0
 	github.com/swaggo/swag v1.7.0
 	github.com/tealeg/xlsx v1.0.5
+	github.com/thinkeridea/go-extend v1.3.2
 	github.com/unknwon/com v1.0.1
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
 	google.golang.org/grpc v1.35.0
