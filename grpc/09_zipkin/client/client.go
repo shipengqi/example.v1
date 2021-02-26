@@ -76,7 +76,7 @@ func main() {
 func getTracer() (stdopentracing.Tracer, zipkinreporter.Reporter) {
 	// set up a span reporter
 	reporter := zipkinhttp.NewReporter(ZIPKIN_HTTP_ENDPOINT)
-	// 在这里的 defer 在函数返回时错误的关闭 repoter
+	// 注意，在这里的 defer ，会在函数返回时错误的关闭 repoter
 	// defer reporter.Close()
 
 	// create our local service endpoint

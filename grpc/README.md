@@ -147,13 +147,6 @@ protoc --go_out=plugins=grpc:. *.proto
 $ protoc --go_out=. *.proto
 ```
 
-### gRPC-gateway
-
-```bash
-go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-```
-
-
 ## 流式 RPC
 
 gRPC 的流式，分为三种类型：
@@ -919,3 +912,14 @@ docker run -d -p 9411:9411 openzipkin/zipkin
 
 ### gRPC + Opentracing + Zipkin
 实现 gRPC 通过 Opentracing 标准 API 对接 Zipkin，再通过 Zipkin 去查看数据
+
+
+## gRPC-gateway
+
+如果希望用 Rpc 作为内部 API 的通讯，同时也想对外提供 Restful Api，写两套又太繁琐不符合，就可以使用 [gRPC Gateway](https://github.com/grpc-ecosystem/grpc-gateway)。
+
+官方文档：<https://grpc-ecosystem.github.io/grpc-gateway/>
+
+```bash
+go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+```

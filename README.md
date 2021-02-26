@@ -14,30 +14,31 @@ Golang examples.
 | 08 类型别名 | syntax/typealias  |
 | 09 继承接口 | syntax/extendinterface  |
 | 10 隐式转换 | syntax/implicitConver |
-| 11 select usage | syntax/select |
-| 12 map usage | syntax/map |
-| 13 slice usage | syntax/slice |
-| 14 通道 | concurrent/chan |
-| 15 goroutine | concurrent/goroutine |
-| 16 原子操作 | concurrent/atomic |
-| 17 sync 包 | concurrent/sync |
-| 18 并发编程常见问题 | concurrent/issues |
-| 19 context 包 | standardpkg/ctx |
-| 20 fmt 包 | standardpkg/io/fmtdemo |
-| 21 io 包 | standardpkg/io/iodemo |
-| 22 ioutil 包 | standardpkg/io/ioutildemo |
-| 23 bufio 包 | standardpkg/io/bufiodemo |
-| 24 rand 包 | standardpkg/rand |
-| 25 expvar 包 | standardpkg/expvar |
-| 26 sort 包 | standardpkg/data/sort |
-| xx testify 包 | test/testify |
-| xx http test | test/httptest |
-| xx main test | test/maintest |
-| xx parallel test | test/paralleltest |
-| xx test coverage | test/cover |
-| xx benchmark test | test/benchmarktest |
-| xx 字符串拼接 | syntax/stringsjoin |
-| xx https servser 和 client | standardpkg/tlscs |
+| 11 字符串拼接 | syntax/stringsjoin |
+| 12 字符串截取 | syntax/substring |
+| 13 select usage | syntax/select |
+| 14 map usage | syntax/map |
+| 15 slice usage | syntax/slice |
+| 16 通道 | concurrent/chan |
+| 17 goroutine | concurrent/goroutine |
+| 18 原子操作 | concurrent/atomic |
+| 19 sync 包 | concurrent/sync |
+| 20 并发编程常见问题 | concurrent/issues |
+| 21 context 包 | standardpkg/ctx |
+| 22 fmt 包 | standardpkg/io/fmtdemo |
+| 23 io 包 | standardpkg/io/iodemo |
+| 24 ioutil 包 | standardpkg/io/ioutildemo |
+| 25 bufio 包 | standardpkg/io/bufiodemo |
+| 26 rand 包 | standardpkg/rand |
+| 27 expvar 包 | standardpkg/expvar |
+| 28 sort 包 | standardpkg/data/sort |
+| 29 testify 包 | test/testify |
+| 30 http test | test/httptest |
+| 31 main test | test/maintest |
+| 32 parallel test | test/paralleltest |
+| 33 test coverage | test/cover |
+| 34 benchmark test | test/benchmarktest |
+| 35 https servser 和 client | standardpkg/tlscs |
 
 ## todo
 
@@ -46,9 +47,7 @@ Golang examples.
 - panic
 - slice
 - map
-- golang learn
 - https://github.com/hyper0x/Golang_Puzzlers
-- grpc
 - grpc-gateway
 - https://github.com/lifei6671/interview-go
 - https://github.com/thinkeridea/go-extend
