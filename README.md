@@ -47,8 +47,5 @@ Golang examples.
 - panic
 - slice
 - map
-- https://github.com/hyper0x/Golang_Puzzlers
 - grpc-gateway
-- https://github.com/lifei6671/interview-go
-- https://github.com/thinkeridea/go-extend
-- https://github.com/tmrts/go-patterns
+- https://github.com/hyper0x/Golang_Puzzlers

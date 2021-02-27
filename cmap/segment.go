@@ -59,7 +59,7 @@ func newSegment(
 
 func (s *segment) Put(p Pair) (bool, error) {
 	s.lock.Lock()
-	b := s.buckets[int(p.Hash()%uint64(s.bucketsLen) )]
+	b := s.buckets[int(p.Hash()%uint64(s.bucketsLen))]
 	ok, err := b.Put(p, nil)
 	if ok {
 		newTotal := atomic.AddUint64(&s.pairTotal, 1)
