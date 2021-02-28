@@ -28,6 +28,14 @@ func GoID() int {
 //
 // getg() alone returns the current g
 //
-// 但是内部方法。
+// 但是内部方法。可以尝试直接修改源代码 src/runtime/runtime2.go 中添加 Goid 函数，将 goid 暴露给应用层：
+//
+// func Goid() int64 {
+//    _g_ := getg()
+//    return _g_.goid
+// }
+//
+// 这个方式能解决法 1 的性能问题，但是会导致你的程序只能在修改了源代码的机器上才能编译，没有移植性，并且每次 go 版本升级以后，都需要重新修改源代码，
+// 维护成本较高。
 //
 // petermattis/goid 模仿 runtime.getg 暴露出一个 getg 的方法，这种方式和前面的方式的性能差距非常大，一千倍左右

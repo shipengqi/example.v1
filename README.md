@@ -39,6 +39,7 @@ Golang examples.
 | 33 test coverage | test/cover |
 | 34 benchmark test | test/benchmarktest |
 | 35 https servser 和 client | standardpkg/tlscs |
+| 36 获取 goroutine ID 的方式 | utils/goid.go |
 
 ## todo
 
