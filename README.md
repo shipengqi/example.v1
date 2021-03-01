@@ -40,6 +40,8 @@ Golang examples.
 | 34 benchmark test | test/benchmarktest |
 | 35 https servser 和 client | standardpkg/tlscs |
 | 36 获取 goroutine ID 的方式 | utils/goid.go |
+| 37 并发读取文件目录示例 | dirservice |
+
 
 ## todo
 
