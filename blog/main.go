@@ -51,8 +51,8 @@ func main() {
 		}
 	}()
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	var ctx context.Context
 	var cancel context.CancelFunc
 	defer func() {
@@ -61,7 +61,7 @@ func main() {
 		}
 	}()
 	for {
-		sig := <-c
+		sig := <-quit
 		log.Info().Msgf("get a signal %s", sig.String())
 		switch sig {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
