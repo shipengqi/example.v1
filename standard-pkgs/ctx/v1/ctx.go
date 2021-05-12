@@ -53,7 +53,7 @@ import (
 // Deadline 方法是获取设置的截止时间的意思，第一个返回值截止时间，到了这个时间点，Context 会自动发起取消请求；
 //          第二个返回值 ok==false 时表示没有设置截止时间，如果需要取消的话，需要调用取消函数进行取消。
 //
-// Done 方法返回一个只读的 chan，类型为s truct{}，我们在 goroutine 中，如果该方法返回的 chan 以读取，则意味着 parent context 已经发
+// Done 方法返回一个只读的 chan，类型为 struct{}，我们在 goroutine 中，如果该方法返回的 chan 可以读取，则意味着 parent context 已经发
 // 起了取消请求，我们通过 Done 方法收到这个信号后，就应该做清理操作，然后退出 goroutine，释放资源。
 //
 // Err 方法返回取消的错误原因，因为什么 Context 被取消。

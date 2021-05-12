@@ -31,6 +31,7 @@ func TestEncodeMD5WithSalt(t *testing.T) {
 		{"case1", "d62c93b1d441dfdbd104f33270776be8"},
 		{"case2", "b038fe94dcf230f3755d9429cd91be96"},
 		{"case3", "b6289549d102057ba0ce7194cd9b1509"},
+		{"123456", "b6b8393f648ccf7acbb601eca83edcb9"},
 		{"Admin@111", "432fedceddbfcab540c809fbff4e616f"},
 	}
 
