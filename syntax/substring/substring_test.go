@@ -5,7 +5,26 @@ import (
 )
 
 var testString = "Go 语言是 Google 开发的一种静态类型，编译型，并发型，并具有垃圾回收功能的编程语言。简称为 Golang。"
+var asciiString = "DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, " +
+	"DNS:autorh78vm00.hpeswlab.net, DNS:autorh78vm00, IP Address:172.17.17.1, IP Address:16.155.195.168"
+var asciiString2 = "DNS:kubernetes"
+var asciiString3 = "IP:16.155.195.168"
 var testLength = 20
+
+func TestSliceSubString(t *testing.T) {
+	r := SliceSubString(asciiString, 0, testLength)
+	t.Log(r)
+	r2 := SliceSubString(asciiString2, 3, len(asciiString2))
+	t.Log(r2)
+	r3 := SliceSubString(asciiString2, 3, len(asciiString2) - 1)
+	t.Log(r3)
+	r4 := SliceSubString(asciiString2, 4, len(asciiString2))
+	t.Log(r4)
+	r5 := SliceSubString(asciiString3, 2, len(asciiString3))
+	t.Log(r5)
+	r6 := SliceSubString(asciiString3, 3, len(asciiString3))
+	t.Log(r6)
+}
 
 func BenchmarkRuneSubString(b *testing.B) {
 	for i := 0; i < b.N; i ++ {
