@@ -15,7 +15,7 @@ func New() *cobra.Command {
 		Short: "Manages TLS certificates in kubernetes clusters.",
 		Long: "To securely deploy the kubernetes, we recommend that you use the TLS/SSL communication protocol. " +
 			"We uses internal certificates and external certificates to secure its deployment.",
-		PreRun: func(cmd *cobra.Command, args []string) {
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 		},

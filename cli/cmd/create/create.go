@@ -1,14 +1,26 @@
 package create
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
 
-func NewCommand() *cobra.Command {
+	"github.com/shipengqi/example.v1/cli/internal/action"
+	"github.com/shipengqi/example.v1/cli/internal/config"
+	"github.com/shipengqi/example.v1/cli/pkg/log"
+)
+
+func NewCommand(cfg *config.Global) *cobra.Command {
 	c := &cobra.Command{
 		Use:   "create",
 		Short: "Create the internal/external certificates in CDF clusters.",
 		PreRun: func(cmd *cobra.Command, args []string) {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
+			c := action.NewCreate(cfg)
+			err := c.Run()
+			if err != nil {
+				log.Errorf("create, ERR: %v", err)
+			}
+			return
 		},
 	}
 
