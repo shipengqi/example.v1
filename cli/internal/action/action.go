@@ -33,16 +33,16 @@ var CertificateSet = []CertificateSetItem{
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		},
-		Name:    "common-etcd-client",
-		Deploy:  DepMasterAndWorker,
+		Name:   "common-etcd-client",
+		Deploy: DepMasterAndWorker,
 	},
 	{
 		Certificate: certs.Certificate{
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		},
-		Name:    "kube-api-etcd-client",
-		Deploy:  DepMaster,
+		Name:   "kube-api-etcd-client",
+		Deploy: DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -50,16 +50,16 @@ var CertificateSet = []CertificateSetItem{
 			ExtKeyUsages:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			Organizations: []string{"system:kubelet-api-admin"},
 		},
-		Name:    "kube-api-kubelet-client",
-		Deploy:  DepMaster,
+		Name:   "kube-api-kubelet-client",
+		Deploy: DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		},
-		Name:    "kube-api-proxy-client",
-		Deploy:  DepMaster,
+		Name:   "kube-api-proxy-client",
+		Deploy: DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -84,8 +84,8 @@ var CertificateSet = []CertificateSetItem{
 			ExtKeyUsages:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			Organizations: []string{"system:masters"},
 		},
-		Name:    "kubectl-kube-api-client",
-		Deploy:  DepMasterAndWorker,
+		Name:   "kubectl-kube-api-client",
+		Deploy: DepMasterAndWorker,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -93,8 +93,8 @@ var CertificateSet = []CertificateSetItem{
 			ExtKeyUsages:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			Organizations: []string{"system:nodes"},
 		},
-		Name:    "kubelet-kube-api-client",
-		Deploy:  DepMasterAndWorker,
+		Name:   "kubelet-kube-api-client",
+		Deploy: DepMasterAndWorker,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -125,7 +125,7 @@ var CertificateSet = []CertificateSetItem{
 	},
 	{
 		Certificate: certs.Certificate{
-			KeyUsage:     x509.KeyUsageDigitalSignature|x509.KeyUsageKeyEncipherment|x509.KeyUsageKeyAgreement,
+			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment | x509.KeyUsageKeyAgreement,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		},
 		Name:   "kube-registry",
@@ -135,6 +135,7 @@ var CertificateSet = []CertificateSetItem{
 }
 
 type Interface interface {
+	Name() string
 	Run() error
 }
 

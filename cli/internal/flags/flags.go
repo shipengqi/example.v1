@@ -42,7 +42,7 @@ type Global struct {
 	Install       bool
 	Apply         bool
 	Renew         bool
-	AutoConfirm   bool
+	SkipConfirm   bool
 	Remote        bool
 	Local         bool
 	Period        int
@@ -50,7 +50,7 @@ type Global struct {
 
 func (g *Global) Init(flagSet *pflag.FlagSet) {
 	flagSet.BoolVarP(
-		&g.AutoConfirm,
+		&g.SkipConfirm,
 		"yes",
 		"y",
 		false,

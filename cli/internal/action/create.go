@@ -13,7 +13,19 @@ func NewCreate(cfg *config.Global) Interface {
 	return &Create{cfg: cfg}
 }
 
+func (a *Create) Name() string {
+	return "create"
+}
+
+func (a *Create) PreRun() error {
+	return nil
+}
+
 func (a *Create) Run() error {
 	log.Info("create certificates.")
+	return nil
+}
+
+func (a *Create) PostRun() error {
 	return nil
 }

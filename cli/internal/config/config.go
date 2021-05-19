@@ -35,15 +35,20 @@ type Global struct {
 	Install            bool
 	Apply              bool
 	Renew              bool
-	AutoConfirm        bool
+	SkipConfirm        bool
 	Remote             bool
 	Local              bool
+	InContainer        bool
 	Period             int
 	Kube               *kube.Config
 	Log                *log.Config
 	Vault              *vault.Config
 }
 
-func Combine() *Global {
+func (g *Global) Init() error {
+	return nil
+}
+
+func combine() *Global {
 	return nil
 }

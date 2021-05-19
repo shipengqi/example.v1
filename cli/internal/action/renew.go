@@ -13,7 +13,19 @@ func NewRenew(cfg *config.Global) Interface {
 	return &Renew{cfg: cfg}
 }
 
+func (a *Renew) Name() string {
+	return "renew"
+}
+
+func (a *Renew) PreRun() error {
+	return nil
+}
+
 func (a *Renew) Run() error {
 	log.Info("renew certificates.")
+	return nil
+}
+
+func (a *Renew) PostRun() error {
 	return nil
 }
