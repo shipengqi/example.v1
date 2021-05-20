@@ -22,6 +22,7 @@ package config
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -31,21 +32,37 @@ import (
 )
 
 const (
-	ITOMCDFEnvFile        = "/etc/profile.d/itom-cdf.sh"
+	ITOMCDFEnvFile = "/etc/profile.d/itom-cdf.sh"
 
 	EnvKeyK8SHome         = "K8S_HOME="
 	EnvKeyCDFNamespace    = "CDF_NAMESPACE="
 	EnvKeyRuntimeDataHome = "RUNTIME_CDFDATA_HOME="
 )
 
+const (
+	_defaultCDFNamespace    = "core"
+	_defaultK8SHome         = "/opt/kubernetes"
+	_defaultRunTimeDataPath = "/opt/kubernetes/data"
+	_defaultK8STokenFile    = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+)
+
 type Envs struct {
 	K8SHome            string
 	CDFNamespace       string
 	RuntimeCDFDataHome string
+	RunOnMaster        bool
+	RunInPod           bool
 }
 
 func InitEnvs() (*Envs, error) {
-	var envs Envs
+	envs := &Envs{
+		K8SHome:            _defaultK8SHome,
+		CDFNamespace:       _defaultCDFNamespace,
+		RuntimeCDFDataHome: _defaultRunTimeDataPath,
+		RunOnMaster:        false,
+		RunInPod:           false,
+	}
+
 	values, err := retrieveEnv(ITOMCDFEnvFile, EnvKeyK8SHome, EnvKeyCDFNamespace)
 	if err != nil {
 		return nil, errors.Wrapf(err, "open %s", ITOMCDFEnvFile)
@@ -60,14 +77,18 @@ func InitEnvs() (*Envs, error) {
 
 		values, err = retrieveEnv(fmt.Sprintf("%s/bin/env.sh", v), EnvKeyRuntimeDataHome)
 		if err != nil {
-			return &envs, errors.Wrap(err, "open env.sh")
+			return envs, errors.Wrap(err, "open env.sh")
 		}
 		if dataHome, ok := values[EnvKeyRuntimeDataHome]; ok {
 			log.Debugf("got env: %s, value: %s ", EnvKeyRuntimeDataHome, dataHome)
 			envs.RuntimeCDFDataHome = dataHome
 		}
 	}
-	return &envs, nil
+
+	envs.RunOnMaster = onMasterNode(envs.RuntimeCDFDataHome)
+	envs.RunInPod = inPod()
+
+	return envs, nil
 }
 
 // ----------------------------------------------------------------------------
@@ -98,4 +119,29 @@ func retrieveEnv(filePath string, keys ...string) (map[string]string, error) {
 	}
 
 	return mappings, nil
+}
+
+func isExist(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
+func onMasterNode(dataHome string) bool {
+	etcdDir := dataHome + "/etcd"
+	if isExist(etcdDir) {
+		files, _ := ioutil.ReadDir(etcdDir)
+		if len(files) == 0 {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+func inPod() bool {
+	return isExist(_defaultK8STokenFile)
 }

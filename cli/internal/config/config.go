@@ -1,48 +1,25 @@
 package config
 
 import (
+	"github.com/shipengqi/example.v1/cli/internal/flags"
 	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/vault"
 )
 
 type Global struct {
-	Version            string
-	K8SHome            string
-	CDFNamespace       string
-	RuntimeCDFDataHome string
-	SSLPath            string
-	NewCertPath        string
-	CertRole           string
-	VaultAddress       string
-	CertType           string
-	Username           string
-	Password           string
-	SSHKey             string
-	Cert               string
-	Key                string
-	CACert             string
-	Namespace          string
-	LogLevel           string
-	LogOutput          string
-	Unit               string
-	KubeConfig         string
-	CAKey              string
-	NodeType           string
-	Host               string
-	OutputDir          string
-	ServerCertSan      string
-	Install            bool
-	Apply              bool
-	Renew              bool
-	SkipConfirm        bool
-	Remote             bool
-	Local              bool
-	InContainer        bool
-	Period             int
+	Flags              *flags.Global
+	Env                *Envs
 	Kube               *kube.Config
 	Log                *log.Config
 	Vault              *vault.Config
+
+	Version            string
+	SSLPath            string
+	CertRole           string
+	VaultAddress       string
+	LogLevel           string
+	LogOutput          string
 }
 
 func (g *Global) Init() error {
@@ -52,3 +29,5 @@ func (g *Global) Init() error {
 func combine() *Global {
 	return nil
 }
+
+
