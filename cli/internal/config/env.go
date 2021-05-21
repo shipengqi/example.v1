@@ -24,9 +24,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
@@ -50,6 +49,7 @@ type Envs struct {
 	K8SHome            string
 	CDFNamespace       string
 	RuntimeCDFDataHome string
+	SSLPath            string
 	RunOnMaster        bool
 	RunInPod           bool
 }
@@ -59,13 +59,19 @@ func InitEnvs() (*Envs, error) {
 		K8SHome:            _defaultK8SHome,
 		CDFNamespace:       _defaultCDFNamespace,
 		RuntimeCDFDataHome: _defaultRunTimeDataPath,
+		SSLPath:            "",
 		RunOnMaster:        false,
 		RunInPod:           false,
 	}
 
+	envs.RunInPod = inPod()
+	if envs.RunInPod {
+		return envs, nil
+	}
+
 	values, err := retrieveEnv(ITOMCDFEnvFile, EnvKeyK8SHome, EnvKeyCDFNamespace)
 	if err != nil {
-		return nil, errors.Wrapf(err, "open %s", ITOMCDFEnvFile)
+		return nil, err
 	}
 	if v, ok := values[EnvKeyCDFNamespace]; ok {
 		log.Debugf("got env: %s, value: %s ", EnvKeyCDFNamespace, v)
@@ -77,7 +83,7 @@ func InitEnvs() (*Envs, error) {
 
 		values, err = retrieveEnv(fmt.Sprintf("%s/bin/env.sh", v), EnvKeyRuntimeDataHome)
 		if err != nil {
-			return envs, errors.Wrap(err, "open env.sh")
+			return envs, err
 		}
 		if dataHome, ok := values[EnvKeyRuntimeDataHome]; ok {
 			log.Debugf("got env: %s, value: %s ", EnvKeyRuntimeDataHome, dataHome)
@@ -86,7 +92,7 @@ func InitEnvs() (*Envs, error) {
 	}
 
 	envs.RunOnMaster = onMasterNode(envs.RuntimeCDFDataHome)
-	envs.RunInPod = inPod()
+	envs.SSLPath = filepath.Join(envs.K8SHome, "ssl")
 
 	return envs, nil
 }

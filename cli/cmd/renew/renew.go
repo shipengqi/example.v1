@@ -13,6 +13,7 @@ func NewCommand(cfg *config.Global) *cobra.Command {
 		Use:   "renew",
 		Short: "Renew the internal/external certificates in CDF clusters.",
 		PreRun: func(cmd *cobra.Command, args []string) {
+			cfg.Print()
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			r := action.NewRenew(cfg)

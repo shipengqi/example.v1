@@ -52,3 +52,5 @@ Golang examples.
 - map
 - grpc-gateway
 - https://github.com/hyper0x/Golang_Puzzlers
+- add defer recovery for each sub command
+- add channel and exit code signal for each sub command

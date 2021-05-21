@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/AlecAivazis/survey/v2/terminal"
@@ -9,11 +10,11 @@ import (
 
 	"github.com/shipengqi/example.v1/cli/cmd/apply"
 	"github.com/shipengqi/example.v1/cli/cmd/check"
+	configcmd "github.com/shipengqi/example.v1/cli/cmd/config"
 	"github.com/shipengqi/example.v1/cli/cmd/create"
 	"github.com/shipengqi/example.v1/cli/cmd/renew"
 	"github.com/shipengqi/example.v1/cli/internal/action"
 	"github.com/shipengqi/example.v1/cli/internal/config"
-	"github.com/shipengqi/example.v1/cli/internal/flags"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
@@ -23,25 +24,32 @@ const (
 )
 
 var exitCode = ExitCodeOk
-var logFile string
+var filename string
 
 func New() *cobra.Command {
-	f := &flags.Global{}
-	cfg := &config.Global{
-		Flags:        f,
-	}
+	cfg := config.New()
+
 	c := &cobra.Command{
 		Use:   "cert-manager",
 		Short: "Manages TLS certificates in kubernetes clusters.",
 		Long: "To securely deploy the kubernetes, we recommend that you use the TLS/SSL communication protocol.\n" +
 			"We uses internal certificates and external certificates to secure its deployment.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-
+			err := cfg.Init()
+			if err != nil {
+				_, _ = fmt.Fprintln(os.Stderr, "Failed to init configuration! ERR:", err)
+				os.Exit(ExitCodeError)
+			}
+			filename, err = log.Init(cfg.Log)
+			if err != nil {
+				_, _ = fmt.Fprintln(os.Stderr, "Failed to init logger! ERR:", err)
+				os.Exit(ExitCodeError)
+			}
 		},
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
-			if !f.Remote {
+			if !cfg.Remote {
 				log.Warn("Additional logging details can be found in:")
-				log.Warnf("    %s", logFile)
+				log.Warnf("    %s", filename)
 			}
 			os.Exit(exitCode)
 		},
@@ -51,15 +59,15 @@ func New() *cobra.Command {
 			var c action.Interface
 			var err error
 
-			if f.Renew {
+			if cfg.Renew {
 				log.Warn("The '--renew' flag will be deprecated in a future version.")
-				if f.Install {
+				if cfg.Install {
 					log.Warn("The '--install' flag will be deprecated in a future version.")
 					c = action.NewCreate(cfg)
 				} else {
 					c = action.NewRenew(cfg)
 				}
-			} else if f.Apply {
+			} else if cfg.Apply {
 				log.Warn("The '--renew' flag will be deprecated in a future version.")
 				c = action.NewApply(cfg)
 			} else {
@@ -85,155 +93,156 @@ func New() *cobra.Command {
 		renew.NewCommand(cfg),
 		apply.NewCommand(cfg),
 		check.NewCommand(cfg),
+		configcmd.NewCommand(cfg),
 	)
 
 	cobra.EnableCommandSorting = false
-	initFlags(c.Flags(), f)
+	initFlags(c.Flags(), cfg)
 
 	return c
 }
 
-func initFlags(flagSet *pflag.FlagSet, f *flags.Global) {
+func initFlags(flagSet *pflag.FlagSet, cfg *config.Global) {
 	flagSet.BoolVarP(
-		&f.SkipConfirm,
+		&cfg.SkipConfirm,
 		"yes",
 		"y",
 		false,
 		"Answer yes for any confirmations.",
 	)
 	flagSet.StringVarP(
-		&f.CertType,
+		&cfg.CertType,
 		"type",
 		"t",
 		"internal",
 		"Specifies the type (internal/external) of the server certificates.",
 	)
 	flagSet.StringVarP(
-		&f.Password,
+		&cfg.Password,
 		"password",
 		"p",
 		"",
 		"VM password",
 	)
 	flagSet.StringVarP(
-		&f.Username,
+		&cfg.Username,
 		"username",
 		"u",
 		"root",
 		"VM user",
 	)
 	flagSet.StringVar(
-		&f.SSHKey,
+		&cfg.SSHKey,
 		"key",
 		"",
 		"SSH key file path.",
 	)
 	flagSet.IntVarP(
-		&f.Period,
+		&cfg.Period,
 		"validity",
 		"V", 365,
 		"Specifies the validity period (days) of server certificate.",
 	)
 	flagSet.BoolVar(
-		&f.Apply,
+		&cfg.Apply,
 		"apply",
 		false,
 		"Apply certificates.",
 	)
 	flagSet.BoolVar(
-		&f.Renew,
+		&cfg.Renew,
 		"renew",
 		false,
 		"Renew certificates.",
 	)
 	flagSet.StringVar(
-		&f.Cert,
+		&cfg.Cert,
 		"tls-cert",
 		"",
 		"Certificate file path.",
 	)
 	flagSet.StringVar(
-		&f.Key,
+		&cfg.Key,
 		"tls-key",
 		"",
 		"Private key file path.",
 	)
 	flagSet.StringVar(
-		&f.CACert,
+		&cfg.CACert,
 		"tls-cacert",
 		"",
 		"CA certificate file path.",
 	)
 	flagSet.StringVar(
-		&f.CAKey,
+		&cfg.CAKey,
 		"tls-cakey",
 		"",
 		"CA key file path.",
 	)
 	flagSet.StringVar(
-		&f.NodeType,
+		&cfg.NodeType,
 		"node-type",
 		"",
 		"Node type (controlplane/worker) of the host which certificates are generated for.",
 	)
 	flagSet.StringVarP(
-		&f.OutputDir,
+		&cfg.OutputDir,
 		"output-dir",
 		"d",
 		"",
 		"The output directory of certificates.",
 	)
 	flagSet.StringVar(
-		&f.Host,
+		&cfg.Host,
 		"host",
 		"",
 		"The host FQDN or IP address.",
 	)
 	flagSet.StringVarP(
-		&f.Namespace,
+		&cfg.Namespace,
 		"namespace",
 		"n",
 		"",
 		"Specifies the namespace.",
 	)
 	flagSet.StringVar(
-		&f.CDFNamespace,
+		&cfg.CDFNamespace,
 		"cdf-namespace",
 		"",
 		"Specifies the CDF service namespace.",
 	)
 	flagSet.BoolVar(
-		&f.Local,
+		&cfg.Local,
 		"local",
 		false,
 		"Renew local internal certificates.",
 	)
 	flagSet.BoolVar(
-		&f.Remote,
+		&cfg.Remote,
 		"remote",
 		false,
 		"do not use, just for auto apply certificates.",
 	)
 	flagSet.BoolVar(
-		&f.Install,
+		&cfg.Install,
 		"install",
 		false,
 		"Just for installing first master node.",
 	)
 	flagSet.StringVar(
-		&f.ServerCertSan,
+		&cfg.ServerCertSan,
 		"server-cert-san",
 		"",
 		"Just for installing first master node.",
 	)
 	flagSet.StringVar(
-		&f.Unit,
+		&cfg.Unit,
 		"unit-time",
 		"d",
 		"unit of time (d/m), just for testing the certificates.",
 	)
 	flagSet.StringVar(
-		&f.KubeConfig,
+		&cfg.KubeConfig,
 		"kubeconfig",
 		"",
 		"Specifies kube config file.",
