@@ -1,6 +1,7 @@
 package apply
 
 import (
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/shipengqi/example.v1/cli/internal/action"
@@ -15,15 +16,15 @@ func NewCommand(cfg *config.Global) *cobra.Command {
 		PreRun: func(cmd *cobra.Command, args []string) {
 			cfg.Print()
 		},
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			a := action.NewApply(cfg)
 			err := a.Run()
 			if err != nil {
-				log.Errorf("apply, ERR: %v", err)
 				log.Warnf("Make sure that you have run the '%s/scripts/renewCert --apply' "+
 					"on other master nodes.", cfg.Env.K8SHome)
+				return errors.Wrapf(err, "%s.Run()", a.Name())
 			}
-			return
+			return nil
 		},
 	}
 

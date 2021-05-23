@@ -1,11 +1,11 @@
 package check
 
 import (
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/shipengqi/example.v1/cli/internal/action"
 	"github.com/shipengqi/example.v1/cli/internal/config"
-	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 func NewCommand(cfg *config.Global) *cobra.Command {
@@ -15,13 +15,13 @@ func NewCommand(cfg *config.Global) *cobra.Command {
 		PreRun: func(cmd *cobra.Command, args []string) {
 			cfg.Print()
 		},
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			c := action.NewCheck(cfg)
 			err := c.Run()
 			if err != nil {
-				log.Errorf("check, ERR: %v", err)
+				return errors.Wrapf(err, "%s.Run()", c.Name())
 			}
-			return
+			return nil
 		},
 	}
 

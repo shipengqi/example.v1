@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/AlecAivazis/survey/v2/terminal"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -18,12 +16,6 @@ import (
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
-const (
-	ExitCodeOk    = 0
-	ExitCodeError = 1
-)
-
-var exitCode = ExitCodeOk
 var filename string
 
 func New() *cobra.Command {
@@ -34,28 +26,25 @@ func New() *cobra.Command {
 		Short: "Manages TLS certificates in kubernetes clusters.",
 		Long: "To securely deploy the kubernetes, we recommend that you use the TLS/SSL communication protocol.\n" +
 			"We uses internal certificates and external certificates to secure its deployment.",
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			err := cfg.Init()
 			if err != nil {
-				_, _ = fmt.Fprintln(os.Stderr, "Failed to init configuration! ERR:", err)
-				os.Exit(ExitCodeError)
+				return errors.Wrap(err, "cfg.Init()")
 			}
 			filename, err = log.Init(cfg.Log)
 			if err != nil {
-				_, _ = fmt.Fprintln(os.Stderr, "Failed to init logger! ERR:", err)
-				os.Exit(ExitCodeError)
+				return errors.Wrap(err, "log.Init()")
 			}
+			return nil
 		},
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
 			if !cfg.Remote {
 				log.Warn("Additional logging details can be found in:")
 				log.Warnf("    %s", filename)
 			}
-			os.Exit(exitCode)
+			return
 		},
-		Run: func(cmd *cobra.Command, args []string) {
-			defer recovery()
-
+		RunE: func(cmd *cobra.Command, args []string) error {
 			var c action.Interface
 			var err error
 
@@ -72,18 +61,20 @@ func New() *cobra.Command {
 				c = action.NewApply(cfg)
 			} else {
 				log.Info("no matched action flags")
-				return
+				return nil
 			}
 
 			err = c.Run()
 			if err != nil {
 				if err == terminal.InterruptErr {
 					log.Warnf("%s, interrupted", c.Name())
-					return
+					return nil
 				}
-				exitCode = ExitCodeError
-				log.Errorf("%s, ERR: %v", c.Name(), err)
+
+				return errors.Wrapf(err, "%s.Run()", c.Name())
 			}
+
+			return nil
 		},
 	}
 
@@ -247,11 +238,4 @@ func initFlags(flagSet *pflag.FlagSet, cfg *config.Global) {
 		"",
 		"Specifies kube config file.",
 	)
-}
-
-func recovery() {
-	if err := recover(); err != nil {
-		exitCode = ExitCodeError
-		log.Errorf("[Recovery] panic recovered: %+v", err)
-	}
 }
