@@ -1,10 +1,10 @@
-package flags
+package options
 
-type RenewFlags struct {
+type RenewOptions struct {
 	*Global
 }
 
-func (r *RenewFlags) Check() error {
+func (r *RenewOptions) Check() error {
 	err := r.Global.Check()
 	if err != nil {
 		return err

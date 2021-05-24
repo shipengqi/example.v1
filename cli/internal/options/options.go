@@ -1,4 +1,4 @@
-package flags
+package options
 
 import (
 	"os"
@@ -196,10 +196,6 @@ func (g *Global) Init(flagSet *pflag.FlagSet) {
 }
 
 func (g *Global) Check() error {
-	if !g.Apply && !g.Renew {
-		return errors.New("Need a flag --renew or --apply")
-	}
-
 	if g.CertType != "internal" && g.CertType != "external" {
 		return errors.Errorf("The certificates type: %s is invalid.", g.CertType)
 	}
@@ -230,4 +226,16 @@ func (g *Global) Check() error {
 		}
 	}
 	return nil
+}
+
+func (g *Global) MarkDeprecated() {
+	if g.Renew {
+		log.Warn("The '--renew' flag will be deprecated in a future version.")
+	}
+	if g.Apply {
+		log.Warn("The '--apply' flag will be deprecated in a future version.")
+	}
+	if g.Install {
+		log.Warn("The '--install' flag will be deprecated in a future version.")
+	}
 }

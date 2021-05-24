@@ -1,15 +1,15 @@
 package action
 
 import (
-	"github.com/shipengqi/example.v1/cli/internal/config"
+	"github.com/shipengqi/example.v1/cli/internal/env"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 type Check struct {
-	cfg *config.Global
+	cfg *env.Global
 }
 
-func NewCheck(cfg *config.Global) Interface {
+func NewCheck(cfg *env.Global) Interface {
 	return &Check{cfg: cfg}
 }
 

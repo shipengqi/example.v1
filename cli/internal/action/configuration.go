@@ -1,4 +1,4 @@
-package config
+package action
 
 import (
 	"fmt"
@@ -7,7 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/shipengqi/example.v1/cli/internal/flags"
+	"github.com/shipengqi/example.v1/cli/internal/env"
+	"github.com/shipengqi/example.v1/cli/internal/options"
 	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/vault"
@@ -15,22 +16,20 @@ import (
 
 const (
 	DefaultVaultAddr = "https://127.0.0.1:8200"
-	DefaultVaultRole = "coretech"
-	EnvKeyVaultRole  = "CERTIFICATE_ROLE"
 )
 
-type Global struct {
-	*flags.Global
+type Configuration struct {
+	*options.Global
 
-	Env   *Envs
+	Env   *env.Settings
 	Log   *log.Config
 	Kube  *kube.Config
 	Vault *vault.Config
 }
 
-func New() *Global {
-	return &Global{
-		Global: &flags.Global{},
+func New() *Configuration {
+	return &Configuration{
+		Global: &options.Global{},
 		Env:    nil,
 		Log:    nil,
 		Kube:   nil,
@@ -38,21 +37,16 @@ func New() *Global {
 	}
 }
 
-func (g *Global) Init() error {
-	envs, err := InitEnvs()
+func (g *Configuration) Init() error {
+	envs, err := env.New()
 	if err != nil {
 		return err
 	}
 	g.Env = envs
 	g.Log = &log.Config{}
 	g.Vault = &vault.Config{
-		Role: DefaultVaultRole,
+		Role: envs.VaultRole,
 	}
-	role := os.Getenv(EnvKeyVaultRole)
-	if role != "" {
-		g.Vault.Role = role
-	}
-
 	if g.Env.RunInPod {
 		g.Log.Output = "/tmp"
 		g.Vault.Address = DefaultVaultAddr
@@ -73,7 +67,7 @@ func (g *Global) Init() error {
 	return nil
 }
 
-func (g *Global) Print() {
+func (g *Configuration) Print() {
 	globalv := reflect.ValueOf(*g.Global)
 	globalt := reflect.TypeOf(*g.Global)
 	log.Info("Global: ")

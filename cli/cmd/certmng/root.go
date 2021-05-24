@@ -1,4 +1,4 @@
-package cmd
+package certmng
 
 import (
 	"github.com/AlecAivazis/survey/v2/terminal"
@@ -6,36 +6,20 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/shipengqi/example.v1/cli/cmd/apply"
-	"github.com/shipengqi/example.v1/cli/cmd/check"
-	configcmd "github.com/shipengqi/example.v1/cli/cmd/config"
-	"github.com/shipengqi/example.v1/cli/cmd/create"
-	"github.com/shipengqi/example.v1/cli/cmd/renew"
 	"github.com/shipengqi/example.v1/cli/internal/action"
-	"github.com/shipengqi/example.v1/cli/internal/config"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 var filename string
 
-func New() *cobra.Command {
-	cfg := config.New()
-
+func New(cfg *action.Configuration) *cobra.Command {
 	c := &cobra.Command{
 		Use:   "cert-manager",
 		Short: "Manages TLS certificates in kubernetes clusters.",
 		Long: "To securely deploy the kubernetes, we recommend that you use the TLS/SSL communication protocol.\n" +
 			"We uses internal certificates and external certificates to secure its deployment.",
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			err := cfg.Init()
-			if err != nil {
-				return errors.Wrap(err, "cfg.Init()")
-			}
-			filename, err = log.Init(cfg.Log)
-			if err != nil {
-				return errors.Wrap(err, "log.Init()")
-			}
-			return nil
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			cfg.Print()
 		},
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
 			if !cfg.Remote {
@@ -80,11 +64,11 @@ func New() *cobra.Command {
 
 	// Add sub commands
 	c.AddCommand(
-		create.NewCommand(cfg),
-		renew.NewCommand(cfg),
-		apply.NewCommand(cfg),
-		check.NewCommand(cfg),
-		configcmd.NewCommand(cfg),
+		newRenewCmd(cfg),
+		newCreateCmd(cfg),
+		newApplyCmd(cfg),
+		newCheckCmd(cfg),
+		newConfigCmd(cfg),
 	)
 
 	cobra.EnableCommandSorting = false
@@ -93,7 +77,11 @@ func New() *cobra.Command {
 	return c
 }
 
-func initFlags(flagSet *pflag.FlagSet, cfg *config.Global) {
+func init() {
+
+}
+
+func initFlags(flagSet *pflag.FlagSet, cfg *action.Configuration) {
 	flagSet.BoolVarP(
 		&cfg.SkipConfirm,
 		"yes",

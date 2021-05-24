@@ -1,15 +1,15 @@
 package action
 
 import (
-	"github.com/shipengqi/example.v1/cli/internal/config"
+	"github.com/shipengqi/example.v1/cli/internal/env"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 type Create struct {
-	cfg *config.Global
+	cfg *env.Global
 }
 
-func NewCreate(cfg *config.Global) Interface {
+func NewCreate(cfg *env.Global) Interface {
 	return &Create{cfg: cfg}
 }
 

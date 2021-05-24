@@ -17,7 +17,7 @@
 * U.S. Government under vendor's standard commercial license.
  */
 
-package config
+package env
 
 import (
 	"bufio"
@@ -31,34 +31,37 @@ import (
 )
 
 const (
-	ITOMCDFEnvFile = "/etc/profile.d/itom-cdf.sh"
-
-	EnvKeyK8SHome         = "K8S_HOME="
-	EnvKeyCDFNamespace    = "CDF_NAMESPACE="
-	EnvKeyRuntimeDataHome = "RUNTIME_CDFDATA_HOME="
+	ITOMCDFEnvFile        = "/etc/profile.d/itom-cdf.sh"
+	EnvKeyK8SHome         = "K8S_HOME"
+	EnvKeyCDFNamespace    = "CDF_NAMESPACE"
+	EnvKeyRuntimeDataHome = "RUNTIME_CDFDATA_HOME"
+	EnvKeyVaultRole       = "CERTIFICATE_ROLE"
 )
 
 const (
+	_defaultVaultRole       = "coretech"
 	_defaultCDFNamespace    = "core"
 	_defaultK8SHome         = "/opt/kubernetes"
 	_defaultRunTimeDataPath = "/opt/kubernetes/data"
 	_defaultK8STokenFile    = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 )
 
-type Envs struct {
+type Settings struct {
 	K8SHome            string
 	CDFNamespace       string
 	RuntimeCDFDataHome string
 	SSLPath            string
+	VaultRole          string
 	RunOnMaster        bool
 	RunInPod           bool
 }
 
-func InitEnvs() (*Envs, error) {
-	envs := &Envs{
-		K8SHome:            _defaultK8SHome,
-		CDFNamespace:       _defaultCDFNamespace,
-		RuntimeCDFDataHome: _defaultRunTimeDataPath,
+func New() (*Settings, error) {
+	envs := &Settings{
+		K8SHome:            envOr(EnvKeyK8SHome, _defaultK8SHome),
+		CDFNamespace:       envOr(EnvKeyCDFNamespace, _defaultCDFNamespace),
+		RuntimeCDFDataHome: envOr(EnvKeyRuntimeDataHome, _defaultRunTimeDataPath),
+		VaultRole:          envOr(EnvKeyVaultRole, _defaultVaultRole),
 		SSLPath:            "",
 		RunOnMaster:        false,
 		RunInPod:           false,
@@ -116,7 +119,7 @@ func retrieveEnv(filePath string, keys ...string) (map[string]string, error) {
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			lineText := scanner.Text()
-			if strings.Contains(lineText, keys[k]) {
+			if strings.Contains(lineText, fmt.Sprintf("%s=", keys[k])) {
 				ss := strings.Split(lineText, "=")
 				mappings[keys[k]] = ss[len(ss)-1]
 				break
@@ -150,4 +153,11 @@ func onMasterNode(dataHome string) bool {
 
 func inPod() bool {
 	return isExist(_defaultK8STokenFile)
+}
+
+func envOr(name, def string) string {
+	if v, ok := os.LookupEnv(name); ok {
+		return v
+	}
+	return def
 }

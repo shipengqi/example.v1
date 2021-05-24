@@ -1,6 +1,6 @@
-package flags
+package options
 
-type CreateFlags struct {
+type CreateOptions struct {
 	*Global
 
 	CAKey          string
@@ -9,7 +9,7 @@ type CreateFlags struct {
 	KubeApiCertSan string
 }
 
-func (c *CreateFlags) Check() error {
+func (c *CreateOptions) Check() error {
 	err := c.Global.Check()
 	if err != nil {
 		return err

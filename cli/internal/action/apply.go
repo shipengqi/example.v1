@@ -1,15 +1,15 @@
 package action
 
 import (
-	"github.com/shipengqi/example.v1/cli/internal/config"
+	"github.com/shipengqi/example.v1/cli/internal/env"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 type Apply struct {
-	cfg *config.Global
+	cfg *env.Global
 }
 
-func NewApply(cfg *config.Global) Interface {
+func NewApply(cfg *env.Global) Interface {
 	return &Apply{cfg: cfg}
 }
 

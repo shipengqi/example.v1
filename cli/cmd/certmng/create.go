@@ -1,20 +1,25 @@
-package create
+package certmng
 
 import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/shipengqi/example.v1/cli/internal/action"
-	"github.com/shipengqi/example.v1/cli/internal/config"
+	"github.com/shipengqi/example.v1/cli/internal/env"
 )
 
-func NewCommand(cfg *config.Global) *cobra.Command {
+type createOptions struct {
+	CAKey          string
+	NodeType       string
+	Host           string
+	KubeApiCertSan string
+}
+
+func newCreateCmd(cfg *env.Global) *cobra.Command {
 	c := &cobra.Command{
 		Use:   "create",
 		Short: "Create the internal/external certificates in CDF clusters.",
-		PreRun: func(cmd *cobra.Command, args []string) {
-			cfg.Print()
-		},
+		PreRun: func(cmd *cobra.Command, args []string) {},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := action.NewCreate(cfg)
 			err := c.Run()

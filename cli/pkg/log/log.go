@@ -25,6 +25,7 @@ type Config struct {
 }
 
 var logger zerolog.Logger
+var LogFileName string
 
 func Init(c *Config) (string, error) {
 	if c.Output == "" {
@@ -53,7 +54,7 @@ func Init(c *Config) (string, error) {
 	} else {
 		logger = zerolog.New(f).With().Timestamp().Logger()
 	}
-
+	LogFileName = logfile
 	return logfile, nil
 }
 

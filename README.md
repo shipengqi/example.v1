@@ -53,4 +53,3 @@ Golang examples.
 - grpc-gateway
 - https://github.com/hyper0x/Golang_Puzzlers
 - config command PrintWithLevel
-- check all flags is deprecated and validation in Hook func

@@ -3,7 +3,11 @@ package main
 import (
 	"os"
 
-	"github.com/shipengqi/example.v1/cli/cmd"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+
+	"github.com/shipengqi/example.v1/cli/cmd/certmng"
+	"github.com/shipengqi/example.v1/cli/internal/env"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
@@ -15,7 +19,20 @@ const (
 func main() {
 	defer recovery()
 
-	c := cmd.New()
+	cfg := env.New()
+	c := certmng.New(cfg)
+
+	cobra.OnInitialize(func() {
+		err := cfg.Init()
+		if err != nil {
+			panic(errors.Wrap(err, "cfg.Init()"))
+		}
+		_, err = log.Init(cfg.Log)
+		if err != nil {
+			panic(errors.Wrap(err, "log.Init()"))
+		}
+	})
+
 	err := c.Execute()
 	if err != nil {
 		log.Errorf("cmd.Execute(): %v", err)

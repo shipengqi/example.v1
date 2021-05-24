@@ -1,6 +1,6 @@
-package flags
+package options
 
-type CheckFlags struct {
+type CheckOptions struct {
 	CertType       string
 	Cert           string
 	Key            string
@@ -9,6 +9,6 @@ type CheckFlags struct {
 	Namespace      string
 }
 
-func (c *CheckFlags) Check() error {
+func (c *CheckOptions) Check() error {
 	return nil
 }
