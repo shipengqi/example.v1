@@ -41,6 +41,10 @@ func main() {
 			os.Exit(ExitCodeOk)
 		}
 
+		if err == action.DropError {
+			os.Exit(ExitCodeOk)
+		}
+
 		log.Errorf("cmd.Execute(): %v", err)
 		os.Exit(ExitCodeError)
 	}

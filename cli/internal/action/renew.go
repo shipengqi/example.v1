@@ -1,8 +1,12 @@
 package action
 
 import (
+	"github.com/pkg/errors"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
+	"github.com/shipengqi/example.v1/cli/pkg/prompt"
 )
+
+var DropError = errors.New("Exit")
 
 type Renew struct {
 	name string
@@ -18,6 +22,20 @@ func (a *Renew) Name() string {
 }
 
 func (a *Renew) PreRun() error {
+	log.Debug("====================    PRE CHECK    ====================")
+	if a.cfg.SkipConfirm {
+		return nil
+	}
+	if a.cfg.Env.RunInPod {
+		return nil
+	}
+	confirm, err := prompt.Confirm("Are you sure to continue")
+	if err != nil {
+		return err
+	}
+	if !confirm {
+		return DropError
+	}
 	return nil
 }
 

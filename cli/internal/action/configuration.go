@@ -34,7 +34,7 @@ type Options struct {
 	Host          string
 	OutputDir     string
 	ServerCertSan string
-	AutoConfirm   bool
+	SkipConfirm   bool
 	Period        int
 }
 
