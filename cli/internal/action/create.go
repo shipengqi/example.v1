@@ -1,20 +1,20 @@
 package action
 
 import (
-	"github.com/shipengqi/example.v1/cli/internal/env"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 type Create struct {
-	cfg *env.Global
+	name string
+	cfg  *Configuration
 }
 
-func NewCreate(cfg *env.Global) Interface {
-	return &Create{cfg: cfg}
+func NewCreate(cfg *Configuration) Interface {
+	return &Create{name: "create", cfg: cfg}
 }
 
 func (a *Create) Name() string {
-	return "create"
+	return a.name
 }
 
 func (a *Create) PreRun() error {
@@ -28,4 +28,16 @@ func (a *Create) Run() error {
 
 func (a *Create) PostRun() error {
 	return nil
+}
+
+func (a *Create) Execute() error {
+	err := a.PreRun()
+	if err != nil {
+		return err
+	}
+	err = a.Run()
+	if err != nil {
+		return err
+	}
+	return a.PostRun()
 }

@@ -136,8 +136,8 @@ var CertificateSet = []CertificateSetItem{
 
 type Interface interface {
 	Name() string
+	PreRun() error
 	Run() error
-}
-
-type Action struct {
+	PostRun() error
+	Execute() error
 }

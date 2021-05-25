@@ -3,12 +3,13 @@ package main
 import (
 	"os"
 
-	"github.com/pkg/errors"
+	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/spf13/cobra"
 
 	"github.com/shipengqi/example.v1/cli/cmd/certmng"
-	"github.com/shipengqi/example.v1/cli/internal/env"
+	"github.com/shipengqi/example.v1/cli/internal/action"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
+	"github.com/shipengqi/example.v1/cli/pkg/recovery"
 )
 
 const (
@@ -17,33 +18,31 @@ const (
 )
 
 func main() {
-	defer recovery()
+	defer recovery.Recovery(ExitCodeError)
 
-	cfg := env.New()
+	cfg := action.NewConfiguration()
 	c := certmng.New(cfg)
 
 	cobra.OnInitialize(func() {
 		err := cfg.Init()
 		if err != nil {
-			panic(errors.Wrap(err, "cfg.Init()"))
+			panic(err)
 		}
 		_, err = log.Init(cfg.Log)
 		if err != nil {
-			panic(errors.Wrap(err, "log.Init()"))
+			panic(err)
 		}
 	})
 
 	err := c.Execute()
 	if err != nil {
+		if err == terminal.InterruptErr {
+			log.Warnf("%s.Execute(), interrupted.", c.Name())
+			os.Exit(ExitCodeOk)
+		}
+
 		log.Errorf("cmd.Execute(): %v", err)
 		os.Exit(ExitCodeError)
 	}
 	os.Exit(ExitCodeOk)
-}
-
-func recovery() {
-	if err := recover(); err != nil {
-		log.Errorf("[Recovery] panic recovered: %+v", err)
-		os.Exit(ExitCodeError)
-	}
 }

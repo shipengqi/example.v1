@@ -58,6 +58,8 @@ func Init(c *Config) (string, error) {
 	return logfile, nil
 }
 
+type LoggerFunc func(format string, args ...interface{})
+
 func Tracef(format string, args ...interface{}) {
 	logger.Trace().Msgf(format, args...)
 }

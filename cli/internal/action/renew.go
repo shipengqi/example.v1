@@ -1,20 +1,20 @@
 package action
 
 import (
-	"github.com/shipengqi/example.v1/cli/internal/env"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 type Renew struct {
-	cfg *env.Global
+	name string
+	cfg  *Configuration
 }
 
-func NewRenew(cfg *env.Global) Interface {
-	return &Renew{cfg: cfg}
+func NewRenew(cfg *Configuration) Interface {
+	return &Renew{name: "renew", cfg: cfg}
 }
 
 func (a *Renew) Name() string {
-	return "renew"
+	return a.name
 }
 
 func (a *Renew) PreRun() error {
@@ -28,4 +28,16 @@ func (a *Renew) Run() error {
 
 func (a *Renew) PostRun() error {
 	return nil
+}
+
+func (a *Renew) Execute() error {
+	err := a.PreRun()
+	if err != nil {
+		return err
+	}
+	err = a.Run()
+	if err != nil {
+		return err
+	}
+	return a.PostRun()
 }

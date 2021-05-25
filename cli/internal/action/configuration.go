@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/shipengqi/example.v1/cli/internal/env"
-	"github.com/shipengqi/example.v1/cli/internal/options"
 	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/vault"
@@ -18,8 +17,29 @@ const (
 	DefaultVaultAddr = "https://127.0.0.1:8200"
 )
 
+type Options struct {
+	CertType      string
+	Username      string
+	Password      string
+	SSHKey        string
+	Cert          string
+	Key           string
+	CACert        string
+	CDFNamespace  string
+	Namespace     string
+	Unit          string
+	KubeConfig    string
+	CAKey         string
+	NodeType      string
+	Host          string
+	OutputDir     string
+	ServerCertSan string
+	AutoConfirm   bool
+	Period        int
+}
+
 type Configuration struct {
-	*options.Global
+	*Options
 
 	Env   *env.Settings
 	Log   *log.Config
@@ -27,13 +47,13 @@ type Configuration struct {
 	Vault *vault.Config
 }
 
-func New() *Configuration {
+func NewConfiguration() *Configuration {
 	return &Configuration{
-		Global: &options.Global{},
-		Env:    nil,
-		Log:    nil,
-		Kube:   nil,
-		Vault:  nil,
+		Options: &Options{},
+		Env:     nil,
+		Log:     nil,
+		Kube:    nil,
+		Vault:   nil,
 	}
 }
 
@@ -62,40 +82,54 @@ func (g *Configuration) Init() error {
 		}
 	}
 
-	g.Kube = &kube.Config{Kubeconfig: g.KubeConfig}
+	g.Kube = &kube.Config{Kubeconfig: g.Options.KubeConfig}
 
 	return nil
 }
 
-func (g *Configuration) Print() {
-	globalv := reflect.ValueOf(*g.Global)
-	globalt := reflect.TypeOf(*g.Global)
-	log.Info("Global: ")
+func (g *Configuration) printWithLevel(level string) {
+	var print log.LoggerFunc
+	if level == log.DefaultLogLevel {
+		print = log.Debugf
+	} else {
+		print = log.Infof
+	}
+	globalv := reflect.ValueOf(*g.Options)
+	globalt := reflect.TypeOf(*g.Options)
+	print("Options: ")
 	for num := 0; num < globalv.NumField(); num++ {
-		log.Infof("  %s: %v", globalt.Field(num).Name, globalv.Field(num))
+		print("  %s: %v", globalt.Field(num).Name, globalv.Field(num))
 	}
 	envsv := reflect.ValueOf(*g.Env)
 	envst := reflect.TypeOf(*g.Env)
-	log.Info("Envs: ")
+	print("Envs: ")
 	for num := 0; num < envsv.NumField(); num++ {
-		log.Infof("  %s: %v", envst.Field(num).Name, envsv.Field(num))
+		print("  %s: %v", envst.Field(num).Name, envsv.Field(num))
 	}
 	logv := reflect.ValueOf(*g.Log)
 	logt := reflect.TypeOf(*g.Log)
-	log.Info("Log: ")
+	print("Log: ")
 	for num := 0; num < logv.NumField(); num++ {
-		log.Infof("  %s: %v", logt.Field(num).Name, logv.Field(num))
+		print("  %s: %v", logt.Field(num).Name, logv.Field(num))
 	}
 	kubev := reflect.ValueOf(*g.Kube)
 	kubet := reflect.TypeOf(*g.Kube)
-	log.Info("Kube: ")
+	print("Kube: ")
 	for num := 0; num < kubev.NumField(); num++ {
-		log.Infof("  %s: %v", kubet.Field(num).Name, kubev.Field(num))
+		print("  %s: %v", kubet.Field(num).Name, kubev.Field(num))
 	}
 	vaultv := reflect.ValueOf(*g.Vault)
 	vaultt := reflect.TypeOf(*g.Vault)
-	log.Info("Kube: ")
+	print("Kube: ")
 	for num := 0; num < vaultv.NumField(); num++ {
-		log.Infof("  %s: %v", vaultt.Field(num).Name, vaultv.Field(num))
+		print("  %s: %v", vaultt.Field(num).Name, vaultv.Field(num))
 	}
+}
+
+func (g *Configuration) Print() {
+	g.printWithLevel("")
+}
+
+func (g *Configuration) Debug() {
+	g.printWithLevel(log.DefaultLogLevel)
 }
