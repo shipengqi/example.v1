@@ -11,13 +11,13 @@ import (
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
-func RestartKubeService(namespace string) error {
+func RestartKubeService(namespace string, version int) error {
 	err := RestartNativeService("kubelet")
 	if err != nil {
 		return err
 	}
 	time.Sleep(time.Second * 5)
-	err = RestartContainersWithNamespace(namespace)
+	err = RestartContainers(namespace, version)
 	if err != nil {
 		return err
 	}
@@ -64,8 +64,15 @@ func StartNativeService(serviceName string) error {
 	return nil
 }
 
-func RestartContainersWithNamespace(namespace string) error {
-	restartCMD := fmt.Sprintf("docker restart $(docker ps | grep %s | sed '/\\/pause/d' | awk '{print $1}')", namespace)
+func RestartContainers(namespace string, version int) error {
+	var restartCMD string
+	restartCMD = fmt.Sprintf("docker restart $(docker ps | grep %s | " +
+		"sed '/\\/pause/d' | awk '{print $1}')", namespace)
+	if version > 202108 {
+		restartCMD = fmt.Sprintf("crictl stop (crictl ps --label io.kubernetes.pod.namespace=%s | " +
+			"grep '^[^CONTAINER]' | sed '/\\/pause/d' | awk '{print $1}')", namespace)
+	}
+
 	log.Debugf("exec: %s", restartCMD)
 	log.Infof("Start to restart all containers in namespace: %s.", namespace)
 	err := command.ExecSync(restartCMD)

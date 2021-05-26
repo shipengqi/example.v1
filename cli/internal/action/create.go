@@ -1,36 +1,58 @@
 package action
 
 import (
+	"github.com/pkg/errors"
+
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
+	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
-type Create struct {
-	name string
-	cfg  *Configuration
+type create struct {
+	*action
+
+	infra  certs.Generator
+	deploy certs.Generator
 }
 
 func NewCreate(cfg *Configuration) Interface {
-	return &Create{name: "create", cfg: cfg}
+	c := &create{
+		action: &action{
+			name: "create",
+			cfg:  cfg,
+		},
+		infra:  infra.New(),
+		deploy: deployment.New(),
+	}
+
+	return c
 }
 
-func (a *Create) Name() string {
+func (a *create) Name() string {
 	return a.name
 }
 
-func (a *Create) PreRun() error {
+func (a *create) Run() error {
+	log.Debug("====================    CREATE CRT    ====================")
+	switch a.cfg.NodeType {
+	case types.NodeTypeControlPlane:
+		break
+	case types.NodeTypeWorker:
+		break
+	default:
+		return errors.Errorf("unknown node type: %s", a.cfg.NodeType)
+	}
 	return nil
 }
 
-func (a *Create) Run() error {
-	log.Info("create certificates.")
+func (a *create) PostRun() error {
+	log.Info("Finished.")
 	return nil
 }
 
-func (a *Create) PostRun() error {
-	return nil
-}
-
-func (a *Create) Execute() error {
+func (a *create) Execute() error {
 	err := a.PreRun()
 	if err != nil {
 		return err

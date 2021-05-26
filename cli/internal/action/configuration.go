@@ -88,41 +88,41 @@ func (g *Configuration) Init() error {
 }
 
 func (g *Configuration) printWithLevel(level string) {
-	var print log.LoggerFunc
+	var printf log.LoggerFunc
 	if level == log.DefaultLogLevel {
-		print = log.Debugf
+		printf = log.Debugf
 	} else {
-		print = log.Infof
+		printf = log.Infof
 	}
 	globalv := reflect.ValueOf(*g.Options)
 	globalt := reflect.TypeOf(*g.Options)
-	print("Options: ")
+	printf("Options: ")
 	for num := 0; num < globalv.NumField(); num++ {
-		print("  %s: %v", globalt.Field(num).Name, globalv.Field(num))
+		printf("  %s: %v", globalt.Field(num).Name, globalv.Field(num))
 	}
 	envsv := reflect.ValueOf(*g.Env)
 	envst := reflect.TypeOf(*g.Env)
-	print("Envs: ")
+	printf("Envs: ")
 	for num := 0; num < envsv.NumField(); num++ {
-		print("  %s: %v", envst.Field(num).Name, envsv.Field(num))
+		printf("  %s: %v", envst.Field(num).Name, envsv.Field(num))
 	}
 	logv := reflect.ValueOf(*g.Log)
 	logt := reflect.TypeOf(*g.Log)
-	print("Log: ")
+	printf("Log: ")
 	for num := 0; num < logv.NumField(); num++ {
-		print("  %s: %v", logt.Field(num).Name, logv.Field(num))
+		printf("  %s: %v", logt.Field(num).Name, logv.Field(num))
 	}
 	kubev := reflect.ValueOf(*g.Kube)
 	kubet := reflect.TypeOf(*g.Kube)
-	print("Kube: ")
+	printf("Kube: ")
 	for num := 0; num < kubev.NumField(); num++ {
-		print("  %s: %v", kubet.Field(num).Name, kubev.Field(num))
+		printf("  %s: %v", kubet.Field(num).Name, kubev.Field(num))
 	}
 	vaultv := reflect.ValueOf(*g.Vault)
 	vaultt := reflect.TypeOf(*g.Vault)
-	print("Kube: ")
+	printf("Kube: ")
 	for num := 0; num < vaultv.NumField(); num++ {
-		print("  %s: %v", vaultt.Field(num).Name, vaultv.Field(num))
+		printf("  %s: %v", vaultt.Field(num).Name, vaultv.Field(num))
 	}
 }
 

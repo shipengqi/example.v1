@@ -25,8 +25,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
+	"github.com/shipengqi/example.v1/cli/internal/command"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
@@ -39,6 +41,7 @@ const (
 )
 
 const (
+	_defaultCDFVersion      = 202108
 	_defaultVaultRole       = "coretech"
 	_defaultCDFNamespace    = "core"
 	_defaultK8SHome         = "/opt/kubernetes"
@@ -54,6 +57,7 @@ type Settings struct {
 	VaultRole          string
 	RunOnMaster        bool
 	RunInPod           bool
+	Version            int
 }
 
 func New() (*Settings, error) {
@@ -65,6 +69,7 @@ func New() (*Settings, error) {
 		SSLPath:            "",
 		RunOnMaster:        false,
 		RunInPod:           false,
+		Version:            _defaultCDFVersion,
 	}
 
 	envs.RunInPod = inPod()
@@ -91,6 +96,14 @@ func New() (*Settings, error) {
 		if dataHome, ok := values[EnvKeyRuntimeDataHome]; ok {
 			log.Debugf("got env: %s, value: %s ", EnvKeyRuntimeDataHome, dataHome)
 			envs.RuntimeCDFDataHome = dataHome
+		}
+		version, _, err := command.Exec(fmt.Sprintf("cat %s/version.txt | awk -F . '{print $1$2}'", envs.K8SHome))
+		if err != nil {
+			return envs, err
+		}
+		vi, err := strconv.Atoi(version)
+		if err == nil {
+			envs.Version = vi
 		}
 	}
 

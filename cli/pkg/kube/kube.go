@@ -104,6 +104,19 @@ func (c *Client) ApplySecret(namespace, name string, data map[string]string) (*c
 	return c.UpdateSecret(namespace, olds)
 }
 
+func (c *Client) ApplySecretBytes(namespace, name string, data map[string][]byte) (*corev1.Secret, error) {
+	olds, err := c.GetSecret(namespace, name)
+	if err != nil || olds == nil {
+		var news corev1.Secret
+		news.SetName(name)
+		news.SetNamespace(namespace)
+		news.Data = data
+		return c.CreateSecret(namespace, &news)
+	}
+	olds.Data = data
+	return c.UpdateSecret(namespace, olds)
+}
+
 // DeleteSecret Delete secret
 func (c *Client) DeleteSecret(namespace, name string) error {
 	return c.CoreV1().Secrets(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})

@@ -4,33 +4,35 @@ import (
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
-type Check struct {
-	name string
-	cfg  *Configuration
+type check struct {
+	*action
 }
 
 func NewCheck(cfg *Configuration) Interface {
-	return &Check{name: "check", cfg: cfg}
+	return &check{&action{
+		name: "check",
+		cfg:  cfg,
+	}}
 }
 
-func (a *Check) Name() string {
+func (a *check) Name() string {
 	return a.name
 }
 
-func (a *Check) PreRun() error {
+func (a *check) PreRun() error {
 	log.Info("check certificates.")
 	return nil
 }
 
-func (a *Check) Run() error {
+func (a *check) Run() error {
 	return nil
 }
 
-func (a *Check) PostRun() error {
+func (a *check) PostRun() error {
 	return nil
 }
 
-func (a *Check) Execute() error {
+func (a *check) Execute() error {
 	err := a.PreRun()
 	if err != nil {
 		return err

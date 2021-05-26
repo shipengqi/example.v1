@@ -5,34 +5,32 @@ import (
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
-type Apply struct {
-	name string
-	cfg  *Configuration
+type apply struct {
+	*action
 }
 
 func NewApply(cfg *Configuration) Interface {
-	return &Apply{name: "apply", cfg: cfg}
+	return &apply{&action{
+		name: "apply",
+		cfg:  cfg,
+	}}
 }
 
-func (a *Apply) Name() string {
+func (a *apply) Name() string {
 	return a.name
 }
 
-func (a *Apply) PreRun() error {
-	log.Info("start to apply certificates.")
-	return nil
+func (a *apply) Run() error {
+	log.Debug("====================    APPLY CRT    ====================")
+	return sysc.RestartKubeService(a.cfg.Env.CDFNamespace, a.cfg.Env.Version)
 }
 
-func (a *Apply) Run() error {
-	return sysc.RestartKubeService(a.cfg.Env.CDFNamespace)
-}
-
-func (a *Apply) PostRun() error {
+func (a *apply) PostRun() error {
 	log.Info("Apply certificates successfully.")
 	return nil
 }
 
-func (a *Apply) Execute() error {
+func (a *apply) Execute() error {
 	err := a.PreRun()
 	if err != nil {
 		return err

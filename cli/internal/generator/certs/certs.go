@@ -1,11 +1,6 @@
 package certs
 
-const (
-	VaultREPkiPath     = "RE"
-	CertUnitTimeDay    = "d"
-	CertUnitTimeMinute = "m"
-)
-
 type Generator interface {
-	Gen(c *Certificate) (cert, key string, err error)
+	Gen(c *Certificate) (cert, key []byte, err error)
+	Dump(certName, keyName, secret string, cert, key []byte) error
 }

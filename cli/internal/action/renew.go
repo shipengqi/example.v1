@@ -2,26 +2,42 @@ package action
 
 import (
 	"github.com/pkg/errors"
+
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
+	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/prompt"
 )
 
 var DropError = errors.New("Exit")
 
-type Renew struct {
-	name string
-	cfg  *Configuration
+type renew struct {
+	*action
+
+	infra  certs.Generator
+	deploy certs.Generator
 }
 
 func NewRenew(cfg *Configuration) Interface {
-	return &Renew{name: "renew", cfg: cfg}
+	r := &renew{
+		action: &action{
+			name: "renew",
+			cfg:  cfg,
+		},
+		infra:  infra.New(),
+		deploy: deployment.New(),
+	}
+
+	return r
 }
 
-func (a *Renew) Name() string {
+func (a *renew) Name() string {
 	return a.name
 }
 
-func (a *Renew) PreRun() error {
+func (a *renew) PreRun() error {
 	log.Debug("====================    PRE CHECK    ====================")
 	if a.cfg.SkipConfirm {
 		return nil
@@ -39,16 +55,26 @@ func (a *Renew) PreRun() error {
 	return nil
 }
 
-func (a *Renew) Run() error {
-	log.Info("renew certificates.")
+func (a *renew) Run() error {
+	log.Debug("====================    RENEW CRT    ====================")
+	switch a.cfg.CertType {
+	case types.CertTypeInternal:
+		break
+	case types.CertTypeExternal:
+		break
+	default:
+		return errors.Errorf("unknown cert type: %s", a.cfg.CertType)
+	}
+
 	return nil
 }
 
-func (a *Renew) PostRun() error {
+func (a *renew) PostRun() error {
+	log.Info("Finished.")
 	return nil
 }
 
-func (a *Renew) Execute() error {
+func (a *renew) Execute() error {
 	err := a.PreRun()
 	if err != nil {
 		return err

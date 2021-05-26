@@ -2,13 +2,11 @@ package action
 
 import (
 	"crypto/x509"
-	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
-)
+	"strings"
 
-const (
-	DepWorker int = iota
-	DepMaster
-	DepMasterAndWorker
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
+	"github.com/shipengqi/example.v1/cli/internal/types"
+	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 type CertificateSetItem struct {
@@ -19,6 +17,14 @@ type CertificateSetItem struct {
 	Deploy int
 }
 
+type Interface interface {
+	Name() string
+	PreRun() error
+	Run() error
+	PostRun() error
+	Execute() error
+}
+
 var CertificateSet = []CertificateSetItem{
 	{
 		Certificate: certs.Certificate{
@@ -26,7 +32,7 @@ var CertificateSet = []CertificateSetItem{
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		},
 		Name:   "etcd-server",
-		Deploy: DepMaster,
+		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -34,7 +40,7 @@ var CertificateSet = []CertificateSetItem{
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		},
 		Name:   "common-etcd-client",
-		Deploy: DepMasterAndWorker,
+		Deploy: types.DepMasterAndWorker,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -42,7 +48,7 @@ var CertificateSet = []CertificateSetItem{
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		},
 		Name:   "kube-api-etcd-client",
-		Deploy: DepMaster,
+		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -51,7 +57,7 @@ var CertificateSet = []CertificateSetItem{
 			Organizations: []string{"system:kubelet-api-admin"},
 		},
 		Name:   "kube-api-kubelet-client",
-		Deploy: DepMaster,
+		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -59,7 +65,7 @@ var CertificateSet = []CertificateSetItem{
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		},
 		Name:   "kube-api-proxy-client",
-		Deploy: DepMaster,
+		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -67,7 +73,7 @@ var CertificateSet = []CertificateSetItem{
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		},
 		Name:   "kube-api-server",
-		Deploy: DepMaster,
+		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -76,7 +82,7 @@ var CertificateSet = []CertificateSetItem{
 			CN:           "system:kube-controller-manager",
 		},
 		Name:   "kube-controller-kube-api-client",
-		Deploy: DepMaster,
+		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -85,7 +91,7 @@ var CertificateSet = []CertificateSetItem{
 			Organizations: []string{"system:masters"},
 		},
 		Name:   "kubectl-kube-api-client",
-		Deploy: DepMasterAndWorker,
+		Deploy: types.DepMasterAndWorker,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -94,7 +100,7 @@ var CertificateSet = []CertificateSetItem{
 			Organizations: []string{"system:nodes"},
 		},
 		Name:   "kubelet-kube-api-client",
-		Deploy: DepMasterAndWorker,
+		Deploy: types.DepMasterAndWorker,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -102,7 +108,7 @@ var CertificateSet = []CertificateSetItem{
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		},
 		Name:   "kubelet-server",
-		Deploy: DepMasterAndWorker,
+		Deploy: types.DepMasterAndWorker,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -111,7 +117,7 @@ var CertificateSet = []CertificateSetItem{
 			CN:           "system:kube-scheduler",
 		},
 		Name:   "kube-scheduler-kube-api-client",
-		Deploy: DepMaster,
+		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -121,7 +127,7 @@ var CertificateSet = []CertificateSetItem{
 		},
 		Name:   "metrics-server",
 		Secret: "metrics-server-cert.kube-system",
-		Deploy: DepMaster,
+		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: certs.Certificate{
@@ -130,14 +136,42 @@ var CertificateSet = []CertificateSetItem{
 		},
 		Name:   "kube-registry",
 		Secret: "kube-registry-cert.<namespace>",
-		Deploy: DepMaster,
+		Deploy: types.DepMaster,
 	},
 }
 
-type Interface interface {
-	Name() string
-	PreRun() error
-	Run() error
-	PostRun() error
-	Execute() error
+type action struct {
+	name string
+	cfg *Configuration
+}
+
+func (a *action) Name() string {
+	return "[action]"
+}
+
+func (a *action) PreRun() error {
+	log.Debugf("====================    %s PreRun    ====================", strings.ToUpper(a.name))
+	return nil
+}
+
+func (a *action) Run() error {
+	log.Debugf("====================   %s Run    ====================", strings.ToUpper(a.name))
+	return nil
+}
+
+func (a *action) PostRun() error {
+	log.Debugf("====================   %s PostRun    ====================", strings.ToUpper(a.name))
+	return nil
+}
+
+func (a *action) Execute() error {
+	err := a.PreRun()
+	if err != nil {
+		return err
+	}
+	err = a.Run()
+	if err != nil {
+		return err
+	}
+	return a.PostRun()
 }
