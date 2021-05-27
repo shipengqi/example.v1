@@ -1,8 +1,6 @@
 package certmng
 
 import (
-	"bytes"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -10,6 +8,31 @@ import (
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
+const (
+	caCertFlagName        = "tls-cacert"
+	caKeyFlagName         = "tls-cakey"
+	nodeTypeFlagName      = "node-type"
+	hostFlagName          = "host"
+	serverCertSanFlagName = "server-cert-san"
+	certFlagName          = "tls-cert"
+	keyFlagName           = "tls-key"
+	remoteFlagName        = "remote"
+	installFlagName       = "install"
+	unitFlagName          = "unit-time"
+	renewFlagName         = "renew"
+	applyFlagName         = "apply"
+	sshKeyFlagName        = "key"
+	namespaceFlagName     = "namespace"
+	confirmFlagName       = "yes"
+	usernameFlagName      = "username"
+	passwordFlagName      = "password"
+	validityFlagName      = "validity"
+	outputFlagName        = "output-dir"
+	typeFlagName          = "type"
+	cdfnsFlagName         = "cdf-namespace"
+	localFlagName         = "local"
+	kubeconfigFlagName    = "kubeconfig"
+)
 const (
 	rootDesc = `To securely deploy the kubernetes, we recommend that you use the TLS/SSL communication protocol.
 We uses internal certificates and external certificates to secure its deployment.`
@@ -66,9 +89,6 @@ func New(cfg *action.Configuration) *cobra.Command {
 		Short:   "Manages TLS certificates in kubernetes clusters.",
 		Long:    rootDesc,
 		Example: examplesDesc,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			cfg.Debug()
-		},
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
 			log.Warn("Additional logging details can be found in:")
 			log.Warnf("    %s", log.LogFileName)
@@ -100,7 +120,6 @@ func New(cfg *action.Configuration) *cobra.Command {
 		newCreateCmd(cfg),
 		newApplyCmd(cfg),
 		newCheckCmd(cfg),
-		newConfigCmd(cfg),
 	)
 
 	cobra.EnableCommandSorting = false
@@ -111,48 +130,36 @@ func New(cfg *action.Configuration) *cobra.Command {
 }
 
 func addFlags(f *pflag.FlagSet, o *rootOptions) {
-	f.BoolVarP(&o.skipConfirm, "yes", "y", false, "Answer yes for any confirmations.")
-	f.StringVarP(&o.certType, "type", "t", "internal", typeFlagDesc)
-	f.StringVarP(&o.username, "username", "u", "root", "VM user")
-	f.StringVarP(&o.password, "password", "p", "", passwordFlagDesc)
-	f.StringVar(&o.sshKey, "key", "", "SSH key file path.")
-	f.IntVarP(&o.validity, "validity", "V", 365, validityFlagDesc)
-	f.BoolVar(&o.apply, "apply", false, "Apply certificates.")
-	f.BoolVar(&o.renew, "renew", false, "Renew certificates.")
-	f.StringVar(&o.cert, "tls-cert", "", "Certificate file path.")
-	f.StringVar(&o.key, "tls-key", "", "Private key file path.")
-	f.StringVar(&o.caCert, "tls-cacert", "", "CA certificate file path.")
-	f.StringVar(&o.caKey, "tls-cakey", "", "CA key file path.")
-	f.StringVar(&o.nodeType, "node-type", "", nodeTypeFlagDesc)
-	f.StringVarP(&o.outputDir, "output-dir", "d", "", "The output directory of certificates.")
-	f.StringVar(&o.host, "host", "", "The host FQDN or IP address.")
-	f.StringVarP(&o.namespace, "namespace", "n", "", "Specifies the namespace.")
-	f.StringVar(&o.cdfNamespace, "cdf-namespace", "", "Specifies the CDF service namespace.")
-	f.BoolVar(&o.local, "local", false, "Renew local internal certificates.")
-	f.BoolVar(&o.remote, "remote", false, "Apply certificates in ssh mode.")
-	f.BoolVar(&o.install, "install", false, "Install first master node.")
-	f.StringVar(&o.serverCertSan, "server-cert-san", "", "server-cert-san for installing first master node.")
-	f.StringVar(&o.unit, "unit-time", "d", "unit of time (d/m), For testing.")
-	f.StringVar(&o.kubeconfig, "kubeconfig", "", "Specifies kube config file.")
+	f.BoolVarP(&o.skipConfirm, confirmFlagName, "y", false, "Answer yes for any confirmations.")
+	f.StringVarP(&o.certType, typeFlagName, "t", "internal", typeFlagDesc)
+	f.StringVarP(&o.username, usernameFlagName, "u", "root", "VM user")
+	f.StringVarP(&o.password, passwordFlagName, "p", "", passwordFlagDesc)
+	f.StringVar(&o.sshKey, sshKeyFlagName, "", "SSH key file path.")
+	f.IntVarP(&o.validity, validityFlagName, "V", 365, validityFlagDesc)
+	f.BoolVar(&o.apply, applyFlagName, false, "Apply certificates.")
+	f.BoolVar(&o.renew, renewFlagName, false, "Renew certificates.")
+	f.StringVar(&o.cert, certFlagName, "", "Certificate file path.")
+	f.StringVar(&o.key, keyFlagName, "", "Private key file path.")
+	f.StringVar(&o.caCert, caCertFlagName, "", "CA certificate file path.")
+	f.StringVar(&o.caKey, caKeyFlagName, "", "CA key file path.")
+	f.StringVar(&o.nodeType, nodeTypeFlagName, "", nodeTypeFlagDesc)
+	f.StringVarP(&o.outputDir, outputFlagName, "d", "", "The output directory of certificates.")
+	f.StringVar(&o.host, hostFlagName, "", "The host FQDN or IP address.")
+	f.StringVarP(&o.namespace, namespaceFlagName, "n", "", "Specifies the namespace.")
+	f.StringVar(&o.cdfNamespace, cdfnsFlagName, "", "Specifies the CDF service namespace.")
+	f.BoolVar(&o.local, localFlagName, false, "Renew local internal certificates.")
+	f.BoolVar(&o.remote, remoteFlagName, false, "Apply certificates in ssh mode.")
+	f.BoolVar(&o.install, installFlagName, false, "Install first master node.")
+	f.StringVar(&o.serverCertSan, serverCertSanFlagName, "", "server-cert-san for installing first master node.")
+	f.StringVar(&o.unit, unitFlagName, "d", "unit of time (d/m), For testing.")
+	f.StringVar(&o.kubeconfig, kubeconfigFlagName, "", "Specifies kube config file.")
 
-	_ = f.MarkHidden("remote")
-	_ = f.MarkHidden("install")
-	_ = f.MarkHidden("server-cert-san")
-	_ = f.MarkHidden("unit-time")
-	_ = f.MarkHidden("server-cert-san")
+	_ = f.MarkHidden(remoteFlagName)
+	_ = f.MarkHidden(installFlagName)
+	_ = f.MarkHidden(serverCertSanFlagName)
+	_ = f.MarkHidden(unitFlagName)
 
-	_ = f.MarkDeprecated("renew", "'renew' flag will be deprecated in a future version.")
-	_ = f.MarkDeprecated("apply", "'apply' flag will be deprecated in a future version.")
-	_ = f.MarkDeprecated("install", "'install' flag will be deprecated in a future version.")
-}
-
-func combine(cmd *cobra.Command, args []string) string {
-	buf := new(bytes.Buffer)
-	buf.WriteString(cmd.Name())
-
-	for k := range args {
-		buf.WriteString(" ")
-		buf.WriteString(args[k])
-	}
-	return buf.String()
+	_ = f.MarkDeprecated(renewFlagName, "'renew' flag will be deprecated in a future version.")
+	_ = f.MarkDeprecated(applyFlagName, "'apply' flag will be deprecated in a future version.")
+	_ = f.MarkDeprecated(installFlagName, "'install' flag will be deprecated in a future version.")
 }

@@ -18,12 +18,16 @@ type create struct {
 }
 
 func NewCreate(cfg *Configuration) Interface {
+	g, err := infra.New(cfg.CACert, cfg.CAKey)
+	if err != nil {
+		panic(err)
+	}
 	c := &create{
 		action: &action{
 			name: "create",
 			cfg:  cfg,
 		},
-		generator: infra.New(),
+		generator: g,
 	}
 
 	return c
@@ -58,7 +62,7 @@ func (a *create) Run() error {
 		if v.IsServerCert() {
 			var sanSvcIp string
 			log.Debugf("server cert: %s", v.Name)
-			d, i, s := a.parseSan()
+			d, i, s := parseSan(a.cfg.ServerCertSan)
 			if d != nil {
 				dns = append(dns, d ...)
 			}

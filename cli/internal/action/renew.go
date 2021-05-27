@@ -2,6 +2,8 @@ package action
 
 import (
 	"github.com/pkg/errors"
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
 	"github.com/shipengqi/example.v1/cli/internal/types"
@@ -18,14 +20,27 @@ type renew struct {
 }
 
 func NewRenew(cfg *Configuration) Interface {
-	r := &renew{
-		action: &action{
-			name: "renew",
-			cfg:  cfg,
-		},
+	var (
+		g   certs.Generator
+		err error
+	)
+
+	if cfg.CertType == types.CertTypeExternal {
+		g, err = deployment.New(cfg.Namespace, cfg.Kube, cfg.Vault)
+	} else {
+		g, err = infra.New(cfg.CACert, cfg.CAKey)
+	}
+	if err != nil {
+		panic(err)
 	}
 
-	return r
+	return &renew{
+		action: &action{
+			name: renewFlagName,
+			cfg:  cfg,
+		},
+		generator: g,
+	}
 }
 
 func (a *renew) Name() string {

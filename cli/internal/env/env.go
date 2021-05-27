@@ -28,7 +28,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/shipengqi/example.v1/cli/internal/command"
+	"github.com/shipengqi/example.v1/cli/pkg/command"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 

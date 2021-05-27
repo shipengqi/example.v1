@@ -11,7 +11,7 @@ var remote bool
 
 func newApplyCmd(cfg *action.Configuration) *cobra.Command {
 	c := &cobra.Command{
-		Use:    "apply",
+		Use:    applyFlagName,
 		Short:  "Apply the internal/external certificates in CDF clusters.",
 		PreRun: func(cmd *cobra.Command, args []string) {},
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
@@ -28,8 +28,8 @@ func newApplyCmd(cfg *action.Configuration) *cobra.Command {
 	}
 
 	f := c.Flags()
-	f.BoolVar(&remote, "remote", false, "apply certificates in ssh mode")
-	_ = f.MarkHidden("remote")
+	f.BoolVar(&remote, remoteFlagName, false, "apply certificates in ssh mode")
+	_ = f.MarkHidden(remoteFlagName)
 
 	return c
 }

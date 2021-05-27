@@ -11,7 +11,7 @@ type apply struct {
 
 func NewApply(cfg *Configuration) Interface {
 	return &apply{&action{
-		name: "apply",
+		name: applyFlagName,
 		cfg:  cfg,
 	}}
 }

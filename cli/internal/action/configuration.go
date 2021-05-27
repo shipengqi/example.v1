@@ -19,23 +19,21 @@ const (
 
 type Options struct {
 	CertType      string
+	Namespace     string
 	Username      string
 	Password      string
 	SSHKey        string
 	Cert          string
 	Key           string
 	CACert        string
-	CDFNamespace  string
-	Namespace     string
-	Unit          string
-	KubeConfig    string
 	CAKey         string
+	Unit          string
 	NodeType      string
 	Host          string
 	OutputDir     string
 	ServerCertSan string
 	SkipConfirm   bool
-	Validity        int
+	Validity      int
 }
 
 type Configuration struct {
@@ -82,7 +80,7 @@ func (g *Configuration) Init() error {
 		}
 	}
 
-	g.Kube = &kube.Config{Kubeconfig: g.Options.KubeConfig}
+	g.Kube = &kube.Config{}
 
 	return nil
 }

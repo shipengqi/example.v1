@@ -7,22 +7,48 @@ import (
 )
 
 type createOptions struct {
-	CAKey          string
-	NodeType       string
-	Host           string
-	KubeApiCertSan string
+	caCert        string
+	caKey         string
+	nodeType      string
+	host          string
+	serverCertSan string
 }
 
 func newCreateCmd(cfg *action.Configuration) *cobra.Command {
+	o := &createOptions{}
 	c := &cobra.Command{
 		Use:   "create",
 		Short: "Create the internal/external certificates in CDF clusters.",
-		PreRun: func(cmd *cobra.Command, args []string) {},
+		PreRun: func(cmd *cobra.Command, args []string) {
+			f := cmd.Flags()
+			if f.Changed(caCertFlagName) {
+				cfg.CACert = o.caCert
+			}
+			if f.Changed(caKeyFlagName) {
+				cfg.CAKey = o.caKey
+			}
+			if f.Changed(nodeTypeFlagName) {
+				cfg.NodeType = o.nodeType
+			}
+			if f.Changed(hostFlagName) {
+				cfg.Host = o.host
+			}
+			if f.Changed(serverCertSanFlagName) {
+				cfg.ServerCertSan = o.serverCertSan
+			}
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := action.NewCreate(cfg)
 			return c.Execute()
 		},
 	}
+
+	f := c.Flags()
+	f.StringVar(&o.caCert, caCertFlagName, "", "CA certificate file path.")
+	f.StringVar(&o.caKey, caKeyFlagName, "", "CA key file path.")
+	f.StringVar(&o.nodeType, nodeTypeFlagName, "", nodeTypeFlagDesc)
+	f.StringVar(&o.host, hostFlagName, "", "The host FQDN or IP address.")
+	f.StringVar(&o.serverCertSan, serverCertSanFlagName, "", "server-cert-san for installing first master node.")
 
 	return c
 }

@@ -15,11 +15,23 @@ import (
 type generator struct {
 	namespace string
 	vault     *vault.Client
-	kube      kube.Client
+	kube      *kube.Client
 }
 
-func New() certs.Generator {
-	return &generator{}
+func New(ns string, k *kube.Config, v *vault.Config) (certs.Generator, error) {
+	kclient, err := kube.New(k)
+	if err != nil {
+		return nil, err
+	}
+	vclient, err := vault.New(v)
+	if err != nil {
+		return nil, err
+	}
+	return &generator{
+		namespace: ns,
+		vault:     vclient,
+		kube:      kclient,
+	}, nil
 }
 
 func (g *generator) Gen(c *certs.Certificate) (cert, key []byte, err error) {

@@ -29,9 +29,11 @@ type renewOptions struct {
 
 func newRenewCmd(cfg *action.Configuration) *cobra.Command {
 	c := &cobra.Command{
-		Use:   "renew",
+		Use:   renewFlagName,
 		Short: "Renew the internal/external certificates in CDF clusters.",
-		PreRun: func(cmd *cobra.Command, args []string) {},
+		PreRun: func(cmd *cobra.Command, args []string) {
+
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			r := action.NewRenew(cfg)
 			return r.Execute()

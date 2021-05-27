@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/shipengqi/example.v1/cli/internal/generator/keys/rsa"
 	"io/ioutil"
 	"path"
 
@@ -13,10 +14,20 @@ import (
 
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
 	"github.com/shipengqi/example.v1/cli/internal/generator/keys"
+	"github.com/shipengqi/example.v1/cli/internal/utils"
 )
 
-func New() certs.Generator {
-	return &generator{}
+func New(cacrt, cakey string) (certs.Generator, error) {
+	ca, err := utils.ParseCrt(cacrt)
+	if err != nil {
+		return nil, err
+	}
+	key, err := utils.ParseKey(cakey)
+	return &generator{
+		rootCA: ca,
+		rootKey: key,
+		keys: rsa.New(),
+	}, nil
 }
 
 type generator struct {

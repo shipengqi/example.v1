@@ -52,8 +52,10 @@ func (a *action) Execute() error {
 	return a.PostRun()
 }
 
-func (a *action) parseSan() ([]string, []net.IP, string) {
-	san := a.cfg.ServerCertSan
+// ----------------------------------------------------------------------------
+// Helpers...
+
+func parseSan(san string) ([]string, []net.IP, string) {
 	if len(san) == 0 {
 		return nil, nil, ""
 	}
