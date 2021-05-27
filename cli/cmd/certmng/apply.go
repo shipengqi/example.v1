@@ -13,7 +13,6 @@ func newApplyCmd(cfg *action.Configuration) *cobra.Command {
 	c := &cobra.Command{
 		Use:    applyFlagName,
 		Short:  "Apply the internal/external certificates in CDF clusters.",
-		PreRun: func(cmd *cobra.Command, args []string) {},
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
 			if remote {
 				return

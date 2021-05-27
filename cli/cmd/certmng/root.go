@@ -32,7 +32,9 @@ const (
 	cdfnsFlagName         = "cdf-namespace"
 	localFlagName         = "local"
 	kubeconfigFlagName    = "kubeconfig"
+	secretFlagName        = "secret"
 )
+
 const (
 	rootDesc = `To securely deploy the kubernetes, we recommend that you use the TLS/SSL communication protocol.
 We uses internal certificates and external certificates to secure its deployment.`
@@ -124,12 +126,12 @@ func New(cfg *action.Configuration) *cobra.Command {
 
 	cobra.EnableCommandSorting = false
 
-	addFlags(c.Flags(), o)
+	addRootFlags(c.Flags(), o)
 
 	return c
 }
 
-func addFlags(f *pflag.FlagSet, o *rootOptions) {
+func addRootFlags(f *pflag.FlagSet, o *rootOptions) {
 	f.BoolVarP(&o.skipConfirm, confirmFlagName, "y", false, "Answer yes for any confirmations.")
 	f.StringVarP(&o.certType, typeFlagName, "t", "internal", typeFlagDesc)
 	f.StringVarP(&o.username, usernameFlagName, "u", "root", "VM user")

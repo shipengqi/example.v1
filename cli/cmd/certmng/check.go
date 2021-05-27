@@ -13,15 +13,20 @@ type checkOptions struct {
 }
 
 func newCheckCmd(cfg *action.Configuration) *cobra.Command {
+	o := &checkOptions{}
 	c := &cobra.Command{
 		Use:    "check",
 		Short:  "Check the internal/external certificates in CDF clusters.",
-		PreRun: func(cmd *cobra.Command, args []string) {},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := action.NewCheck(cfg)
 			return c.Execute()
 		},
 	}
+
+	f := c.Flags()
+	f.StringVar(&o.cert, certFlagName, "", "Certificate file path.")
+	f.StringVar(&o.secret, secretFlagName, "", "Specifies the secret name.")
+	f.StringVarP(&o.namespace, namespaceFlagName, "n", "", "Specifies the namespace.")
 
 	return c
 }
