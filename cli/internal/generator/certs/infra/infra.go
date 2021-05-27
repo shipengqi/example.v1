@@ -5,8 +5,11 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
-	"github.com/pkg/errors"
+	"fmt"
 	"io/ioutil"
+	"path"
+
+	"github.com/pkg/errors"
 
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
 	"github.com/shipengqi/example.v1/cli/internal/generator/keys"
@@ -42,10 +45,18 @@ func (g *generator) Gen(c *certs.Certificate) (cert, key []byte, err error) {
 	return pem.EncodeToMemory(objPem), g.keys.Encode(privk), nil
 }
 
-func (g *generator) Dump(certName, keyName, secret string, cert, key []byte) (err error) {
-	err = ioutil.WriteFile(certName, cert, 0400)
+func (g *generator) GenAndDump(c *certs.Certificate, output string) (err error) {
+	cert, key, err := g.Gen(c)
 	if err != nil {
-		return errors.Wrapf(err, "write %s", certName)
+		return err
+	}
+
+	crtName := path.Join(output, fmt.Sprintf("%s-%s.crt", c.CN, c.Name))
+	keyName := path.Join(output, fmt.Sprintf("%s-%s.key", c.CN, c.Name))
+
+	err = ioutil.WriteFile(crtName, cert, 0400)
+	if err != nil {
+		return errors.Wrapf(err, "write %s", crtName)
 	}
 	err = ioutil.WriteFile(keyName, key, 0400)
 	if err != nil {

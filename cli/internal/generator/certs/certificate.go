@@ -3,17 +3,21 @@ package certs
 import (
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"github.com/shipengqi/example.v1/cli/internal/types"
 	"math/big"
 	rd "math/rand"
 	"net"
 	"time"
 )
 
+const BaseDuration = 24 * 60 * 60 * 1000 * 1000 * 1000
+
 type Certificate struct {
+	Name          string
 	CN            string
 	UintTime      string
 	IsCA          bool
-	Period        int
+	Validity      int
 	KeyUsage      x509.KeyUsage
 	Organizations []string
 	DNSNames      []string
@@ -26,7 +30,7 @@ func (c *Certificate) Gen() *x509.Certificate {
 		CommonName: c.CN,
 	}
 	subject.Organization = c.Organizations
-	duration := time.Duration(c.Period)
+	duration := time.Duration(c.validity())
 	obj := &x509.Certificate{
 		SerialNumber:          big.NewInt(rd.Int63()),
 		Subject:               subject,
@@ -47,4 +51,12 @@ func (c *Certificate) Gen() *x509.Certificate {
 	}
 
 	return obj
+}
+
+func (c *Certificate) validity() int {
+	d := BaseDuration
+	if c.UintTime == types.CertUnitTimeMinute {
+		d = 60 * 1000 * 1000 * 1000
+	}
+	return c.Validity * d
 }

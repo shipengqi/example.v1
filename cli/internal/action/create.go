@@ -1,10 +1,11 @@
 package action
 
 import (
+	"net"
+
 	"github.com/pkg/errors"
 
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
-	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
@@ -13,8 +14,7 @@ import (
 type create struct {
 	*action
 
-	infra  certs.Generator
-	deploy certs.Generator
+	generator certs.Generator
 }
 
 func NewCreate(cfg *Configuration) Interface {
@@ -23,8 +23,7 @@ func NewCreate(cfg *Configuration) Interface {
 			name: "create",
 			cfg:  cfg,
 		},
-		infra:  infra.New(),
-		deploy: deployment.New(),
+		generator: infra.New(),
 	}
 
 	return c
@@ -36,14 +35,46 @@ func (a *create) Name() string {
 
 func (a *create) Run() error {
 	log.Debug("====================    CREATE CRT    ====================")
+	var isMater bool
+
 	switch a.cfg.NodeType {
 	case types.NodeTypeControlPlane:
+		isMater = true
 		break
 	case types.NodeTypeWorker:
+		isMater = false
 		break
 	default:
 		return errors.Errorf("unknown node type: %s", a.cfg.NodeType)
 	}
+
+	for _, v := range CertificateSet {
+		if !v.CanDep(isMater) {
+			continue
+		}
+
+		dns := make([]string, 0)
+		ips := make([]net.IP, 0)
+		if v.IsServerCert() {
+			var sanSvcIp string
+			log.Debugf("server cert: %s", v.Name)
+			d, i, s := a.parseSan()
+			if d != nil {
+				dns = append(dns, d ...)
+			}
+			if i != nil {
+				ips = append(ips, i ...)
+			}
+			if len(s) > 0 {
+				sanSvcIp = s
+			}
+			v.SetIPs(ips, sanSvcIp)
+			v.SetDNS(dns)
+		}
+		v.SetCN("address")
+		return a.generator.GenAndDump(v.Certificate, "")
+	}
+
 	return nil
 }
 

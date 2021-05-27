@@ -35,7 +35,7 @@ type Options struct {
 	OutputDir     string
 	ServerCertSan string
 	SkipConfirm   bool
-	Period        int
+	Validity        int
 }
 
 type Configuration struct {

@@ -11,6 +11,10 @@ import (
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
+const (
+	DockerSupportVersion = 202108
+)
+
 func RestartKubeService(namespace string, version int) error {
 	err := RestartNativeService("kubelet")
 	if err != nil {
@@ -68,7 +72,7 @@ func RestartContainers(namespace string, version int) error {
 	var restartCMD string
 	restartCMD = fmt.Sprintf("docker restart $(docker ps | grep %s | " +
 		"sed '/\\/pause/d' | awk '{print $1}')", namespace)
-	if version > 202108 {
+	if version > DockerSupportVersion {
 		restartCMD = fmt.Sprintf("crictl stop (crictl ps --label io.kubernetes.pod.namespace=%s | " +
 			"grep '^[^CONTAINER]' | sed '/\\/pause/d' | awk '{print $1}')", namespace)
 	}

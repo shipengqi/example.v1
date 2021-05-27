@@ -4,8 +4,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
-	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
-	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/prompt"
@@ -16,8 +14,7 @@ var DropError = errors.New("Exit")
 type renew struct {
 	*action
 
-	infra  certs.Generator
-	deploy certs.Generator
+	generator certs.Generator
 }
 
 func NewRenew(cfg *Configuration) Interface {
@@ -26,8 +23,6 @@ func NewRenew(cfg *Configuration) Interface {
 			name: "renew",
 			cfg:  cfg,
 		},
-		infra:  infra.New(),
-		deploy: deployment.New(),
 	}
 
 	return r
@@ -59,14 +54,20 @@ func (a *renew) Run() error {
 	log.Debug("====================    RENEW CRT    ====================")
 	switch a.cfg.CertType {
 	case types.CertTypeInternal:
-		break
+		return a.generator.GenAndDump(&certs.Certificate{
+			CN:       a.cfg.Host,
+			UintTime: a.cfg.Unit,
+			Validity: a.cfg.Validity,
+		}, "")
 	case types.CertTypeExternal:
-		break
+		return a.generator.GenAndDump(&certs.Certificate{
+			CN:       a.cfg.Host,
+			UintTime: a.cfg.Unit,
+			Validity: a.cfg.Validity,
+		}, "")
 	default:
 		return errors.Errorf("unknown cert type: %s", a.cfg.CertType)
 	}
-
-	return nil
 }
 
 func (a *renew) PostRun() error {

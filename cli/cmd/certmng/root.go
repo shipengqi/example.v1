@@ -89,7 +89,7 @@ func New(cfg *action.Configuration) *cobra.Command {
 				return nil
 			}
 
-			log.Infof("Matched action flag: %s", c.Name())
+			log.Infof("Matched action: %s", c.Name())
 			return c.Execute()
 		},
 	}

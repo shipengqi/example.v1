@@ -23,9 +23,9 @@ func New() certs.Generator {
 }
 
 func (g *generator) Gen(c *certs.Certificate) (cert, key []byte, err error) {
-	ttl := fmt.Sprintf("%dh", c.Period*24)
+	ttl := fmt.Sprintf("%dh", c.Validity*24)
 	if c.UintTime == types.CertUnitTimeMinute {
-		ttl = fmt.Sprintf("%dm", c.Period)
+		ttl = fmt.Sprintf("%dm", c.Validity)
 	}
 
 	log.Debugf("generate external certificates for host: %s", c.CN)
@@ -38,12 +38,16 @@ func (g *generator) Gen(c *certs.Certificate) (cert, key []byte, err error) {
 	return
 }
 
-func (g *generator) Dump(certName, keyName, secret string, cert, key []byte) error {
+func (g *generator) GenAndDump(c *certs.Certificate, secret string) (err error) {
+	cert, key, err := g.Gen(c)
+	if err != nil {
+		return err
+	}
 	data := make(map[string][]byte)
-	data[certName] = cert
-	data[keyName] = key
+	data[c.Name+".crt"] = cert
+	data[c.Name+".key"] = key
 
-	_, err := g.kube.ApplySecretBytes(g.namespace, secret, data)
+	_, err = g.kube.ApplySecretBytes(g.namespace, secret, data)
 	if err != nil {
 		return err
 	}
