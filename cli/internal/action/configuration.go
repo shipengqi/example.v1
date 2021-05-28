@@ -3,9 +3,11 @@ package action
 import (
 	"fmt"
 	"os"
+	"path"
 	"reflect"
 
 	"github.com/pkg/errors"
+	"github.com/shipengqi/example.v1/cli/internal/types"
 
 	"github.com/shipengqi/example.v1/cli/internal/env"
 	"github.com/shipengqi/example.v1/cli/pkg/kube"
@@ -14,7 +16,8 @@ import (
 )
 
 const (
-	DefaultVaultAddr = "https://127.0.0.1:8200"
+	DefaultVaultAddr     = "https://127.0.0.1:8200"
+	DefaultIngressSecret = "nginx-default-secret"
 )
 
 type Options struct {
@@ -32,7 +35,10 @@ type Options struct {
 	Host          string
 	OutputDir     string
 	ServerCertSan string
+	Secret        string
 	SkipConfirm   bool
+	Local         bool
+	Remote        bool
 	Validity      int
 }
 
@@ -47,7 +53,9 @@ type Configuration struct {
 
 func NewConfiguration() *Configuration {
 	return &Configuration{
-		Options: &Options{},
+		Options: &Options{
+			CertType: types.CertTypeInternal,
+		},
 		Env:     nil,
 		Log:     nil,
 		Kube:    nil,
@@ -78,9 +86,13 @@ func (g *Configuration) Init() error {
 		if hostname == "" {
 			return errors.New("get hostname")
 		}
+		g.Vault.Address = fmt.Sprintf("https://%s:8200", hostname)
 	}
 
 	g.Kube = &kube.Config{}
+	g.CACert = path.Join(g.Env.SSLPath, "ca.crt")
+	g.CAKey = path.Join(g.Env.SSLPath, "ca.key")
+	g.Secret = DefaultIngressSecret
 
 	return nil
 }

@@ -26,17 +26,18 @@ func (a *action) Name() string {
 }
 
 func (a *action) PreRun() error {
-	log.Debugf("====================    %s PreRun    ====================", strings.ToUpper(a.name))
+	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
+	a.cfg.Debug()
 	return nil
 }
 
 func (a *action) Run() error {
-	log.Debugf("====================   %s Run    ====================", strings.ToUpper(a.name))
+	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
 	return nil
 }
 
 func (a *action) PostRun() error {
-	log.Debugf("====================   %s PostRun    ====================", strings.ToUpper(a.name))
+	log.Debugf("***** %s PostRun *****", strings.ToUpper(a.name))
 	return nil
 }
 

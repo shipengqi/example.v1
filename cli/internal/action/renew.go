@@ -36,7 +36,7 @@ func NewRenew(cfg *Configuration) Interface {
 
 	return &renew{
 		action: &action{
-			name: renewFlagName,
+			name: "renew",
 			cfg:  cfg,
 		},
 		generator: g,
@@ -48,7 +48,9 @@ func (a *renew) Name() string {
 }
 
 func (a *renew) PreRun() error {
-	log.Debug("====================    PRE CHECK    ====================")
+	log.Debug("*****  RENEW PRE RUN  *****")
+	a.cfg.Debug()
+
 	if a.cfg.SkipConfirm {
 		return nil
 	}
@@ -66,7 +68,7 @@ func (a *renew) PreRun() error {
 }
 
 func (a *renew) Run() error {
-	log.Debug("====================    RENEW CRT    ====================")
+	log.Debug("*****  RENEW CRT  *****")
 	switch a.cfg.CertType {
 	case types.CertTypeInternal:
 		return a.generator.GenAndDump(&certs.Certificate{

@@ -25,10 +25,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
-	"github.com/shipengqi/example.v1/cli/pkg/command"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
@@ -67,7 +65,7 @@ func New() (*Settings, error) {
 		RuntimeCDFDataHome: envOr(EnvKeyRuntimeDataHome, _defaultRunTimeDataPath),
 		VaultRole:          envOr(EnvKeyVaultRole, _defaultVaultRole),
 		SSLPath:            "",
-		RunOnMaster:        false,
+		RunOnMaster:        true,
 		RunInPod:           false,
 		Version:            _defaultCDFVersion,
 	}
@@ -79,7 +77,7 @@ func New() (*Settings, error) {
 
 	values, err := retrieveEnv(ITOMCDFEnvFile, EnvKeyK8SHome, EnvKeyCDFNamespace)
 	if err != nil {
-		return nil, err
+		log.Warnf("open %s, %v", ITOMCDFEnvFile, err)
 	}
 	if v, ok := values[EnvKeyCDFNamespace]; ok {
 		log.Debugf("got env: %s, value: %s ", EnvKeyCDFNamespace, v)
@@ -89,26 +87,31 @@ func New() (*Settings, error) {
 		log.Debugf("got env: %s, value: %s ", EnvKeyK8SHome, v)
 		envs.K8SHome = v
 
-		values, err = retrieveEnv(fmt.Sprintf("%s/bin/env.sh", v), EnvKeyRuntimeDataHome)
+		envfile := fmt.Sprintf("%s/bin/env.sh", v)
+		values, err = retrieveEnv(envfile, EnvKeyRuntimeDataHome)
 		if err != nil {
-			return envs, err
+			log.Warnf("open %s, %v", envfile, err)
 		}
 		if dataHome, ok := values[EnvKeyRuntimeDataHome]; ok {
 			log.Debugf("got env: %s, value: %s ", EnvKeyRuntimeDataHome, dataHome)
 			envs.RuntimeCDFDataHome = dataHome
 		}
-		version, _, err := command.Exec(fmt.Sprintf("cat %s/version.txt | awk -F . '{print $1$2}'", envs.K8SHome))
-		if err != nil {
-			return envs, err
-		}
-		vi, err := strconv.Atoi(version)
-		if err == nil {
-			envs.Version = vi
-		}
 	}
 
 	envs.RunOnMaster = onMasterNode(envs.RuntimeCDFDataHome)
 	envs.SSLPath = filepath.Join(envs.K8SHome, "ssl")
+
+	// version, _, err := command.Exec(fmt.Sprintf("cat %s/version.txt | awk -F . '{print $1$2}'", envs.K8SHome))
+	// if err != nil {
+	// 	log.Warnf("open version.txt, %v", err)
+	// 	return envs, err
+	// }
+	// vi, err := strconv.Atoi(strings.TrimSpace(version))
+	// if err != nil {
+	// 	log.Warnf("Atoi version, %v", err)
+	// } else {
+	// 	envs.Version = vi
+	// }
 
 	return envs, nil
 }

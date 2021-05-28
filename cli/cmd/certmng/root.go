@@ -58,33 +58,30 @@ you understand and agree to assume all associated risks and hold Micro Focus har
 )
 
 type rootOptions struct {
-	certType      string
-	username      string
-	password      string
-	sshKey        string
-	cert          string
-	key           string
-	caCert        string
-	cdfNamespace  string
-	namespace     string
-	unit          string
-	kubeconfig    string
-	caKey         string
-	nodeType      string
-	host          string
-	outputDir     string
+	*renewOptions
+
 	serverCertSan string
+	remote        bool
 	install       bool
 	apply         bool
 	renew         bool
-	skipConfirm   bool
-	remote        bool
-	local         bool
-	validity      int
+}
+
+func (o *rootOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
+	o.renewOptions.combine(f, cfg)
+
+	if f.Changed(localFlagName) {
+		cfg.Local = o.local
+	}
+	if f.Changed(serverCertSanFlagName) {
+		cfg.ServerCertSan = o.serverCertSan
+	}
 }
 
 func New(cfg *action.Configuration) *cobra.Command {
-	o := &rootOptions{}
+	o := &rootOptions{
+		renewOptions: &renewOptions{},
+	}
 
 	c := &cobra.Command{
 		Use:     "cert-manager",
@@ -94,6 +91,10 @@ func New(cfg *action.Configuration) *cobra.Command {
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
 			log.Warn("Additional logging details can be found in:")
 			log.Warnf("    %s", log.LogFileName)
+		},
+		PreRun: func(cmd *cobra.Command, args []string) {
+			f := cmd.Flags()
+			o.combine(f, cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var c action.Interface
@@ -107,11 +108,11 @@ func New(cfg *action.Configuration) *cobra.Command {
 			} else if o.apply {
 				c = action.NewApply(cfg)
 			} else {
-				log.Info("No matched action flags")
+				log.Warn("No matched action flags")
 				return nil
 			}
 
-			log.Infof("Matched action: %s", c.Name())
+			log.Debugf("Matched action: %s", c.Name())
 			return c.Execute()
 		},
 	}
@@ -125,6 +126,8 @@ func New(cfg *action.Configuration) *cobra.Command {
 	)
 
 	cobra.EnableCommandSorting = false
+	c.SilenceUsage = true
+	c.SilenceErrors = true
 
 	addRootFlags(c.Flags(), o)
 
@@ -161,7 +164,7 @@ func addRootFlags(f *pflag.FlagSet, o *rootOptions) {
 	_ = f.MarkHidden(serverCertSanFlagName)
 	_ = f.MarkHidden(unitFlagName)
 
-	_ = f.MarkDeprecated(renewFlagName, "'renew' flag will be deprecated in a future version.")
-	_ = f.MarkDeprecated(applyFlagName, "'apply' flag will be deprecated in a future version.")
-	_ = f.MarkDeprecated(installFlagName, "'install' flag will be deprecated in a future version.")
+	_ = f.MarkDeprecated(renewFlagName, "'renew' flag will be removed in a future version.")
+	_ = f.MarkDeprecated(applyFlagName, "'apply' flag will be removed in a future version.")
+	_ = f.MarkDeprecated(installFlagName, "'install' flag will be removed in a future version.")
 }

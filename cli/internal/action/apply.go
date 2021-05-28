@@ -11,7 +11,7 @@ type apply struct {
 
 func NewApply(cfg *Configuration) Interface {
 	return &apply{&action{
-		name: applyFlagName,
+		name: "apply",
 		cfg:  cfg,
 	}}
 }
@@ -21,7 +21,7 @@ func (a *apply) Name() string {
 }
 
 func (a *apply) Run() error {
-	log.Debug("====================    APPLY CRT    ====================")
+	log.Debug("*****  APPLY CRT  *****")
 	return sysc.RestartKubeService(a.cfg.Env.CDFNamespace, a.cfg.Env.Version)
 }
 

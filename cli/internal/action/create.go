@@ -38,7 +38,7 @@ func (a *create) Name() string {
 }
 
 func (a *create) Run() error {
-	log.Debug("====================    CREATE CRT    ====================")
+	log.Debug("*****  CREATE CRT  *****")
 	var isMater bool
 
 	switch a.cfg.NodeType {

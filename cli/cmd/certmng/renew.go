@@ -18,14 +18,77 @@ type renewOptions struct {
 	cdfNamespace string
 	namespace    string
 	unit         string
-	kubeConfig   string
+	kubeconfig   string
 	caKey        string
 	nodeType     string
 	host         string
 	outputDir    string
+	secret       string
 	skipConfirm  bool
 	local        bool
 	validity     int
+}
+
+func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
+	if f.Changed(confirmFlagName) {
+		cfg.SkipConfirm = o.skipConfirm
+	}
+	if f.Changed(typeFlagName) {
+		cfg.CertType = o.certType
+	}
+	if f.Changed(usernameFlagName) {
+		cfg.Username = o.username
+	}
+	if f.Changed(passwordFlagName) {
+		cfg.Password = o.password
+	}
+	if f.Changed(sshKeyFlagName) {
+		cfg.SSHKey = o.sshKey
+	}
+	if f.Changed(validityFlagName) {
+		cfg.Validity = o.validity
+	}
+	if f.Changed(certFlagName) {
+		cfg.Cert = o.cert
+	}
+	if f.Changed(keyFlagName) {
+		cfg.Key = o.key
+	}
+	if f.Changed(caCertFlagName) {
+		cfg.CACert = o.caCert
+	}
+	if f.Changed(caKeyFlagName) {
+		cfg.CAKey = o.caKey
+	}
+	if f.Changed(nodeTypeFlagName) {
+		cfg.NodeType = o.nodeType
+	}
+	if f.Changed(outputFlagName) {
+		cfg.OutputDir = o.outputDir
+	}
+	if f.Changed(hostFlagName) {
+		cfg.Host = o.host
+	}
+	if f.Changed(namespaceFlagName) {
+		cfg.Namespace = o.namespace
+	}
+	if f.Changed(localFlagName) {
+		cfg.Local = o.local
+	}
+	if f.Changed(unitFlagName) {
+		cfg.Unit = o.unit
+	}
+
+	if f.Changed(cdfnsFlagName) {
+		cfg.Env.CDFNamespace = o.cdfNamespace
+	}
+	if f.Changed(kubeconfigFlagName) {
+		cfg.Kube.Kubeconfig = o.kubeconfig
+	}
+
+	if len(cfg.Namespace) == 0 {
+		cfg.Namespace = cfg.Env.CDFNamespace
+	}
 }
 
 func newRenewCmd(cfg *action.Configuration) *cobra.Command {
@@ -35,21 +98,7 @@ func newRenewCmd(cfg *action.Configuration) *cobra.Command {
 		Short: "Renew the internal/external certificates in CDF clusters.",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			f := cmd.Flags()
-			if f.Changed(caCertFlagName) {
-				cfg.CACert = o.caCert
-			}
-			if f.Changed(caKeyFlagName) {
-				cfg.CAKey = o.caKey
-			}
-			if f.Changed(nodeTypeFlagName) {
-				cfg.NodeType = o.nodeType
-			}
-			if f.Changed(hostFlagName) {
-				cfg.Host = o.host
-			}
-			// if f.Changed(serverCertSanFlagName) {
-			// 	cfg.ServerCertSan = o.serverCertSan
-			// }
+			o.combine(f, cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			r := action.NewRenew(cfg)
@@ -80,6 +129,7 @@ func addRenewFlags(f *pflag.FlagSet, o *renewOptions) {
 	f.StringVar(&o.cdfNamespace, cdfnsFlagName, "", "Specifies the CDF service namespace.")
 	f.BoolVar(&o.local, localFlagName, false, "Renew local internal certificates.")
 	f.StringVar(&o.unit, unitFlagName, "d", "unit of time (d/m), For testing.")
+	f.StringVar(&o.kubeconfig, kubeconfigFlagName, "", "Specifies kube config file.")
 
 	_ = f.MarkHidden(unitFlagName)
 }

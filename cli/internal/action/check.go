@@ -1,9 +1,5 @@
 package action
 
-import (
-	"github.com/shipengqi/example.v1/cli/pkg/log"
-)
-
 type check struct {
 	*action
 }
@@ -17,11 +13,6 @@ func NewCheck(cfg *Configuration) Interface {
 
 func (a *check) Name() string {
 	return a.name
-}
-
-func (a *check) PreRun() error {
-	log.Info("check certificates.")
-	return nil
 }
 
 func (a *check) Run() error {
