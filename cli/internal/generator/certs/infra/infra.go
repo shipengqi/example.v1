@@ -7,6 +7,8 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/shipengqi/example.v1/cli/internal/generator/keys/rsa"
+	"github.com/shipengqi/example.v1/cli/pkg/log"
+
 	"io/ioutil"
 	"path"
 
@@ -65,10 +67,12 @@ func (g *generator) GenAndDump(c *certs.Certificate, output string) (err error) 
 	crtName := path.Join(output, fmt.Sprintf("%s-%s.crt", c.CN, c.Name))
 	keyName := path.Join(output, fmt.Sprintf("%s-%s.key", c.CN, c.Name))
 
+	log.Debugf("dumping crt: %s", crtName)
 	err = ioutil.WriteFile(crtName, cert, 0400)
 	if err != nil {
 		return errors.Wrapf(err, "write %s", crtName)
 	}
+	log.Debugf("dumping key: %s", keyName)
 	err = ioutil.WriteFile(keyName, key, 0400)
 	if err != nil {
 		return errors.Wrapf(err, "write %s", keyName)

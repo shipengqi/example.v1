@@ -92,6 +92,7 @@ func (g *Configuration) Init() error {
 	g.Kube = &kube.Config{}
 	g.CACert = path.Join(g.Env.SSLPath, "ca.crt")
 	g.CAKey = path.Join(g.Env.SSLPath, "ca.key")
+	g.OutputDir = path.Join(g.Env.SSLPath, "new-certs")
 	g.Secret = DefaultIngressSecret
 
 	return nil
@@ -130,7 +131,7 @@ func (g *Configuration) printWithLevel(level string) {
 	}
 	vaultv := reflect.ValueOf(*g.Vault)
 	vaultt := reflect.TypeOf(*g.Vault)
-	printf("Kube: ")
+	printf("Vault: ")
 	for num := 0; num < vaultv.NumField(); num++ {
 		printf("  %s: %v", vaultt.Field(num).Name, vaultv.Field(num))
 	}

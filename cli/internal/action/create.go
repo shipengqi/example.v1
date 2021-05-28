@@ -2,6 +2,7 @@ package action
 
 import (
 	"net"
+	"os"
 
 	"github.com/pkg/errors"
 
@@ -18,6 +19,12 @@ type create struct {
 }
 
 func NewCreate(cfg *Configuration) Interface {
+	// create new-certs folder for internal cert
+	err := os.MkdirAll(cfg.OutputDir, 0744)
+	if err != nil {
+		panic(err)
+	}
+
 	g, err := infra.New(cfg.CACert, cfg.CAKey)
 	if err != nil {
 		panic(err)

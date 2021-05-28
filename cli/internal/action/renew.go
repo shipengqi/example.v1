@@ -1,6 +1,8 @@
 package action
 
 import (
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
@@ -28,6 +30,12 @@ func NewRenew(cfg *Configuration) Interface {
 	if cfg.CertType == types.CertTypeExternal {
 		g, err = deployment.New(cfg.Namespace, cfg.Kube, cfg.Vault)
 	} else {
+		// create new-certs folder for internal cert
+		err = os.MkdirAll(cfg.OutputDir, 0744)
+		if err != nil {
+			panic(err)
+		}
+
 		g, err = infra.New(cfg.CACert, cfg.CAKey)
 	}
 	if err != nil {
@@ -71,17 +79,19 @@ func (a *renew) Run() error {
 	log.Debug("*****  RENEW CRT  *****")
 	switch a.cfg.CertType {
 	case types.CertTypeInternal:
+		log.Debugf("cert type: %s", types.CertTypeInternal)
 		return a.generator.GenAndDump(&certs.Certificate{
 			CN:       a.cfg.Host,
 			UintTime: a.cfg.Unit,
 			Validity: a.cfg.Validity,
-		}, "")
+		}, a.cfg.OutputDir)
 	case types.CertTypeExternal:
+		log.Debugf("cert type: %s", types.CertTypeExternal)
 		return a.generator.GenAndDump(&certs.Certificate{
 			CN:       a.cfg.Host,
 			UintTime: a.cfg.Unit,
 			Validity: a.cfg.Validity,
-		}, "")
+		}, a.cfg.OutputDir)
 	default:
 		return errors.Errorf("unknown cert type: %s", a.cfg.CertType)
 	}

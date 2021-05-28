@@ -42,6 +42,7 @@ func main() {
 		}
 
 		if err == action.DropError {
+			log.Warnf("%s.Execute(), exited.", c.Name())
 			os.Exit(ExitCodeOk)
 		}
 
