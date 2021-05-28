@@ -19,12 +19,6 @@ type create struct {
 }
 
 func NewCreate(cfg *Configuration) Interface {
-	// create new-certs folder for internal cert
-	err := os.MkdirAll(cfg.OutputDir, 0744)
-	if err != nil {
-		panic(err)
-	}
-
 	g, err := infra.New(cfg.CACert, cfg.CAKey)
 	if err != nil {
 		panic(err)
@@ -87,6 +81,14 @@ func (a *create) Run() error {
 	}
 
 	return nil
+}
+
+func (a *create) PreRun() error {
+	log.Debug("*****  CREATE PRE RUN  *****")
+	a.cfg.Debug()
+
+	// create new-certs folder for internal cert
+	return os.MkdirAll(a.cfg.OutputDir, 0744)
 }
 
 func (a *create) PostRun() error {

@@ -4,10 +4,10 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
-	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
+	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/prompt"
@@ -30,12 +30,6 @@ func NewRenew(cfg *Configuration) Interface {
 	if cfg.CertType == types.CertTypeExternal {
 		g, err = deployment.New(cfg.Namespace, cfg.Kube, cfg.Vault)
 	} else {
-		// create new-certs folder for internal cert
-		err = os.MkdirAll(cfg.OutputDir, 0744)
-		if err != nil {
-			panic(err)
-		}
-
 		g, err = infra.New(cfg.CACert, cfg.CAKey)
 	}
 	if err != nil {
@@ -58,6 +52,12 @@ func (a *renew) Name() string {
 func (a *renew) PreRun() error {
 	log.Debug("*****  RENEW PRE RUN  *****")
 	a.cfg.Debug()
+
+	// create new-certs folder for internal cert
+	err := os.MkdirAll(a.cfg.OutputDir, 0744)
+	if err != nil {
+		return err
+	}
 
 	if a.cfg.SkipConfirm {
 		return nil

@@ -31,11 +31,7 @@ func (a *apply) PostRun() error {
 }
 
 func (a *apply) Execute() error {
-	err := a.PreRun()
-	if err != nil {
-		return err
-	}
-	err = a.Run()
+	err := a.Run()
 	if err != nil {
 		log.Warnf("Make sure that you have run the '%s/scripts/renewCert apply' "+
 			"on other master nodes.", a.cfg.Env.K8SHome)

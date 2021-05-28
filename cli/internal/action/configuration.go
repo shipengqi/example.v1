@@ -7,9 +7,9 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	"github.com/shipengqi/example.v1/cli/internal/types"
 
 	"github.com/shipengqi/example.v1/cli/internal/env"
+	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/vault"

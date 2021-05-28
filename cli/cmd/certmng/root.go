@@ -40,7 +40,7 @@ const (
 We uses internal certificates and external certificates to secure its deployment.`
 	passwordFlagDesc = `VM password (By providing the password with this option, you are disabling or bypassing 
 security features, thereby exposing the system to increased security risks. By using this option, 
-you understand and agree to assume all associated risks and hold Micro Focus harmless for the same.`
+you understand and agree to assume all associated risks and hold Micro Focus harmless for the same.)`
 	nodeTypeFlagDesc = "Node type (controlplane/worker) of the host which certificates are generated for."
 	typeFlagDesc     = "Specifies the type (internal/external) of the server certificates."
 	validityFlagDesc = "Specifies the validity period (days) of server certificate."

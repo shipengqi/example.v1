@@ -24,11 +24,7 @@ func (a *check) PostRun() error {
 }
 
 func (a *check) Execute() error {
-	err := a.PreRun()
-	if err != nil {
-		return err
-	}
-	err = a.Run()
+	err := a.Run()
 	if err != nil {
 		return err
 	}
