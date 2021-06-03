@@ -29,8 +29,8 @@ func CheckCrt(certPath string) (int, error) {
 	return int(available), nil
 }
 
-func CheckCrtSecret(certPath string) (int, error) {
-	cert, err := ParseCrt(certPath)
+func CheckCrtString(certPath string) (int, error) {
+	cert, err := ParseCrtString(certPath)
 	if err != nil {
 		return -1, err
 	}

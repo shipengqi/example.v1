@@ -52,4 +52,3 @@ Golang examples.
 - map
 - grpc-gateway
 - https://github.com/hyper0x/Golang_Puzzlers
-- ???Viper

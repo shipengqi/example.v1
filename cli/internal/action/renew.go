@@ -1,6 +1,7 @@
 package action
 
 import (
+	"github.com/shipengqi/example.v1/cli/internal/utils"
 	"os"
 
 	"github.com/pkg/errors"
@@ -19,6 +20,7 @@ type renew struct {
 	*action
 
 	generator certs.Generator
+	expired   bool
 }
 
 func NewRenew(cfg *Configuration) Interface {
@@ -59,6 +61,18 @@ func (a *renew) PreRun() error {
 		return err
 	}
 
+	// check cert validity
+	available, err := utils.CheckCrt(a.cfg.CACert)
+	if err != nil {
+		return err
+	}
+	if available <= 0 {
+		log.Infof("The certificate: %s has already expired.", a.cfg.Cert)
+	} else {
+		log.Infof("The certificate: %s will expire in %d hour(s).", a.cfg.Cert, available)
+	}
+
+	// confirm
 	if a.cfg.SkipConfirm {
 		return nil
 	}
@@ -112,4 +126,12 @@ func (a *renew) Execute() error {
 		return err
 	}
 	return a.PostRun()
+}
+
+func (a *renew) renewExternal() error {
+	return nil
+}
+
+func (a *renew) renewInternal() error {
+	return nil
 }
