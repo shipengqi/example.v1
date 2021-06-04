@@ -62,10 +62,11 @@ func (a *renew) PreRun() error {
 	}
 
 	// check cert validity
-	available, err := utils.CheckCrt(a.cfg.CACert)
+	crt, err := utils.ParseCrt(a.cfg.Cert)
 	if err != nil {
 		return err
 	}
+	available := utils.CheckCrtValidity(crt)
 	if available <= 0 {
 		log.Infof("The certificate: %s has already expired.", a.cfg.Cert)
 	} else {

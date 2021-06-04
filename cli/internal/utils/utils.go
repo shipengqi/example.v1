@@ -16,30 +16,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-func CheckCrt(certPath string) (int, error) {
-	cert, err := ParseCrt(certPath)
-	if err != nil {
-		return -1, err
-	}
+func CheckCrtValidity(cert *x509.Certificate) int {
 	available := cert.NotAfter.Sub(time.Now()).Hours()
 	if available <= 0 {
-		return -1, nil
+		return -1
 	}
 
-	return int(available), nil
+	return int(available)
 }
 
-func CheckCrtString(certPath string) (int, error) {
-	cert, err := ParseCrtString(certPath)
-	if err != nil {
-		return -1, err
-	}
+func CheckCrtStringValidity(cert *x509.Certificate) int {
 	available := cert.NotAfter.Sub(time.Now()).Hours()
 	if available <= 0 {
-		return -1, nil
+		return -1
 	}
 
-	return int(available), nil
+	return int(available)
 }
 
 func ParseCrt(certPath string) (*x509.Certificate, error) {

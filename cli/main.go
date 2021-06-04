@@ -34,20 +34,22 @@ func main() {
 		}
 	})
 
+	code := ExitCodeOk
 	err := c.Execute()
 	if err != nil {
 		if err == terminal.InterruptErr {
 			log.Warnf("%s.Execute(), interrupted.", c.Name())
-			os.Exit(ExitCodeOk)
-		}
-
-		if err == action.DropError {
+		} else if err == action.DropError {
 			log.Warnf("%s.Execute(), exited.", c.Name())
-			os.Exit(ExitCodeOk)
+		} else {
+			log.Errorf("%s.Execute(): %v", c.Name(), err)
+			code = ExitCodeError
 		}
-
-		log.Errorf("cmd.Execute(): %v", err)
-		os.Exit(ExitCodeError)
 	}
-	os.Exit(ExitCodeOk)
+	if cfg.Remote {
+		os.Exit(code)
+	}
+	log.Warn("Additional logging details can be found in:")
+	log.Warnf("    %s", log.LogFileName)
+	os.Exit(code)
 }

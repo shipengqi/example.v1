@@ -73,8 +73,8 @@ func RestartContainers(namespace string, version int) error {
 	restartCMD = fmt.Sprintf("docker restart $(docker ps | grep %s | " +
 		"sed '/\\/pause/d' | awk '{print $1}')", namespace)
 	if version > DockerSupportVersion {
-		restartCMD = fmt.Sprintf("crictl stop (crictl ps --label io.kubernetes.pod.namespace=%s | " +
-			"grep '^[^CONTAINER]' | sed '/\\/pause/d' | awk '{print $1}')", namespace)
+		restartCMD = fmt.Sprintf("crictl stop $(crictl ps --label io.kubernetes.pod.namespace=%s | " +
+			"grep '^[^CONTAINER]' | awk '{print $1}')", namespace)
 	}
 
 	log.Debugf("exec: %s", restartCMD)
