@@ -5,6 +5,10 @@ import (
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
+const (
+	NamespaceKubeSystem = "kube-system"
+)
+
 type apply struct {
 	*action
 }
@@ -22,7 +26,7 @@ func (a *apply) Name() string {
 
 func (a *apply) Run() error {
 	log.Debug("*****  APPLY CRT  *****")
-	return sysc.RestartKubeService(a.cfg.Env.CDFNamespace, a.cfg.Env.Version)
+	return sysc.RestartKubeService(NamespaceKubeSystem, a.cfg.Env.Version)
 }
 
 func (a *apply) PostRun() error {
@@ -31,6 +35,7 @@ func (a *apply) PostRun() error {
 }
 
 func (a *apply) Execute() error {
+	_ = a.PreRun()
 	err := a.Run()
 	if err != nil {
 		log.Warnf("Make sure that you have run the '%s/scripts/renewCert apply' "+

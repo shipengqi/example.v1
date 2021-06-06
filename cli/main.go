@@ -46,10 +46,5 @@ func main() {
 			code = ExitCodeError
 		}
 	}
-	if cfg.Remote {
-		os.Exit(code)
-	}
-	log.Warn("Additional logging details can be found in:")
-	log.Warnf("    %s", log.LogFileName)
 	os.Exit(code)
 }

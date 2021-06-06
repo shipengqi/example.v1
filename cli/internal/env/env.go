@@ -25,8 +25,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
+	"github.com/shipengqi/example.v1/cli/pkg/command"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
@@ -101,17 +103,17 @@ func New() (*Settings, error) {
 	envs.RunOnMaster = onMasterNode(envs.RuntimeCDFDataHome)
 	envs.SSLPath = filepath.Join(envs.K8SHome, "ssl")
 
-	// version, _, err := command.Exec(fmt.Sprintf("cat %s/version.txt | awk -F . '{print $1$2}'", envs.K8SHome))
-	// if err != nil {
-	// 	log.Warnf("open version.txt, %v", err)
-	// 	return envs, err
-	// }
-	// vi, err := strconv.Atoi(strings.TrimSpace(version))
-	// if err != nil {
-	// 	log.Warnf("Atoi version, %v", err)
-	// } else {
-	// 	envs.Version = vi
-	// }
+	version, _, err := command.Exec(fmt.Sprintf("cat %s/version.txt | awk -F . '{print $1$2}'", envs.K8SHome))
+	if err != nil {
+		log.Warnf("open version.txt, %v", err)
+		return envs, err
+	}
+	vi, err := strconv.Atoi(strings.TrimSpace(version))
+	if err != nil {
+		log.Warnf("Atoi version, %v", err)
+	} else {
+		envs.Version = vi
+	}
 
 	return envs, nil
 }

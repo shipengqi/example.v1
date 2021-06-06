@@ -90,6 +90,13 @@ func New(cfg *action.Configuration) *cobra.Command {
 		Short:   "Manages TLS certificates in kubernetes clusters.",
 		Long:    rootDesc,
 		Example: examplesDesc,
+		PersistentPostRun: func(cmd *cobra.Command, args []string) {
+			if cmd.Name() == "help" {
+				return
+			}
+			log.Warn("Additional logging details can be found in:")
+			log.Warnf("    %s", log.LogFileName)
+		},
 		PreRun: func(cmd *cobra.Command, args []string) {
 			f := cmd.Flags()
 			o.combine(f, cfg)
