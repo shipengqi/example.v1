@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	DefaultVaultAddr     = "https://127.0.0.1:8200"
-	DefaultIngressSecret = "nginx-default-secret"
+	DefaultVaultAddr       = "https://127.0.0.1:8200"
+	DefaultIngressSecret   = "secret.nginx-default-secret"
+	DefaultSecretCertField = "tls.crt"
 )
 
 type Options struct {
@@ -35,7 +36,8 @@ type Options struct {
 	Host          string
 	OutputDir     string
 	ServerCertSan string
-	Secret        string
+	Resource      string
+	ResourceField string
 	SkipConfirm   bool
 	Local         bool
 	Remote        bool
@@ -56,10 +58,10 @@ func NewConfiguration() *Configuration {
 		Options: &Options{
 			CertType: types.CertTypeInternal,
 		},
-		Env:     nil,
-		Log:     nil,
-		Kube:    nil,
-		Vault:   nil,
+		Env:   nil,
+		Log:   nil,
+		Kube:  nil,
+		Vault: nil,
 	}
 }
 
@@ -93,7 +95,8 @@ func (g *Configuration) Init() error {
 	g.CACert = path.Join(g.Env.SSLPath, "ca.crt")
 	g.CAKey = path.Join(g.Env.SSLPath, "ca.key")
 	g.OutputDir = path.Join(g.Env.SSLPath, "new-certs")
-	g.Secret = DefaultIngressSecret
+	// g.Source = DefaultIngressSecret
+	// g.SourceField = DefaultSecretCertField
 
 	return nil
 }

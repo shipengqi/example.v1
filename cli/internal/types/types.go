@@ -6,6 +6,11 @@ const (
 )
 
 const (
+	SourceTypeConfigMap = "cm"
+	SourceTypeSecret    = "secret"
+)
+
+const (
 	CertTypeExternal   = "external"
 	CertTypeInternal   = "internal"
 	VaultPkiPathRE     = "RE"

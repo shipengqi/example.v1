@@ -32,7 +32,8 @@ const (
 	cdfnsFlagName         = "cdf-namespace"
 	localFlagName         = "local"
 	kubeconfigFlagName    = "kubeconfig"
-	secretFlagName        = "secret"
+	sourceFlagName        = "resource"
+	sourceFieldFlagName   = "field"
 )
 
 const (
@@ -43,6 +44,7 @@ security features, thereby exposing the system to increased security risks. By u
 you understand and agree to assume all associated risks and hold Micro Focus harmless for the same.)`
 	nodeTypeFlagDesc = "Node type (controlplane/worker) of the host which certificates are generated for."
 	typeFlagDesc     = "Specifies the type (internal/external) of the server certificates."
+	sourceFlagDesc   = "Specifies the source type (cm/secret), name. Format: <type>.<name>. e.g. cm.tls-cas"
 	validityFlagDesc = "Specifies the validity period (days) of server certificate."
 	examplesDesc     = `
   SubCommands Mode:
