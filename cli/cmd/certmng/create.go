@@ -1,6 +1,7 @@
 package certmng
 
 import (
+	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -55,9 +56,9 @@ func newCreateCmd(cfg *action.Configuration) *cobra.Command {
 	f := c.Flags()
 	f.StringVar(&o.caCert, caCertFlagName, "", "CA certificate file path.")
 	f.StringVar(&o.caKey, caKeyFlagName, "", "CA key file path.")
-	f.StringVar(&o.nodeType, nodeTypeFlagName, "", nodeTypeFlagDesc)
+	f.StringVar(&o.nodeType, nodeTypeFlagName, types.NodeTypeControlPlane, nodeTypeFlagDesc)
 	f.StringVar(&o.host, hostFlagName, "", "The host FQDN or IP address.")
-	f.StringVar(&o.serverCertSan, serverCertSanFlagName, "", "server-cert-san for installing first master node.")
+	f.StringVar(&o.serverCertSan, serverCertSanFlagName, "", "server-cert-san for node.")
 
 	return c
 }

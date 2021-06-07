@@ -44,13 +44,21 @@ type Options struct {
 	Validity      int
 }
 
+type ClusterInfo struct {
+	KubeServiceIP string
+	VirtualIP     string
+	LoadBalanceIP string
+	ExternalHost  string
+}
+
 type Configuration struct {
 	*Options
 
-	Env   *env.Settings
-	Log   *log.Config
-	Kube  *kube.Config
-	Vault *vault.Config
+	Cluster *ClusterInfo
+	Env     *env.Settings
+	Log     *log.Config
+	Kube    *kube.Config
+	Vault   *vault.Config
 }
 
 func NewConfiguration() *Configuration {

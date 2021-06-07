@@ -1,7 +1,6 @@
 package action
 
 import (
-	"net"
 	"os"
 
 	"github.com/pkg/errors"
@@ -52,35 +51,7 @@ func (a *create) Run() error {
 	default:
 		return errors.Errorf("unknown node type: %s", a.cfg.NodeType)
 	}
-
-	for _, v := range CertificateSet {
-		if !v.CanDep(isMater) {
-			continue
-		}
-
-		dns := make([]string, 0)
-		ips := make([]net.IP, 0)
-		if v.IsServerCert() {
-			var sanSvcIp string
-			log.Debugf("server cert: %s", v.Name)
-			d, i, s := parseSan(a.cfg.ServerCertSan)
-			if d != nil {
-				dns = append(dns, d ...)
-			}
-			if i != nil {
-				ips = append(ips, i ...)
-			}
-			if len(s) > 0 {
-				sanSvcIp = s
-			}
-			v.SetIPs(ips, sanSvcIp)
-			v.SetDNS(dns)
-		}
-		v.SetCN("address")
-		return a.generator.GenAndDump(v.Certificate, "")
-	}
-
-	return nil
+	return a.iterate(a.cfg.Host, isMater, a.generator)
 }
 
 func (a *create) PreRun() error {

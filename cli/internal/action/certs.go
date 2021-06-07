@@ -40,6 +40,38 @@ func (i *CertificateSetItem) CanDep(isMaster bool) bool {
 	return false
 }
 
+func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, cn, san string) {
+	if i.IsKubeletClientCert() {
+		cn = fmt.Sprintf("%s%s", KubeletCertCNPrefix, cn)
+	}
+	if i.IsServerCert() {
+		log.Debugf("server cert: %s", i.Name)
+		serverDNSNames, serverIps, svcIp := parseSan(san)
+		if serverDNSNames != nil {
+			dns = append(dns, serverDNSNames ...)
+		}
+		if serverIps != nil {
+			ips = append(ips, serverIps ...)
+		}
+		if len(svcIp) > 0 {
+			ips = append(ips, svcIp)
+		}
+		if i.IsK8sApiServerCert() {
+			dns = append(
+				dns,
+				"kubernetes",
+				"kubernetes.default",
+				"kubernetes.default.svc",
+				"kubernetes.default.svc.cluster.local",
+			)
+		}
+	}
+
+	i.CN = cn
+	i.DNSNames = dns
+	i.IPs = ips
+}
+
 func (i *CertificateSetItem) IsServerCert() bool {
 	return strings.HasSuffix(i.Name, ServerCertSuffix)
 }
@@ -50,45 +82,6 @@ func (i *CertificateSetItem) IsK8sApiServerCert() bool {
 
 func (i *CertificateSetItem) IsKubeletClientCert() bool {
 	return i.Name == KubeletClientCertName
-}
-
-func (i *CertificateSetItem) SetCN(cn string) {
-	if i.IsKubeletClientCert() {
-		cn = fmt.Sprintf("%s%s", KubeletCertCNPrefix, cn)
-	}
-	i.CN = cn
-}
-
-func (i *CertificateSetItem) SetValidity(validity int) {
-	i.Validity = validity
-}
-
-func (i *CertificateSetItem) SetDNS(dns []string) {
-	if i.IsK8sApiServerCert() {
-		dns = append(
-			dns,
-			"kubernetes",
-			"kubernetes.default",
-			"kubernetes.default.svc",
-			"kubernetes.default.svc.cluster.local",
-		)
-	}
-	i.DNSNames = dns
-}
-
-func (i *CertificateSetItem) SetIPs(ips []net.IP, svcIp string) {
-	if i.IsK8sApiServerCert() {
-		var sanSvcIp net.IP
-		if len(svcIp) == 0 {
-			sanSvcIp = net.ParseIP(svcIp)
-			log.Debugf("kube api server cert service IP: %s", sanSvcIp)
-		}
-
-		if sanSvcIp != nil && len(sanSvcIp) > 0 {
-			ips = append(ips, sanSvcIp)
-		}
-	}
-	i.IPs = ips
 }
 
 var CertificateSet = []CertificateSetItem{

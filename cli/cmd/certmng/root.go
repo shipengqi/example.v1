@@ -44,19 +44,19 @@ security features, thereby exposing the system to increased security risks. By u
 you understand and agree to assume all associated risks and hold Micro Focus harmless for the same.)`
 	nodeTypeFlagDesc = "Node type (controlplane/worker) of the host which certificates are generated for."
 	typeFlagDesc     = "Specifies the type (internal/external) of the server certificates."
-	sourceFlagDesc   = "Specifies the source type (cm/secret), name. Format: <type>.<name>. e.g. cm.tls-cas"
+	sourceFlagDesc   = "Specifies the resource type (cm/secret), name. Format: <type>.<name>. e.g. cm.tls-cas"
 	validityFlagDesc = "Specifies the validity period (days) of server certificate."
 	examplesDesc     = `
   SubCommands Mode:
-  ./renewCert renew -t internal -V 365         Renew the internal certificates.
-  ./renewCert renew -t external -V 365         Renew the external certificates.
-  ./renewCert create -t internal -V 365        Create the internal certificates.
-  ./renewCert apply                            Apply the certificates.
+  ./cert-manager renew -t internal -V 365         Renew the internal certificates.
+  ./cert-manager renew -t external -V 365         Renew the external certificates.
+  ./cert-manager create -t internal -V 365        Create the internal certificates.
+  ./cert-manager apply                            Apply the certificates.
 
   Flags Mode (To be compatible with older versions, will be deprecated in a future version.):
-  ./renewCert --renew -t internal -V 365       Renew the internal certificates.
-  ./renewCert --renew -t external -V 365       Renew the external certificates.
-  ./renewCert --apply                          Apply the certificates.`
+  ./cert-manager --renew -t internal -V 365       Renew the internal certificates.
+  ./cert-manager --renew -t external -V 365       Renew the external certificates.
+  ./cert-manager --apply                          Apply the certificates.`
 )
 
 type rootOptions struct {
