@@ -17,8 +17,6 @@ import (
 
 const (
 	DefaultVaultAddr       = "https://127.0.0.1:8200"
-	DefaultIngressSecret   = "secret.nginx-default-secret"
-	DefaultSecretCertField = "tls.crt"
 )
 
 type Options struct {
@@ -107,7 +105,7 @@ func (g *Configuration) Init() error {
 	g.CACert = path.Join(g.Env.SSLPath, "ca.crt")
 	g.CAKey = path.Join(g.Env.SSLPath, "ca.key")
 	g.OutputDir = path.Join(g.Env.SSLPath, "new-certs")
-	// g.Source = DefaultIngressSecret
+	// g.Source = SecretNameNginxDefault
 	// g.SourceField = DefaultSecretCertField
 
 	return nil

@@ -43,6 +43,12 @@ func main() {
 			log.Warnf("%s.Execute(), exited.", c.Name())
 		} else {
 			log.Errorf("%s.Execute(): %v", c.Name(), err)
+			// If the RunE return error, the PersistentPostRun func will be skipped, so add the following
+			// if cfg.Remote == true should skip this
+			if !cfg.Remote {
+				log.Warn("Additional logging details can be found in:")
+				log.Warnf("    %s", log.LogFileName)
+			}
 			code = ExitCodeError
 		}
 	}

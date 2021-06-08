@@ -52,3 +52,4 @@ Golang examples.
 - map
 - grpc-gateway
 - https://github.com/hyper0x/Golang_Puzzlers
+- refactor renew cmd like root cmd, add more sub actions for renew cmd, and add 'PreRun' fun for these sub actions

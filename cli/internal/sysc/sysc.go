@@ -104,7 +104,7 @@ func ParseVaultToken(encryptedToken, passphrase, tokenEncKey, tokenEncIv string)
 	return token, nil
 }
 
-func RenewREInContainer(cdfNamespace, namespace, unit string, V int, confirm bool) error {
+func RenewRERemoteExecution(cdfNamespace, namespace, unit string, V int, confirm bool) error {
 	cmd := fmt.Sprintf(`kubectl exec -n %s $(kubectl get po -n %s ` +
 		`-l 'deployments.microfocus.com/component=itom-vault' ` +
 		`-o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}') ` +

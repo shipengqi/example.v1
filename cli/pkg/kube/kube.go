@@ -143,6 +143,14 @@ func (c *Client) GetConfigMap(namespace, name string) (*corev1.ConfigMap, error)
 	return c.CoreV1().ConfigMaps(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 }
 
+func (c *Client) CreateConfigMap(namespace string, cm *corev1.ConfigMap) (*corev1.ConfigMap, error) {
+	return c.CoreV1().ConfigMaps(namespace).Create(context.TODO(), cm, metav1.CreateOptions{})
+}
+
+func (c *Client) UpdateConfigMap(namespace string, cm *corev1.ConfigMap) (*corev1.ConfigMap, error) {
+	return c.CoreV1().ConfigMaps(namespace).Update(context.TODO(), cm, metav1.UpdateOptions{})
+}
+
 func (c *Client) PatchConfigMap(namespace, name string, data []byte) (*corev1.ConfigMap, error) {
 	return c.CoreV1().ConfigMaps(namespace).Patch(
 		context.TODO(),
@@ -151,6 +159,19 @@ func (c *Client) PatchConfigMap(namespace, name string, data []byte) (*corev1.Co
 		data,
 		metav1.PatchOptions{},
 	)
+}
+
+func (c *Client) ApplyConfigMap(namespace, name string, data map[string]string) (*corev1.ConfigMap, error) {
+	olds, err := c.GetConfigMap(namespace, name)
+	if err != nil || olds == nil {
+		var news corev1.ConfigMap
+		news.SetName(name)
+		news.SetNamespace(namespace)
+		news.Data = data
+		return c.CreateConfigMap(namespace, &news)
+	}
+	olds.Data = data
+	return c.UpdateConfigMap(namespace, olds)
 }
 
 // ----------------------------------------------------------------------------

@@ -122,3 +122,15 @@ func IsEmptyStr(v string) bool {
 
 	return false
 }
+
+func ReadFile(filePth string) ([]byte, error) {
+	f, err := os.Open(filePth)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+
+	return ioutil.ReadAll(f)
+}

@@ -9,25 +9,26 @@ import (
 )
 
 type renewOptions struct {
-	certType     string
-	username     string
-	password     string
-	sshKey       string
-	cert         string
-	key          string
-	caCert       string
-	cdfNamespace string
-	namespace    string
-	unit         string
-	kubeconfig   string
-	caKey        string
-	nodeType     string
-	host         string
-	outputDir    string
-	secret       string
-	skipConfirm  bool
-	local        bool
-	validity     int
+	certType      string
+	username      string
+	password      string
+	sshKey        string
+	cert          string
+	key           string
+	caCert        string
+	cdfNamespace  string
+	namespace     string
+	unit          string
+	kubeconfig    string
+	caKey         string
+	nodeType      string
+	host          string
+	outputDir     string
+	resource      string
+	resourceField string
+	skipConfirm   bool
+	local         bool
+	validity      int
 }
 
 func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
@@ -71,7 +72,6 @@ func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 		cfg.Namespace = cfg.Env.CDFNamespace
 	}
 
-
 	// default value
 	cfg.SkipConfirm = o.skipConfirm
 	cfg.CertType = o.certType
@@ -80,6 +80,8 @@ func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 	cfg.NodeType = o.nodeType
 	cfg.Local = o.local
 	cfg.Unit = o.unit
+	cfg.Resource = o.resource
+	cfg.ResourceField = o.resourceField
 }
 
 func newRenewCmd(cfg *action.Configuration) *cobra.Command {
@@ -123,6 +125,9 @@ func addRenewFlags(f *pflag.FlagSet, o *renewOptions) {
 	f.BoolVar(&o.local, localFlagName, false, "Renew local internal certificates.")
 	f.StringVar(&o.unit, unitFlagName, "d", "unit of time (d/m), For testing.")
 	f.StringVar(&o.kubeconfig, kubeconfigFlagName, "", "Specifies kube config file.")
+	f.StringVar(&o.resource, sourceFlagName, action.SecretNameNginxDefault, "Specifies the resource name(s). Format: <name>,<name>. e.g. '--resource secret1,secret2'")
+	f.StringVar(&o.resourceField, sourceFieldFlagName, action.DefaultSecretCertField,
+		"Specifies the certificate field of the source data.")
 
 	_ = f.MarkHidden(unitFlagName)
 }

@@ -13,6 +13,17 @@ import (
 const (
 	ConfigMapNameCDFCluster = "cdf-cluster-host"
 	ConfigMapNameCDF        = "cdf"
+	ConfigMapNamePublicCA   = "public-ca-certificates"
+	SecretNameNginxDefault  = "nginx-default-secret"
+	SecretNameNginxFrontend = "nginx-frontend-secret"
+	CertNameRE              = "RE_ca.crt"
+	CertNameRIC             = "RIC_ca.crt"
+	CertNameRID             = "RID_ca.crt"
+	CertNameCUS             = "CUS_ca.crt"
+)
+
+const (
+	DefaultSecretCertField = "tls"
 )
 
 type Interface interface {

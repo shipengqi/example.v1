@@ -1,8 +1,11 @@
 package deployment
 
 import (
+	"encoding/base64"
 	"fmt"
+	"github.com/shipengqi/example.v1/cli/internal/sysc"
 	"github.com/shipengqi/example.v1/cli/pkg/kube"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -17,6 +20,11 @@ type generator struct {
 	vault     *vault.Client
 	kube      *kube.Client
 }
+
+const (
+	SecretNameVaultPass     = "vault-passphrase"
+	SecretNameVaultCred     = "vault-credential"
+)
 
 func New(ns string, k *kube.Config, v *vault.Config) (certs.Generator, error) {
 	kclient, err := kube.New(k)
@@ -50,18 +58,64 @@ func (g *generator) Gen(c *certs.Certificate) (cert, key []byte, err error) {
 	return
 }
 
-func (g *generator) GenAndDump(c *certs.Certificate, secret string) (err error) {
+func (g *generator) GenAndDump(c *certs.Certificate, resources string) (err error) {
+	secrets, field, err := parseResources(resources)
+	if err != nil {
+		return err
+	}
 	cert, key, err := g.Gen(c)
 	if err != nil {
 		return err
 	}
 	data := make(map[string][]byte)
-	data[c.Name+".crt"] = cert
-	data[c.Name+".key"] = key
+	data[field+".crt"] = cert
+	data[field+".key"] = key
 
-	_, err = g.kube.ApplySecretBytes(g.namespace, secret, data)
+	for k := range secrets {
+		secret := strings.TrimSpace(secrets[k])
+		if len(secret) == 0 {
+			continue
+		}
+
+		_, err = g.kube.ApplySecretBytes(g.namespace, secret, data)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (g *generator) setToken() error {
+	vaultPassphrase, err := g.kube.GetSecret(SecretNameVaultPass, g.namespace)
 	if err != nil {
 		return err
 	}
+	vaultCredential, err := g.kube.GetSecret(SecretNameVaultCred, g.namespace)
+	if err != nil {
+		return err
+	}
+
+	passphrase := vaultPassphrase.Data["passphrase"]
+	encryptedToken := vaultCredential.Data["root.token"]
+	encryptedStr := base64.StdEncoding.EncodeToString(encryptedToken)
+	tokenEncIv := vaultCredential.Data["root.token.enc_iv"]
+	tokenEncKey := vaultCredential.Data["root.token.enc_key"]
+
+	token, err := sysc.ParseVaultToken(encryptedStr, string(passphrase), string(tokenEncKey), string(tokenEncIv))
+	if err != nil {
+		return err
+	}
+	g.vault.SetToken(token)
 	return nil
+}
+
+func parseResources(resources string) ([]string, string, error) {
+	rs := strings.Split(resources, " ")
+	if len(rs) < 2 {
+		return nil, "", errors.New("invalid resources")
+	}
+	names := strings.Split(rs[0], ",")
+	field := rs[1]
+	return names, field, nil
 }
