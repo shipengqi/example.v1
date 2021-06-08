@@ -10,6 +10,10 @@ import (
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
+const (
+	ConfigMapNameCDFCluster = "cdf-cluster-host"
+	ConfigMapNameCDF        = "cdf"
+)
 
 type Interface interface {
 	Name() string
@@ -67,7 +71,10 @@ func (a *action) iterate(address string, master bool, generator certs.Generator)
 		copy(dns, dnsnames)
 		copy(ips, ipaddrs)
 
-		v.CombineServerSan(dns, ips, cn, a.cfg.ServerCertSan)
+		v.CombineServerSan(dns, ips, cn, a.cfg.ServerCertSan, a.cfg.Cluster.KubeServiceIP)
+		v.Validity = a.cfg.Validity
+		v.UintTime = a.cfg.Unit
+
 		log.Debugf("cert DNS: %s", v.DNSNames)
 		log.Debugf("cert IPs: %s", v.IPs)
 		log.Debugf("cert CN: %s", v.CN)
@@ -83,37 +90,37 @@ func (a *action) iterate(address string, master bool, generator certs.Generator)
 
 func (a *action) combineSubject(address string, master bool) ([]string, []net.IP, string) {
 	cn := address
-	var DNSNames []string
-	var IPs []net.IP
+	var dnsNames []string
+	var ips []net.IP
 
 	if !master {
 		if utils.IsIPV4(address) {
 			cn = fmt.Sprintf("host-%s", address)
 		}
 
-		return DNSNames, IPs, cn
+		return dnsNames, ips, cn
 	}
 
 	if a.cfg.Cluster.VirtualIP != "" {
-		IPs = append(IPs, net.ParseIP(a.cfg.Cluster.VirtualIP))
+		ips = append(ips, net.ParseIP(a.cfg.Cluster.VirtualIP))
 	}
 	if a.cfg.Cluster.LoadBalanceIP != "" {
 		LBIP := net.ParseIP(a.cfg.Cluster.LoadBalanceIP)
 		if LBIP != nil {
-			IPs = append(IPs, LBIP)
+			ips = append(ips, LBIP)
 		} else {
-			DNSNames = append(DNSNames, a.cfg.Cluster.LoadBalanceIP)
+			dnsNames = append(dnsNames, a.cfg.Cluster.LoadBalanceIP)
 		}
 	}
 	if utils.IsIPV4(address) {
 		cn = fmt.Sprintf("host-%s", address)
-		IPs = append(IPs, net.ParseIP(address))
+		ips = append(ips, net.ParseIP(address))
 	} else {
-		DNSNames = append(DNSNames, address)
+		dnsNames = append(dnsNames, address)
 		shortNames := strings.Split(address, ".")
 		// Add first short name
 		if len(shortNames) > 0 {
-			DNSNames = append(DNSNames, shortNames[0])
+			dnsNames = append(dnsNames, shortNames[0])
 		}
 
 		// Add master node ip
@@ -122,7 +129,7 @@ func (a *action) combineSubject(address string, master bool) ([]string, []net.IP
 			for _, addr := range addrs {
 				if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 					if ipnet.IP.To4() != nil {
-						IPs = append(IPs, ipnet.IP)
+						ips = append(ips, ipnet.IP)
 						break
 					}
 				}
@@ -130,7 +137,7 @@ func (a *action) combineSubject(address string, master bool) ([]string, []net.IP
 		}
 	}
 
-	return DNSNames, IPs, cn
+	return dnsNames, ips, cn
 }
 
 // ----------------------------------------------------------------------------

@@ -8,12 +8,14 @@ import (
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 	"github.com/shipengqi/example.v1/cli/internal/types"
+	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 type create struct {
 	*action
 
+	kube      *kube.Client
 	generator certs.Generator
 }
 
@@ -22,11 +24,17 @@ func NewCreate(cfg *Configuration) Interface {
 	if err != nil {
 		panic(err)
 	}
+	kclient, err := kube.New(cfg.Kube)
+	if err != nil {
+		panic(err)
+	}
+
 	c := &create{
 		action: &action{
 			name: "create",
 			cfg:  cfg,
 		},
+		kube:      kclient,
 		generator: g,
 	}
 
@@ -39,6 +47,7 @@ func (a *create) Name() string {
 
 func (a *create) Run() error {
 	log.Debug("*****  CREATE CRT  *****")
+	log.Info("Creating certificates ...")
 	var isMater bool
 
 	switch a.cfg.NodeType {
@@ -56,6 +65,16 @@ func (a *create) Run() error {
 
 func (a *create) PreRun() error {
 	log.Debug("*****  CREATE PRE RUN  *****")
+
+	cm, err := a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDFCluster)
+	if err != nil {
+		log.Warnf("kube.GetConfigMap(): %v", err)
+	} else {
+		a.cfg.Cluster.VirtualIP = cm.Data["HA_VIRTUAL_IP"]
+		a.cfg.Cluster.LoadBalanceIP = cm.Data["LOAD_BALANCER_HOST"]
+		a.cfg.Cluster.KubeServiceIP = cm.Data["K8S_DEFAULT_SVC_IP"]
+	}
+
 	a.cfg.Debug()
 
 	// create new-certs folder for internal cert

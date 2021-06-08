@@ -22,7 +22,6 @@ const (
 type CertificateSetItem struct {
 	*certs.Certificate
 
-	Name   string
 	Secret string
 	Deploy int
 }
@@ -40,7 +39,7 @@ func (i *CertificateSetItem) CanDep(isMaster bool) bool {
 	return false
 }
 
-func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, cn, san string) {
+func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, cn, san, defaultSvcIp string) {
 	if i.IsKubeletClientCert() {
 		cn = fmt.Sprintf("%s%s", KubeletCertCNPrefix, cn)
 	}
@@ -55,7 +54,11 @@ func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, cn, sa
 		}
 		if len(svcIp) > 0 {
 			ips = append(ips, svcIp)
+		} else if len(defaultSvcIp) > 0 {
+			defaultIp := net.ParseIP(defaultSvcIp)
+			ips = append(ips, defaultIp)
 		}
+
 		if i.IsK8sApiServerCert() {
 			dns = append(
 				dns,
@@ -87,113 +90,113 @@ func (i *CertificateSetItem) IsKubeletClientCert() bool {
 var CertificateSet = []CertificateSetItem{
 	{
 		Certificate: &certs.Certificate{
+			Name:   "etcd-server",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		},
-		Name:   "etcd-server",
 		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "common-etcd-client",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		},
-		Name:   "common-etcd-client",
 		Deploy: types.DepMasterAndWorker,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kube-api-etcd-client",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		},
-		Name:   "kube-api-etcd-client",
 		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kube-api-kubelet-client",
 			KeyUsage:      x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			Organizations: []string{"system:kubelet-api-admin"},
 		},
-		Name:   "kube-api-kubelet-client",
 		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kube-api-proxy-client",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		},
-		Name:   "kube-api-proxy-client",
 		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kube-api-server",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		},
-		Name:   "kube-api-server",
 		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kube-controller-kube-api-client",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			CN:           "system:kube-controller-manager",
 		},
-		Name:   "kube-controller-kube-api-client",
 		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kubectl-kube-api-client",
 			KeyUsage:      x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			Organizations: []string{"system:masters"},
 		},
-		Name:   "kubectl-kube-api-client",
 		Deploy: types.DepMasterAndWorker,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kubelet-kube-api-client",
 			KeyUsage:      x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			Organizations: []string{"system:nodes"},
 		},
-		Name:   "kubelet-kube-api-client",
 		Deploy: types.DepMasterAndWorker,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kubelet-server",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		},
-		Name:   "kubelet-server",
 		Deploy: types.DepMasterAndWorker,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kube-scheduler-kube-api-client",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 			CN:           "system:kube-scheduler",
 		},
-		Name:   "kube-scheduler-kube-api-client",
 		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "metrics-server",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 			CN:           "metrics-server.kube-system",
 		},
-		Name:   "metrics-server",
 		Secret: "metrics-server-cert.kube-system",
 		Deploy: types.DepMaster,
 	},
 	{
 		Certificate: &certs.Certificate{
+			Name:   "kube-registry",
 			KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment | x509.KeyUsageKeyAgreement,
 			ExtKeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		},
-		Name:   "kube-registry",
 		Secret: "kube-registry-cert.<namespace>",
 		Deploy: types.DepMaster,
 	},

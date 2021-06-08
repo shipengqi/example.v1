@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/shipengqi/example.v1/cli/internal/action"
+	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
@@ -72,9 +73,6 @@ type rootOptions struct {
 func (o *rootOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 	o.renewOptions.combine(f, cfg)
 
-	if f.Changed(localFlagName) {
-		cfg.Local = o.local
-	}
 	if f.Changed(serverCertSanFlagName) {
 		cfg.ServerCertSan = o.serverCertSan
 	}
@@ -131,6 +129,8 @@ func New(cfg *action.Configuration) *cobra.Command {
 	)
 
 	cobra.EnableCommandSorting = false
+	c.Flags().SortFlags = false
+
 	c.SilenceUsage = true
 	c.SilenceErrors = true
 
@@ -152,7 +152,7 @@ func addRootFlags(f *pflag.FlagSet, o *rootOptions) {
 	f.StringVar(&o.key, keyFlagName, "", "Private key file path.")
 	f.StringVar(&o.caCert, caCertFlagName, "", "CA certificate file path.")
 	f.StringVar(&o.caKey, caKeyFlagName, "", "CA key file path.")
-	f.StringVar(&o.nodeType, nodeTypeFlagName, "", nodeTypeFlagDesc)
+	f.StringVar(&o.nodeType, nodeTypeFlagName, types.NodeTypeControlPlane, nodeTypeFlagDesc)
 	f.StringVarP(&o.outputDir, outputFlagName, "d", "", "The output directory of certificates.")
 	f.StringVar(&o.host, hostFlagName, "", "The host FQDN or IP address.")
 	f.StringVarP(&o.namespace, namespaceFlagName, "n", "", "Specifies the namespace.")

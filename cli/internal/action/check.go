@@ -36,7 +36,7 @@ func (a *check) PreRun() error {
 	a.cfg.Debug()
 
 	if len(a.cfg.Cert) == 0 && len(a.cfg.Resource) == 0 {
-		return errors.Errorf("Please ")
+		return errors.Errorf("Please specify a resource to check, use flag '--tls-cert' or '--resource'.")
 	}
 
 	if len(a.cfg.Resource) > 0 {

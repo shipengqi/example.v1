@@ -15,17 +15,16 @@ type createOptions struct {
 	host          string
 	serverCertSan string
 	outputDir     string
+	cdfNamespace  string
+	validity      int
 }
 
-func (o *createOptions) combine(f *pflag.FlagSet, cfg *action.Configuration)  {
+func (o *createOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 	if f.Changed(caCertFlagName) {
 		cfg.CACert = o.caCert
 	}
 	if f.Changed(caKeyFlagName) {
 		cfg.CAKey = o.caKey
-	}
-	if f.Changed(nodeTypeFlagName) {
-		cfg.NodeType = o.nodeType
 	}
 	if f.Changed(hostFlagName) {
 		cfg.Host = o.host
@@ -36,6 +35,14 @@ func (o *createOptions) combine(f *pflag.FlagSet, cfg *action.Configuration)  {
 	if f.Changed(outputFlagName) {
 		cfg.OutputDir = o.outputDir
 	}
+	if f.Changed(cdfnsFlagName) {
+		cfg.Env.CDFNamespace = o.cdfNamespace
+	}
+
+	// default value
+	cfg.Validity = o.validity
+	cfg.NodeType = o.nodeType
+
 }
 
 func newCreateCmd(cfg *action.Configuration) *cobra.Command {
@@ -53,12 +60,16 @@ func newCreateCmd(cfg *action.Configuration) *cobra.Command {
 		},
 	}
 
+	c.Flags().SortFlags = false
+
 	f := c.Flags()
 	f.StringVar(&o.caCert, caCertFlagName, "", "CA certificate file path.")
 	f.StringVar(&o.caKey, caKeyFlagName, "", "CA key file path.")
 	f.StringVar(&o.nodeType, nodeTypeFlagName, types.NodeTypeControlPlane, nodeTypeFlagDesc)
 	f.StringVar(&o.host, hostFlagName, "", "The host FQDN or IP address.")
 	f.StringVar(&o.serverCertSan, serverCertSanFlagName, "", "server-cert-san for node.")
+	f.StringVar(&o.cdfNamespace, cdfnsFlagName, "", "Specifies the CDF service namespace.")
+	f.IntVarP(&o.validity, validityFlagName, "V", 365, validityFlagDesc)
 
 	return c
 }

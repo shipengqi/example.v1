@@ -1,7 +1,6 @@
 package action
 
 import (
-	"github.com/shipengqi/example.v1/cli/internal/utils"
 	"os"
 
 	"github.com/pkg/errors"
@@ -10,6 +9,8 @@ import (
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 	"github.com/shipengqi/example.v1/cli/internal/types"
+	"github.com/shipengqi/example.v1/cli/internal/utils"
+	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/prompt"
 )
@@ -19,8 +20,9 @@ var DropError = errors.New("Exit")
 type renew struct {
 	*action
 
-	generator certs.Generator
 	expired   bool
+	kube      *kube.Client
+	generator certs.Generator
 }
 
 func NewRenew(cfg *Configuration) Interface {
@@ -53,10 +55,29 @@ func (a *renew) Name() string {
 
 func (a *renew) PreRun() error {
 	log.Debug("*****  RENEW PRE RUN  *****")
+
+	cm, err := a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDFCluster)
+	if err != nil {
+		log.Warnf("kube.GetConfigMap(): %v", err)
+	} else {
+		a.cfg.Cluster.VirtualIP = cm.Data["HA_VIRTUAL_IP"]
+		a.cfg.Cluster.LoadBalanceIP = cm.Data["LOAD_BALANCER_HOST"]
+		a.cfg.Cluster.KubeServiceIP = cm.Data["K8S_DEFAULT_SVC_IP"]
+		a.cfg.Cluster.FirstMasterNode = cm.Data["FIRST_MASTER_NODE"]
+		a.cfg.Cluster.EtcdEndpoint = cm.Data["ETCD_ENDPOINT"]
+	}
+
+	cm, err = a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDF)
+	if err != nil {
+		log.Warnf("kube.GetConfigMap(): %v", err)
+	} else {
+		a.cfg.Cluster.ExternalHost = cm.Data["EXTERNAL_ACCESS_HOST"]
+	}
+
 	a.cfg.Debug()
 
 	// create new-certs folder for internal cert
-	err := os.MkdirAll(a.cfg.OutputDir, 0744)
+	err = os.MkdirAll(a.cfg.OutputDir, 0744)
 	if err != nil {
 		return err
 	}
@@ -92,6 +113,8 @@ func (a *renew) PreRun() error {
 
 func (a *renew) Run() error {
 	log.Debug("*****  RENEW CRT  *****")
+	log.Info("Renewing certificates ...")
+
 	switch a.cfg.CertType {
 	case types.CertTypeInternal:
 		log.Debugf("cert type: %s", types.CertTypeInternal)

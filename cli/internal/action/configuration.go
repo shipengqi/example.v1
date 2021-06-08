@@ -45,10 +45,12 @@ type Options struct {
 }
 
 type ClusterInfo struct {
-	KubeServiceIP string
-	VirtualIP     string
-	LoadBalanceIP string
-	ExternalHost  string
+	KubeServiceIP   string
+	VirtualIP       string
+	LoadBalanceIP   string
+	ExternalHost    string
+	FirstMasterNode string
+	EtcdEndpoint    string
 }
 
 type Configuration struct {
@@ -66,10 +68,11 @@ func NewConfiguration() *Configuration {
 		Options: &Options{
 			CertType: types.CertTypeInternal,
 		},
-		Env:   nil,
-		Log:   nil,
-		Kube:  nil,
-		Vault: nil,
+		Cluster: &ClusterInfo{},
+		Env:     nil,
+		Log:     nil,
+		Kube:    nil,
+		Vault:   nil,
 	}
 }
 
@@ -96,6 +99,7 @@ func (g *Configuration) Init() error {
 		if hostname == "" {
 			return errors.New("get hostname")
 		}
+		g.Host = hostname
 		g.Vault.Address = fmt.Sprintf("https://%s:8200", hostname)
 	}
 
@@ -122,6 +126,14 @@ func (g *Configuration) printWithLevel(level string) {
 	for num := 0; num < globalv.NumField(); num++ {
 		printf("  %s: %v", globalt.Field(num).Name, globalv.Field(num))
 	}
+
+	clusterv := reflect.ValueOf(*g.Cluster)
+	clustert := reflect.TypeOf(*g.Cluster)
+	printf("Cluster Info: ")
+	for num := 0; num < clusterv.NumField(); num++ {
+		printf("  %s: %v", clustert.Field(num).Name, clusterv.Field(num))
+	}
+
 	envsv := reflect.ValueOf(*g.Env)
 	envst := reflect.TypeOf(*g.Env)
 	printf("Envs: ")

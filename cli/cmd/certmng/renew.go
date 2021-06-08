@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/shipengqi/example.v1/cli/internal/action"
+	"github.com/shipengqi/example.v1/cli/internal/types"
 )
 
 type renewOptions struct {
@@ -30,23 +31,11 @@ type renewOptions struct {
 }
 
 func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
-	if f.Changed(confirmFlagName) {
-		cfg.SkipConfirm = o.skipConfirm
-	}
-	if f.Changed(typeFlagName) {
-		cfg.CertType = o.certType
-	}
-	if f.Changed(usernameFlagName) {
-		cfg.Username = o.username
-	}
 	if f.Changed(passwordFlagName) {
 		cfg.Password = o.password
 	}
 	if f.Changed(sshKeyFlagName) {
 		cfg.SSHKey = o.sshKey
-	}
-	if f.Changed(validityFlagName) {
-		cfg.Validity = o.validity
 	}
 	if f.Changed(certFlagName) {
 		cfg.Cert = o.cert
@@ -60,9 +49,7 @@ func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 	if f.Changed(caKeyFlagName) {
 		cfg.CAKey = o.caKey
 	}
-	if f.Changed(nodeTypeFlagName) {
-		cfg.NodeType = o.nodeType
-	}
+
 	if f.Changed(outputFlagName) {
 		cfg.OutputDir = o.outputDir
 	}
@@ -71,12 +58,6 @@ func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 	}
 	if f.Changed(namespaceFlagName) {
 		cfg.Namespace = o.namespace
-	}
-	if f.Changed(localFlagName) {
-		cfg.Local = o.local
-	}
-	if f.Changed(unitFlagName) {
-		cfg.Unit = o.unit
 	}
 
 	if f.Changed(cdfnsFlagName) {
@@ -89,6 +70,16 @@ func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 	if len(cfg.Namespace) == 0 {
 		cfg.Namespace = cfg.Env.CDFNamespace
 	}
+
+
+	// default value
+	cfg.SkipConfirm = o.skipConfirm
+	cfg.CertType = o.certType
+	cfg.Username = o.username
+	cfg.Validity = o.validity
+	cfg.NodeType = o.nodeType
+	cfg.Local = o.local
+	cfg.Unit = o.unit
 }
 
 func newRenewCmd(cfg *action.Configuration) *cobra.Command {
@@ -106,6 +97,8 @@ func newRenewCmd(cfg *action.Configuration) *cobra.Command {
 		},
 	}
 
+	c.Flags().SortFlags = false
+
 	addRenewFlags(c.Flags(), o)
 
 	return c
@@ -122,7 +115,7 @@ func addRenewFlags(f *pflag.FlagSet, o *renewOptions) {
 	f.StringVar(&o.key, keyFlagName, "", "Private key file path.")
 	f.StringVar(&o.caCert, caCertFlagName, "", "CA certificate file path.")
 	f.StringVar(&o.caKey, caKeyFlagName, "", "CA key file path.")
-	f.StringVar(&o.nodeType, nodeTypeFlagName, "", nodeTypeFlagDesc)
+	f.StringVar(&o.nodeType, nodeTypeFlagName, types.NodeTypeControlPlane, nodeTypeFlagDesc)
 	f.StringVarP(&o.outputDir, outputFlagName, "d", "", "The output directory of certificates.")
 	f.StringVar(&o.host, hostFlagName, "", "The host FQDN or IP address.")
 	f.StringVarP(&o.namespace, namespaceFlagName, "n", "", "Specifies the namespace.")
