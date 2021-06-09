@@ -3,6 +3,7 @@ package action
 import (
 	"github.com/shipengqi/example.v1/cli/internal/sysc"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
+	"strings"
 )
 
 const (
@@ -25,7 +26,7 @@ func (a *apply) Name() string {
 }
 
 func (a *apply) Run() error {
-	log.Debug("*****  APPLY CRT  *****")
+	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
 	return sysc.RestartKubeService(NamespaceKubeSystem, a.cfg.Env.Version)
 }
 

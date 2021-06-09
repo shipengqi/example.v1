@@ -2,6 +2,7 @@ package action
 
 import (
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -46,7 +47,7 @@ func (a *create) Name() string {
 }
 
 func (a *create) Run() error {
-	log.Debug("*****  CREATE CRT  *****")
+	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
 	log.Info("Creating certificates ...")
 	var isMater bool
 
@@ -64,7 +65,7 @@ func (a *create) Run() error {
 }
 
 func (a *create) PreRun() error {
-	log.Debug("*****  CREATE PRE RUN  *****")
+	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
 
 	cm, err := a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDFCluster)
 	if err != nil {

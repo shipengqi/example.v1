@@ -25,15 +25,6 @@ func CheckCrtValidity(cert *x509.Certificate) int {
 	return int(available)
 }
 
-func CheckCrtStringValidity(cert *x509.Certificate) int {
-	available := cert.NotAfter.Sub(time.Now()).Hours()
-	if available <= 0 {
-		return -1
-	}
-
-	return int(available)
-}
-
 func ParseCrt(certPath string) (*x509.Certificate, error) {
 	certFile, err := ioutil.ReadFile(certPath)
 	if err != nil {
@@ -52,7 +43,14 @@ func ParseCrtString(certString string) (*x509.Certificate, error) {
 	if len(certString) == 0 {
 		return nil, nil
 	}
-	certBlock, _ := pem.Decode([]byte(certString))
+	return ParseCrtBytes([]byte(certString))
+}
+
+func ParseCrtBytes(certBytes []byte) (*x509.Certificate, error) {
+	if len(certBytes) == 0 {
+		return nil, nil
+	}
+	certBlock, _ := pem.Decode(certBytes)
 	cert, err := x509.ParseCertificate(certBlock.Bytes)
 	if err != nil {
 		return nil, err

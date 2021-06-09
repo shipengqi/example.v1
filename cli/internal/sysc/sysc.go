@@ -2,6 +2,7 @@ package sysc
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -123,4 +124,24 @@ func RenewRERemoteExecution(cdfNamespace, namespace, unit string, V int, confirm
 	}
 
 	return nil
+}
+
+func Hostname() (string, error) {
+	cmd := `systemctl show --property=ExecStart kubelet | grep "hostname-override"`
+	log.Debugf("exec: %s", cmd)
+	stdout, _, err := command.Exec(cmd)
+	if err != nil {
+		return "", errors.Wrap(err, stdout)
+	}
+
+	r, err := regexp.Compile(`hostname-override=.*\s-`)
+	if err != nil {
+		return "", err
+	}
+
+	override := r.FindString(stdout)
+	words := strings.Split(override, "=")
+	words2 := strings.Split(words[1], " ")
+
+	return words2[0], nil
 }

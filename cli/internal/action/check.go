@@ -32,7 +32,7 @@ func (a *check) Name() string {
 }
 
 func (a *check) PreRun() error {
-	log.Debug("*****  CHECK PRE RUN  *****")
+	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
 	a.cfg.Debug()
 
 	if len(a.cfg.Cert) == 0 && len(a.cfg.Resource) == 0 {
@@ -52,6 +52,8 @@ func (a *check) PreRun() error {
 }
 
 func (a *check) Run() error {
+	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
+
 	if len(a.cfg.Cert) > 0 {
 		log.Debugf("check cert: %s", a.cfg.Cert)
 		crt, err := utils.ParseCrt(a.cfg.Cert)
