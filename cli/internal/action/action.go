@@ -37,7 +37,6 @@ type Interface interface {
 	PreRun() error
 	Run() error
 	PostRun() error
-	Execute() error
 }
 
 type action struct {
@@ -74,22 +73,22 @@ func (a *action) Name() string {
 }
 
 func (a *action) PreRun() error {
-	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
+	log.Debugf("***** [%s] PreRun *****", strings.ToUpper(a.name))
 	a.cfg.Debug()
 	return nil
 }
 
 func (a *action) Run() error {
-	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
+	log.Debugf("***** [%s] Run *****", strings.ToUpper(a.name))
 	return nil
 }
 
 func (a *action) PostRun() error {
-	log.Debugf("***** %s PostRun *****", strings.ToUpper(a.name))
+	log.Debugf("***** [%s] PostRun *****", strings.ToUpper(a.name))
 	return nil
 }
 
-func (a *action) Execute() error {
+func Execute(a Interface) error {
 	err := a.PreRun()
 	if err != nil {
 		return err

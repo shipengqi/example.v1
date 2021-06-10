@@ -104,21 +104,21 @@ func (a *renew) renewExternal() error {
 	} else {
 		sub = NewRenewSubExternalInPod(a.cfg)
 	}
-	return sub.Execute()
+	return Execute(sub)
 }
 
 func (a *renew) renewInternal() error {
 	if a.cfg.Local {
 		sub := NewRenewSubInternalLocal(a.cfg)
-		return sub.Execute()
+		return Execute(sub)
 	}
 	if a.expired {
 		sub := NewRenewSubInternalExpired(a.cfg)
-		err := sub.Execute()
+		err := Execute(sub)
 		if err != nil {
 			return err
 		}
 	}
 	sub := NewRenewSubInternalAvailable(a.cfg)
-	return sub.Execute()
+	return Execute(sub)
 }

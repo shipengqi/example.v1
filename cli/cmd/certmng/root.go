@@ -116,7 +116,7 @@ func New(cfg *action.Configuration) *cobra.Command {
 			}
 
 			log.Debugf("Matched action: %s", c.Name())
-			return c.Execute()
+			return action.Execute(c)
 		},
 	}
 

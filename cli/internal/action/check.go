@@ -55,6 +55,7 @@ func (a *check) PreRun() error {
 
 func (a *check) Run() error {
 	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
+	log.Info("Checking certificate ...")
 
 	if len(a.cfg.Cert) > 0 {
 		log.Debugf("check cert: %s", a.cfg.Cert)

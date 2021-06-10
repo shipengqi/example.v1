@@ -56,7 +56,7 @@ func newCreateCmd(cfg *action.Configuration) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := action.NewCreate(cfg)
-			return c.Execute()
+			return action.Execute(c)
 		},
 	}
 

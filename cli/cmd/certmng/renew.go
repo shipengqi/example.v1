@@ -95,7 +95,7 @@ func newRenewCmd(cfg *action.Configuration) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			r := action.NewRenew(cfg)
-			return r.Execute()
+			return action.Execute(r)
 		},
 	}
 

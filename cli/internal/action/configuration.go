@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -97,7 +98,7 @@ func (g *Configuration) Init() error {
 		if hostname == "" {
 			return errors.New("get hostname")
 		}
-		g.Host = hostname
+		g.Host = strings.ToLower(hostname)
 		g.Vault.Address = fmt.Sprintf("https://%s:8200", hostname)
 	}
 

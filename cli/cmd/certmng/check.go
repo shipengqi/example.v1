@@ -40,10 +40,10 @@ func newCheckCmd(cfg *action.Configuration) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := action.NewCheck(cfg)
-			return c.Execute()
+			return action.Execute(c)
 		},
 	}
-
+	c.Flags().SortFlags = false
 	f := c.Flags()
 	f.StringVar(&o.cert, certFlagName, "", "Certificate file path.")
 	f.StringVar(&o.resource, sourceFlagName, "", sourceFlagDesc)

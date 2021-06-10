@@ -76,3 +76,9 @@ func (a *create) PreRun() error {
 	// create new-certs folder for internal cert
 	return os.MkdirAll(a.cfg.OutputDir, 0744)
 }
+
+func (a *create) PostRun() error {
+	log.Debugf("***** %s PostRun *****", strings.ToUpper(a.name))
+	log.Info("Finished!")
+	return nil
+}

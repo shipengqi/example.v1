@@ -22,7 +22,7 @@ func newApplyCmd(cfg *action.Configuration) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a := action.NewApply(cfg)
-			return a.Execute()
+			return action.Execute(a)
 		},
 	}
 
