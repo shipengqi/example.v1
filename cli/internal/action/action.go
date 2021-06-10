@@ -21,15 +21,15 @@ const (
 	SecretNameNginxDefault  = "nginx-default-secret"
 	SecretNameNginxFrontend = "nginx-frontend-secret"
 	SecretNameK8SRootCert   = "k8s-root-cert"
-	CertNameRE              = "RE_ca.crt"
-	CertNameRIC             = "RIC_ca.crt"
-	CertNameRID             = "RID_ca.crt"
-	CertNameCUS             = "CUS_ca.crt"
-	KeyNameCA               = "ca.key"
+	ResourceKeyRECert       = "RE_ca.crt"
+	ResourceKeyRICCert      = "RIC_ca.crt"
+	ResourceKeyRIDCert      = "RID_ca.crt"
+	ResourceKeyCUSCert      = "CUS_ca.crt"
+	ResourceKeyCAKey        = "ca.key"
 )
 
 const (
-	DefaultSecretCertField = "tls"
+	DefaultResourceKeyTls = "tls"
 )
 
 type Interface interface {
@@ -232,7 +232,7 @@ func (a *action) parseCAKey() (crypto.PrivateKey, error) {
 		if err != nil {
 			return nil, err
 		}
-		if v, ok := secret.Data[KeyNameCA]; ok {
+		if v, ok := secret.Data[ResourceKeyCAKey]; ok {
 			return utils.ParseKeyBytes(v, false)
 		}
 	}

@@ -2,6 +2,7 @@ package action
 
 import (
 	"os"
+	"path"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -33,32 +34,62 @@ func (a *renew) Name() string {
 func (a *renew) PreRun() error {
 	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
 
-	if a.cfg.CertType == types.CertTypeExternal {
-		return nil
-	}
-	// create new-certs folder for internal cert
-	err := os.MkdirAll(a.cfg.OutputDir, 0744)
-	if err != nil {
-		return err
-	}
-
-	// check cert validity
-	crt, err := utils.ParseCrt(a.cfg.Cert)
+	// check CA cert validity
+	log.Debugf("Checking %s ...", a.cfg.CACert)
+	crt, err := utils.ParseCrt(a.cfg.CACert)
 	if err != nil {
 		return err
 	}
 	available := utils.CheckCrtValidity(crt)
 	if available <= 0 {
-		log.Infof("The certificate: %s has already expired.", a.cfg.Cert)
+		log.Debugf("The certificate: %s has already expired.", a.cfg.CACert)
+		return errors.New("CA certificate expired")
 	} else {
-		log.Infof("The certificate: %s will expire in %d hour(s).", a.cfg.Cert, available)
+		days := available/24
+		log.Warnf("The internal root CA certificate on the current node "+
+			"will expire in %d day(s).", days)
+		log.Warnf("The certificate validity period must less than %d.", days)
+	}
+
+	serverCertPath := path.Join(a.cfg.Env.SSLPath, CertNameKubeletServer+".crt")
+	log.Debugf("Checking %s ...", serverCertPath)
+
+	serverCrt, err := utils.ParseCrt(serverCertPath)
+	if err != nil {
+		return err
+	}
+	available = utils.CheckCrtValidity(serverCrt)
+	if available <= 0 {
+		log.Info("The internal certificates have already expired.")
+	} else {
+		log.Infof("The internal certificates will expire in %d hour(s).", available)
+		a.expired = true
+	}
+
+	// create new-certs folder for internal cert
+	if a.cfg.CertType == types.CertTypeInternal {
+		err := os.MkdirAll(a.cfg.OutputDir, 0744)
+		if err != nil {
+			return err
+		}
+	}
+	if a.cfg.CertType == types.CertTypeExternal {
+		if a.expired {
+			log.Error("The internal certificates have already expired.")
+			log.Errorf("You should run the '%s/scripts/renewCert --renew' to "+
+				"renew the internal certificates firstly.", a.cfg.Env.K8SHome)
+			return errors.New("internal certificates expired")
+		}
+
+		log.Debug("Checking external CA certificate ...")
+	}
+	// ignore ask in pod
+	if a.cfg.Env.RunInPod {
+		return nil
 	}
 
 	// confirm
 	if a.cfg.SkipConfirm {
-		return nil
-	}
-	if a.cfg.Env.RunInPod {
 		return nil
 	}
 	confirm, err := prompt.Confirm("Are you sure to continue")

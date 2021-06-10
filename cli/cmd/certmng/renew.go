@@ -126,7 +126,7 @@ func addRenewFlags(f *pflag.FlagSet, o *renewOptions) {
 	f.StringVar(&o.unit, unitFlagName, "d", "unit of time (d/m), For testing.")
 	f.StringVar(&o.kubeconfig, kubeconfigFlagName, "", "Specifies kube config file.")
 	f.StringVar(&o.resource, sourceFlagName, action.SecretNameNginxDefault, "Specifies the resource name(s). Format: <name>,<name>. e.g. '--resource secret1,secret2'")
-	f.StringVar(&o.resourceField, sourceFieldFlagName, action.DefaultSecretCertField,
+	f.StringVar(&o.resourceField, sourceFieldFlagName, action.DefaultResourceKeyTls,
 		"Specifies the certificate field of the source data.")
 
 	_ = f.MarkHidden(unitFlagName)

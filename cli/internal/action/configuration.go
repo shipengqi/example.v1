@@ -107,7 +107,7 @@ func (g *Configuration) Init() error {
 	g.CAKey = path.Join(g.Env.SSLPath, "ca.key")
 	g.OutputDir = path.Join(g.Env.SSLPath, "new-certs")
 	// g.Source = SecretNameNginxDefault
-	// g.SourceField = DefaultSecretCertField
+	// g.SourceField = DefaultResourceKeyTls
 
 	return nil
 }

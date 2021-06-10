@@ -75,22 +75,22 @@ func (a *renewSubExternalInPod) getCAs(namespace string) ([][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	ric, ok := cm.Data[CertNameRIC]
+	ric, ok := cm.Data[ResourceKeyRICCert]
 	if !ok {
 		return nil, errors.New("RIC ca nil")
 	}
 	var cas [][]byte
 	cas = append(cas, []byte(ric))
 
-	if rid, ok := cm.Data[CertNameRID]; ok {
+	if rid, ok := cm.Data[ResourceKeyRIDCert]; ok {
 		log.Debug("got RID ca")
 		cas = append(cas, []byte(rid))
 	}
-	if re, ok := cm.Data[CertNameRE]; ok {
+	if re, ok := cm.Data[ResourceKeyRECert]; ok {
 		log.Debug("got RE ca")
 		cas = append(cas, []byte(re))
 	}
-	if cus, ok := cm.Data[CertNameCUS]; ok {
+	if cus, ok := cm.Data[ResourceKeyCUSCert]; ok {
 		log.Debug("got CUS ca")
 		cas = append(cas, []byte(cus))
 	}

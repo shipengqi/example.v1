@@ -54,7 +54,6 @@ func (a *renewSubInternalLocal) Run() error {
 
 func (a *renewSubInternalLocal) PreRun() error {
 	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
-
 	hostname, err := sysc.Hostname()
 	if err != nil {
 		return errors.Wrap(err, "get hostname")

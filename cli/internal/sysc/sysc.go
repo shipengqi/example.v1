@@ -143,5 +143,5 @@ func Hostname() (string, error) {
 	words := strings.Split(override, "=")
 	words2 := strings.Split(words[1], " ")
 
-	return words2[0], nil
+	return strings.ToLower(words2[0]), nil
 }

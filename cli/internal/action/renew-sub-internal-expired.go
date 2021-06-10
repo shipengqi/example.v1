@@ -85,10 +85,6 @@ func (a *renewSubInternalExpired) PreRun() error {
 
 func (a *renewSubInternalExpired) PostRun() error {
 	log.Debugf("***** %s PostRun *****", strings.ToUpper(a.name))
-
-	log.Info("Initialize kube client.")
-
-
 	log.Info("Checking the cluster status ...")
 	var status error
 
