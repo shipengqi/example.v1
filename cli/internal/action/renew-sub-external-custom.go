@@ -6,33 +6,20 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/shipengqi/example.v1/cli/internal/utils"
-	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 type renewSubExternalCustom struct {
 	*action
 
-	kube      *kube.Client
 	customCrt []byte
 	customKey []byte
 }
 
 func NewRenewSubExternalCustom(cfg *Configuration) Interface {
-	kclient, err := kube.New(cfg.Kube)
-	if err != nil {
-		panic(err)
+	return &renewSubExternalCustom{
+		action: newActionWithKube("renew-sub-external-custom", cfg),
 	}
-
-	c := &renewSubExternalCustom{
-		action: &action{
-			name: "renew-sub-external-custom",
-			cfg:  cfg,
-		},
-		kube: kclient,
-	}
-
-	return c
 }
 
 func (a *renewSubExternalCustom) Name() string {

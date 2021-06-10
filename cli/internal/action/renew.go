@@ -8,7 +8,6 @@ import (
 
 	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/shipengqi/example.v1/cli/internal/utils"
-	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/prompt"
 )
@@ -18,26 +17,12 @@ var DropError = errors.New("Exit")
 type renew struct {
 	*action
 
-	expired   bool
-	kube      *kube.Client
+	expired bool
 }
 
 func NewRenew(cfg *Configuration) Interface {
-	var (
-		err error
-	)
-
-	kclient, err := kube.New(cfg.Kube)
-	if err != nil {
-		panic(err)
-	}
-
 	return &renew{
-		action: &action{
-			name: "renew",
-			cfg:  cfg,
-		},
-		kube:      kclient,
+		action:  newActionWithKube("renew", cfg),
 	}
 }
 
@@ -102,23 +87,6 @@ func (a *renew) Run() error {
 	}
 }
 
-func (a *renew) PostRun() error {
-	log.Info("Finished.")
-	return nil
-}
-
-func (a *renew) Execute() error {
-	err := a.PreRun()
-	if err != nil {
-		return err
-	}
-	err = a.Run()
-	if err != nil {
-		return err
-	}
-	return a.PostRun()
-}
-
 func (a *renew) renewExternal() error {
 	var sub Interface
 	if len(a.cfg.Cert) > 0 && len(a.cfg.Key) > 0 {
@@ -148,6 +116,3 @@ func (a *renew) renewInternal() error {
 	sub := NewRenewSubInternalAvailable(a.cfg)
 	return sub.Execute()
 }
-
-
-

@@ -12,14 +12,9 @@ type renewSubExternalNotInPod struct {
 }
 
 func NewRenewSubExternalNotInPod(cfg *Configuration) Interface {
-	c := &renewSubExternalNotInPod{
-		action: &action{
-			name: "renew-sub-external-notinpod",
-			cfg:  cfg,
-		},
+	return &renewSubExternalNotInPod{
+		action: newAction("renew-sub-external-notinpod", cfg),
 	}
-
-	return c
 }
 
 func (a *renewSubExternalNotInPod) Name() string {

@@ -8,24 +8,21 @@ import (
 
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/deployment"
-	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
 type renewSubExternalInPod struct {
 	*action
 
-	kube      *kube.Client
 	generator certs.Generator
 }
 
 func NewRenewSubExternalInPod(cfg *Configuration) Interface {
-	kclient, err := kube.New(cfg.Kube)
-	if err != nil {
-		panic(err)
+	c := &renewSubExternalInPod{
+		action: newActionWithKube("renew-sub-external-inpod", cfg),
 	}
 
-	cas, err := getCAs(kclient, cfg.Env.CDFNamespace)
+	cas, err := c.getCAs(cfg.Env.CDFNamespace)
 	if err != nil {
 		panic(err)
 	}
@@ -35,15 +32,7 @@ func NewRenewSubExternalInPod(cfg *Configuration) Interface {
 	if err != nil {
 		panic(err)
 	}
-
-	c := &renewSubExternalInPod{
-		action: &action{
-			name: "renew-sub-external-inpod",
-			cfg:  cfg,
-		},
-		kube:      kclient,
-		generator: g,
-	}
+	c.generator = g
 
 	return c
 }
@@ -81,8 +70,8 @@ func (a *renewSubExternalInPod) PreRun() error {
 	return nil
 }
 
-func getCAs(kube *kube.Client, namespace string) ([][]byte, error) {
-	cm, err := kube.GetConfigMap(namespace, ConfigMapNamePublicCA)
+func (a *renewSubExternalInPod) getCAs(namespace string) ([][]byte, error) {
+	cm, err := a.kube.GetConfigMap(namespace, ConfigMapNamePublicCA)
 	if err != nil {
 		return nil, err
 	}

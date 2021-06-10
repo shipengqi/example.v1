@@ -9,7 +9,6 @@ import (
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 	"github.com/shipengqi/example.v1/cli/internal/sysc"
-	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
@@ -20,18 +19,20 @@ type renewSubInternalExpired struct {
 }
 
 func NewRenewSubInternalExpired(cfg *Configuration) Interface {
-	g, err := infra.New(cfg.CACert, cfg.CAKey)
+	c := &renewSubInternalExpired{
+		action: newActionWithKube("renew-sub-internal-expired", cfg),
+	}
+
+	key, err := c.parseCAKey()
 	if err != nil {
 		panic(err)
 	}
 
-	c := &renewSubInternalExpired{
-		action: &action{
-			name: "renew-sub-internal-expired",
-			cfg:  cfg,
-		},
-		generator: g,
+	g, err := infra.New(cfg.CACert, key)
+	if err != nil {
+		panic(err)
 	}
+	c.generator = g
 
 	return c
 }
@@ -45,7 +46,7 @@ func (a *renewSubInternalExpired) Run() error {
 	var err error
 	log.Info("The certificates have already expired.")
 	log.Info("Renew current node certificates")
-	err = a.iterate(a.cfg.Host, true, a.generator)
+	err = a.iterate(a.cfg.Host, true, true, a.generator)
 	if err != nil {
 		return err
 	}
@@ -86,17 +87,14 @@ func (a *renewSubInternalExpired) PostRun() error {
 	log.Debugf("***** %s PostRun *****", strings.ToUpper(a.name))
 
 	log.Info("Initialize kube client.")
-	kclient, err := kube.New(a.cfg.Kube)
-	if err != nil {
-		return err
-	}
+
 
 	log.Info("Checking the cluster status ...")
 	var status error
 
 	for i := 0; i < 60; i++ {
 		log.Print(".")
-		_, status = kclient.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDFCluster)
+		_, status = a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDFCluster)
 		if status == nil {
 			break
 		}

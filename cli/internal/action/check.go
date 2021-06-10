@@ -10,7 +10,6 @@ import (
 
 	"github.com/shipengqi/example.v1/cli/internal/types"
 	"github.com/shipengqi/example.v1/cli/internal/utils"
-	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
@@ -19,12 +18,15 @@ type check struct {
 }
 
 func NewCheck(cfg *Configuration) Interface {
-	return &check{
-		action: &action{
-			name: "check",
-			cfg:  cfg,
-		},
+	c := &check{}
+
+	if len(cfg.Resource) > 0 {
+		c.action = newActionWithKube("check", cfg)
+	} else {
+		c.action = newAction("check", cfg)
 	}
+
+	return c
 }
 
 func (a *check) Name() string {
@@ -67,12 +69,9 @@ func (a *check) Run() error {
 		var ok bool
 		sType, sName := parseSourceName(a.cfg.Resource)
 		log.Debugf("check cert %s: %s, namespace: %s", sType, sName, a.cfg.Namespace)
-		client, err := kube.New(a.cfg.Kube)
-		if err != nil {
-			return err
-		}
+
 		if sType == types.SourceTypeConfigMap {
-			cm, err := client.GetConfigMap(a.cfg.Namespace, sName)
+			cm, err := a.kube.GetConfigMap(a.cfg.Namespace, sName)
 			if err != nil {
 				return err
 			}
@@ -82,7 +81,7 @@ func (a *check) Run() error {
 				return errors.Errorf("field: %s not found", a.cfg.ResourceField)
 			}
 		} else if sType == types.SourceTypeSecret {
-			secret, err := client.GetSecret(a.cfg.Namespace, sName)
+			secret, err := a.kube.GetSecret(a.cfg.Namespace, sName)
 			if err != nil {
 				return err
 			}
@@ -106,14 +105,6 @@ func (a *check) Run() error {
 	}
 
 	return nil
-}
-
-func (a *check) Execute() error {
-	err := a.PreRun()
-	if err != nil {
-		return err
-	}
-	return a.Run()
 }
 
 func parseSourceName(source string) (sType, sName string) {

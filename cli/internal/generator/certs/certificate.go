@@ -16,6 +16,7 @@ type Certificate struct {
 	Name          string
 	CN            string
 	UintTime      string
+	Overwrite     bool
 	IsCA          bool
 	Validity      int
 	KeyUsage      x509.KeyUsage

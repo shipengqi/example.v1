@@ -1,12 +1,16 @@
 package action
 
 import (
+	"crypto"
 	"fmt"
 	"net"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
 	"github.com/shipengqi/example.v1/cli/internal/utils"
+	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
@@ -16,10 +20,12 @@ const (
 	ConfigMapNamePublicCA   = "public-ca-certificates"
 	SecretNameNginxDefault  = "nginx-default-secret"
 	SecretNameNginxFrontend = "nginx-frontend-secret"
+	SecretNameK8SRootCert   = "k8s-root-cert"
 	CertNameRE              = "RE_ca.crt"
 	CertNameRIC             = "RIC_ca.crt"
 	CertNameRID             = "RID_ca.crt"
 	CertNameCUS             = "CUS_ca.crt"
+	KeyNameCA               = "ca.key"
 )
 
 const (
@@ -37,6 +43,30 @@ type Interface interface {
 type action struct {
 	name string
 	cfg  *Configuration
+	kube *kube.Client
+}
+
+func newAction(name string, cfg *Configuration) *action {
+	return &action{
+		name: name,
+		cfg:  cfg,
+	}
+}
+
+func newActionWithKube(name string, cfg *Configuration) *action {
+	c := &action{
+		name: name,
+		cfg:  cfg,
+	}
+
+	kclient, err := kube.New(cfg.Kube)
+	if err != nil {
+		panic(err)
+	}
+
+	c.kube = kclient
+
+	return c
 }
 
 func (a *action) Name() string {
@@ -71,26 +101,69 @@ func (a *action) Execute() error {
 	return a.PostRun()
 }
 
-func (a *action) iterate(address string, master bool, generator certs.Generator) error {
+func (a *action) iterate(address string, master, overwrite bool, generator certs.Generator) error {
 	dnsnames, ipaddrs, cn := a.combineSubject(address, master)
 	for _, v := range CertificateSet {
 		if !v.CanDep(master) {
 			continue
 		}
+
+		v.Validity = a.cfg.Validity
+		v.UintTime = a.cfg.Unit
+		v.Overwrite = overwrite
+
 		dns := make([]string, 0)
 		ips := make([]net.IP, 0)
 		copy(dns, dnsnames)
 		copy(ips, ipaddrs)
 
 		v.CombineServerSan(dns, ips, cn, a.cfg.ServerCertSan, a.cfg.Cluster.KubeServiceIP)
-		v.Validity = a.cfg.Validity
-		v.UintTime = a.cfg.Unit
 
 		log.Debugf("cert DNS: %s", v.DNSNames)
 		log.Debugf("cert IPs: %s", v.IPs)
 		log.Debugf("cert CN: %s", v.CN)
 
 		err := generator.GenAndDump(v.Certificate, a.cfg.OutputDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (a *action) iterateSecrets(generator certs.Generator) error {
+	for _, v := range CertificateSecretSet {
+		log.Debugf("gen secret: %s, cert: %s", v.Secret, v.Name)
+		v.Validity = a.cfg.Validity
+		v.UintTime = a.cfg.Unit
+		log.Debugf("cert validity: %d, unit: %s", v.Validity, v.UintTime)
+
+		secretName, secretNs := parseSecretName(v.Secret)
+		if len(secretNs) == 0 {
+			secretNs = a.cfg.Env.CDFNamespace
+		}
+		if v.IsKubeRegistryCert() {
+			cn := fmt.Sprintf("%s.%s", v.Name, secretNs)
+			v.CN = cn
+			v.DNSNames = []string{
+				"localhost",
+				cn,
+			}
+		}
+		log.Debugf("cert DNS: %s", v.DNSNames)
+		log.Debugf("cert IPs: %s", v.IPs)
+		log.Debugf("cert CN: %s", v.CN)
+
+		crt, key, err := generator.Gen(v.Certificate)
+		if err != nil {
+			return err
+		}
+
+		data := make(map[string][]byte)
+		data[v.Name+".crt"] = crt
+		data[v.Name+".key"] = key
+		_, err = a.kube.ApplySecretBytes(secretNs, secretName, data)
 		if err != nil {
 			return err
 		}
@@ -116,9 +189,9 @@ func (a *action) combineSubject(address string, master bool) ([]string, []net.IP
 		ips = append(ips, net.ParseIP(a.cfg.Cluster.VirtualIP))
 	}
 	if a.cfg.Cluster.LoadBalanceIP != "" {
-		LBIP := net.ParseIP(a.cfg.Cluster.LoadBalanceIP)
-		if LBIP != nil {
-			ips = append(ips, LBIP)
+		lbIp := net.ParseIP(a.cfg.Cluster.LoadBalanceIP)
+		if lbIp != nil {
+			ips = append(ips, lbIp)
 		} else {
 			dnsNames = append(dnsNames, a.cfg.Cluster.LoadBalanceIP)
 		}
@@ -151,6 +224,22 @@ func (a *action) combineSubject(address string, master bool) ([]string, []net.IP
 	return dnsNames, ips, cn
 }
 
+func (a *action) parseCAKey() (crypto.PrivateKey, error) {
+	if len(a.cfg.CAKey) > 0 && utils.IsExist(a.cfg.CAKey) {
+		log.Debugf("ParseKey(): %s", a.cfg.CAKey)
+		return utils.ParseKey(a.cfg.CAKey)
+	} else {
+		secret, err := a.kube.GetSecret(NamespaceKubeSystem, SecretNameK8SRootCert)
+		if err != nil {
+			return nil, err
+		}
+		if v, ok := secret.Data[KeyNameCA]; ok {
+			return utils.ParseKeyBytes(v, false)
+		}
+	}
+	return nil, errors.New("ca key is nil")
+}
+
 // ----------------------------------------------------------------------------
 // Helpers...
 
@@ -177,4 +266,19 @@ func parseSan(san string) ([]string, []net.IP, net.IP) {
 	}
 
 	return dns, ips, svcIp
+}
+
+func parseSecretName(resource string) (name, namespace string) {
+	if len(resource) == 0 {
+		return
+	}
+
+	subs := strings.Split(resource, ".")
+	if len(subs) == 1 {
+		return subs[0], ""
+	}
+	if len(subs) >= 2 {
+		return subs[0], subs[1]
+	}
+	return
 }

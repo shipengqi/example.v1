@@ -15,10 +15,7 @@ type apply struct {
 }
 
 func NewApply(cfg *Configuration) Interface {
-	return &apply{&action{
-		name: "apply",
-		cfg:  cfg,
-	}}
+	return &apply{newAction("apply", cfg)}
 }
 
 func (a *apply) Name() string {
@@ -27,21 +24,13 @@ func (a *apply) Name() string {
 
 func (a *apply) Run() error {
 	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
-	return sysc.RestartKubeService(NamespaceKubeSystem, a.cfg.Env.Version)
-}
-
-func (a *apply) PostRun() error {
-	log.Info("Apply certificates successfully.")
-	return nil
-}
-
-func (a *apply) Execute() error {
-	_ = a.PreRun()
-	err := a.Run()
+	err := sysc.RestartKubeService(NamespaceKubeSystem, a.cfg.Env.Version)
 	if err != nil {
 		log.Warnf("Make sure that you have run the '%s/scripts/renewCert apply' "+
 			"on other master nodes.", a.cfg.Env.K8SHome)
 		return err
 	}
-	return a.PostRun()
+
+	log.Info("Apply certificates successfully.")
+	return nil
 }

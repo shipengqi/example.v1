@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -63,10 +62,10 @@ func ParseKey(keyPath string) (crypto.PrivateKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ParseKeyString(f, false)
+	return ParseKeyBytes(f, false)
 }
 
-func ParseKeyString(keystr []byte, isBase64 bool) (crypto.PrivateKey, error)  {
+func ParseKeyBytes(keystr []byte, isBase64 bool) (crypto.PrivateKey, error)  {
 	var err error
 	dkeystr := keystr
 
@@ -111,14 +110,6 @@ func IsExist(name string) bool {
 		}
 	}
 	return true
-}
-
-func IsEmptyStr(v string) bool {
-	if len(strings.TrimSpace(v)) == 0 {
-		return true
-	}
-
-	return false
 }
 
 func ReadFile(filePth string) ([]byte, error) {

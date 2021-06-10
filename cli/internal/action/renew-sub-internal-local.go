@@ -18,18 +18,20 @@ type renewSubInternalLocal struct {
 }
 
 func NewRenewSubInternalLocal(cfg *Configuration) Interface {
-	g, err := infra.New(cfg.CACert, cfg.CAKey)
+	c := &renewSubInternalLocal{
+		action: newAction("renew-sub-internal-local", cfg),
+	}
+
+	key, err := c.parseCAKey()
 	if err != nil {
 		panic(err)
 	}
 
-	c := &renewSubInternalLocal{
-		action: &action{
-			name: "renew-sub-internal-local",
-			cfg:  cfg,
-		},
-		generator: g,
+	g, err := infra.New(cfg.CACert, key)
+	if err != nil {
+		panic(err)
 	}
+	c.generator = g
 
 	return c
 }
@@ -40,11 +42,14 @@ func (a *renewSubInternalLocal) Name() string {
 
 func (a *renewSubInternalLocal) Run() error {
 	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
-
 	if a.cfg.Env.RunOnMaster {
-		return a.renewMaster()
+		err := a.iterateSecrets(a.generator)
+		if err != nil {
+			return err
+		}
 	}
-	return a.renewWorker()
+
+	return a.iterate(a.cfg.Host, true, true, a.generator)
 }
 
 func (a *renewSubInternalLocal) PreRun() error {
@@ -58,19 +63,6 @@ func (a *renewSubInternalLocal) PreRun() error {
 	log.Debugf("get local hostname: %s", hostname)
 
 	a.cfg.Debug()
-
-	return nil
-}
-
-func (a *renewSubInternalLocal) renewWorker() error {
-	return nil
-}
-
-func (a *renewSubInternalLocal) renewMaster() error {
-	return nil
-}
-
-func (a *renewSubInternalLocal) renewExistCert() error {
 
 	return nil
 }
