@@ -87,6 +87,12 @@ func (a *renew) Run() error {
 	}
 }
 
+func (a *renew) PostRun() error {
+	log.Debugf("***** %s PostRun *****", strings.ToUpper(a.name))
+	log.Info("Finished!")
+	return nil
+}
+
 func (a *renew) renewExternal() error {
 	var sub Interface
 	if len(a.cfg.Cert) > 0 && len(a.cfg.Key) > 0 {

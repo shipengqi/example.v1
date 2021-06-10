@@ -16,6 +16,7 @@ type Node struct {
 	Pass    string
 	Master  bool
 	First   bool
+	Err     error
 	Signer  ssh.Signer
 	client  ssh2.Client
 }
