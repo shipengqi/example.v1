@@ -74,7 +74,6 @@ func (a *renew) PreRun() error {
 
 func (a *renew) Run() error {
 	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
-	log.Info("Renewing certificates ...")
 
 	switch a.cfg.CertType {
 	case types.CertTypeInternal:

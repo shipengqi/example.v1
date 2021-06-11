@@ -105,7 +105,7 @@ func (a *action) iterate(address string, master, overwrite bool, generator certs
 		}
 
 		log.Debug("********** START **********")
-		v.Host = cn
+		v.Host = address
 		v.Validity = a.cfg.Validity
 		v.UintTime = a.cfg.Unit
 		v.Overwrite = overwrite

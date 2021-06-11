@@ -15,9 +15,9 @@ const BaseDuration = 24 * 60 * 60 * 1000 * 1000 * 1000
 type Certificate struct {
 	Name          string
 	CN            string
-	Host          string
-	UintTime      string
-	Overwrite     bool
+	Host          string  // node host, used when distributing certificates
+	UintTime      string  // used for testing
+	Overwrite     bool    // local or expired certificates need to overwrite
 	IsCA          bool
 	Validity      int
 	KeyUsage      x509.KeyUsage

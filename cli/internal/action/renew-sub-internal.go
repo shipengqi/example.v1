@@ -37,6 +37,8 @@ func (a *renewSubInternal) Run() error {
 		}
 	}
 
+	log.Info("Renewing certificates ...")
+
 	if a.cfg.Local {
 		sub := NewRenewSubInternalLocal(a.cfg)
 		return Execute(sub)

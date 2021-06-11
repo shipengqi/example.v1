@@ -65,8 +65,12 @@ func (g *generator) Gen(c *certs.Certificate) (cert, key []byte, err error) {
 }
 
 func (g *generator) GenAndDump(c *certs.Certificate, output string) (err error) {
-	crtName := path.Join(output, fmt.Sprintf("%s-%s.crt", c.CN, c.Name))
-	keyName := path.Join(output, fmt.Sprintf("%s-%s.key", c.CN, c.Name))
+	host := c.Host
+	if len(host) == 0 {
+		host = c.CN
+	}
+	crtName := path.Join(output, fmt.Sprintf("%s-%s.crt", host, c.Name))
+	keyName := path.Join(output, fmt.Sprintf("%s-%s.key", host, c.Name))
 
 	if c.Overwrite {
 		crtName = path.Join(output, fmt.Sprintf("%s.crt", c.Name))
