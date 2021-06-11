@@ -25,7 +25,7 @@ func (a *renewSubExternalNotInPod) Run() error {
 	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
 
 	return sysc.RenewRERemoteExecution(a.cfg.Env.CDFNamespace, a.cfg.Namespace,
-		a.cfg.Unit, a.cfg.Validity, a.cfg.SkipConfirm)
+		a.cfg.Unit, a.cfg.Validity)
 }
 
 func (a *renewSubExternalNotInPod) PreRun() error {

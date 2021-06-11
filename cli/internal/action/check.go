@@ -21,7 +21,7 @@ func NewCheck(cfg *Configuration) Interface {
 	c := &check{}
 
 	if len(cfg.Resource) > 0 {
-		c.action = newActionWithKube("check", cfg)
+		c.action = newAction("check", cfg)
 	} else {
 		c.action = newAction("check", cfg)
 	}
@@ -55,7 +55,6 @@ func (a *check) PreRun() error {
 
 func (a *check) Run() error {
 	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
-	log.Info("Checking certificate ...")
 
 	if len(a.cfg.Cert) > 0 {
 		log.Debugf("check cert: %s", a.cfg.Cert)

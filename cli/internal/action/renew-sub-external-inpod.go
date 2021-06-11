@@ -19,7 +19,7 @@ type renewSubExternalInPod struct {
 
 func NewRenewSubExternalInPod(cfg *Configuration) Interface {
 	c := &renewSubExternalInPod{
-		action: newActionWithKube("renew-sub-external-inpod", cfg),
+		action: newAction("renew-sub-external-inpod", cfg),
 	}
 
 	cas, err := c.getCAs(cfg.Env.CDFNamespace)

@@ -105,18 +105,17 @@ func ParseVaultToken(encryptedToken, passphrase, tokenEncKey, tokenEncIv string)
 	return token, nil
 }
 
-func RenewRERemoteExecution(cdfNamespace, namespace, unit string, V int, confirm bool) error {
+func RenewRERemoteExecution(cdfNamespace, namespace, unit string, V int) error {
 	cmd := fmt.Sprintf(`kubectl exec -n %s $(kubectl get po -n %s ` +
 		`-l 'deployments.microfocus.com/component=itom-vault' ` +
 		`-o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}') ` +
-		`-- /renewCert --renew -t external -V %d --unit-time %s -n %s --cdf-namespace %s -y %v`,
+		`-- /renewCert --renew -t external -V %d --unit-time %s -n %s --cdf-namespace %s`,
 		namespace,
 		namespace,
 		V,
 		unit,
 		namespace,
-		cdfNamespace,
-		confirm)
+		cdfNamespace)
 	log.Debugf("exec: %s", cmd)
 	err := command.ExecSync(cmd)
 	if err != nil {

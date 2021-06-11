@@ -18,7 +18,7 @@ type renewSubExternalCustom struct {
 
 func NewRenewSubExternalCustom(cfg *Configuration) Interface {
 	return &renewSubExternalCustom{
-		action: newActionWithKube("renew-sub-external-custom", cfg),
+		action: newAction("renew-sub-external-custom", cfg),
 	}
 }
 

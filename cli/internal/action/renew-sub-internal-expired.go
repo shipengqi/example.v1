@@ -20,7 +20,7 @@ type renewSubInternalExpired struct {
 
 func NewRenewSubInternalExpired(cfg *Configuration) Interface {
 	c := &renewSubInternalExpired{
-		action: newActionWithKube("renew-sub-internal-expired", cfg),
+		action: newAction("renew-sub-internal-expired", cfg),
 	}
 
 	key, err := c.parseCAKey()

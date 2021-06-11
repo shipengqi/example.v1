@@ -1,6 +1,7 @@
 package action
 
 import (
+	"github.com/shipengqi/example.v1/cli/internal/utils"
 	"os"
 	"strings"
 
@@ -20,7 +21,7 @@ type create struct {
 
 func NewCreate(cfg *Configuration) Interface {
 	c := &create{
-		action: newActionWithKube("create", cfg),
+		action: newAction("create", cfg),
 	}
 
 	key, err := c.parseCAKey()
@@ -61,6 +62,24 @@ func (a *create) Run() error {
 
 func (a *create) PreRun() error {
 	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
+
+	log.Debugf("Checking %s ...", a.cfg.CACert)
+	crt, err := utils.ParseCrt(a.cfg.CACert)
+	if err != nil {
+		return err
+	}
+	available := utils.CheckCrtValidity(crt)
+	if available <= 0 {
+		log.Debugf("The certificate: %s has already expired.", a.cfg.CACert)
+		return errors.New("CA certificate expired")
+	}
+
+	days := available / 24
+	if days < a.cfg.Validity {
+		log.Warnf("The internal root CA certificate on the current node "+
+			"will expire in %d day(s).", days)
+		log.Warnf("The certificate validity period must less than %d.", days)
+	}
 
 	cm, err := a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDFCluster)
 	if err != nil {

@@ -49,7 +49,7 @@ func newCreateCmd(cfg *action.Configuration) *cobra.Command {
 	o := &createOptions{}
 	c := &cobra.Command{
 		Use:   "create",
-		Short: "Create the internal/external certificates in CDF clusters.",
+		Short: "Create the internal certificates in CDF clusters.",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			f := cmd.Flags()
 			o.combine(f, cfg)

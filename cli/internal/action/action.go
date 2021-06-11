@@ -46,13 +46,6 @@ type action struct {
 }
 
 func newAction(name string, cfg *Configuration) *action {
-	return &action{
-		name: name,
-		cfg:  cfg,
-	}
-}
-
-func newActionWithKube(name string, cfg *Configuration) *action {
 	c := &action{
 		name: name,
 		cfg:  cfg,

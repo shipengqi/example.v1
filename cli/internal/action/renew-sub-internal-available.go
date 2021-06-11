@@ -39,7 +39,7 @@ type renewSubInternalAvailable struct {
 
 func NewRenewSubInternalAvailable(cfg *Configuration) Interface {
 	c := &renewSubInternalAvailable{
-		action: newActionWithKube("renew-sub-internal-available", cfg),
+		action: newAction("renew-sub-internal-available", cfg),
 	}
 
 	key, err := c.parseCAKey()

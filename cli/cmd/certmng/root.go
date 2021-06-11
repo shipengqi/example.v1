@@ -85,7 +85,7 @@ func New(cfg *action.Configuration) *cobra.Command {
 
 	c := &cobra.Command{
 		Use:     "cert-manager",
-		Short:   "Manages TLS certificates in kubernetes clusters.",
+		Short:   "Manages TLS certificates in CDF clusters.",
 		Long:    rootDesc,
 		Example: examplesDesc,
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
