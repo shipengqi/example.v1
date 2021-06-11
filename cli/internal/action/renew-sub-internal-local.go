@@ -43,6 +43,7 @@ func (a *renewSubInternalLocal) Name() string {
 func (a *renewSubInternalLocal) Run() error {
 	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
 	if a.cfg.Env.RunOnMaster {
+		log.Debug("renew certificate secrets on master node")
 		err := a.iterateSecrets(a.generator)
 		if err != nil {
 			return err

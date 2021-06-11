@@ -95,17 +95,23 @@ func Execute(a Interface) error {
 
 func (a *action) iterate(address string, master, overwrite bool, generator certs.Generator) error {
 	dnsnames, ipaddrs, cn := a.combineSubject(address, master)
+	log.Debugf("initial cert DNS: %s", dnsnames)
+	log.Debugf("initial cert IPs: %s", ipaddrs)
+	log.Debugf("initial cert CN: %s", cn)
+
 	for _, v := range CertificateSet {
 		if !v.CanDep(master) {
 			continue
 		}
 
+		log.Debug("********** START **********")
+		v.Host = cn
 		v.Validity = a.cfg.Validity
 		v.UintTime = a.cfg.Unit
 		v.Overwrite = overwrite
 
-		dns := make([]string, 0)
-		ips := make([]net.IP, 0)
+		dns := make([]string, len(dnsnames))
+		ips := make([]net.IP, len(ipaddrs))
 		copy(dns, dnsnames)
 		copy(ips, ipaddrs)
 
@@ -119,6 +125,9 @@ func (a *action) iterate(address string, master, overwrite bool, generator certs
 		if err != nil {
 			return err
 		}
+
+		log.Debug("********** END **********")
+		log.Debug("")
 	}
 
 	return nil

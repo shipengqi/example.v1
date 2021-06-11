@@ -70,12 +70,6 @@ func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, cn, sa
 		if serverIps != nil {
 			ips = append(ips, serverIps...)
 		}
-		if len(svcIp) > 0 {
-			ips = append(ips, svcIp)
-		} else if len(defaultSvcIp) > 0 {
-			defaultIp := net.ParseIP(defaultSvcIp)
-			ips = append(ips, defaultIp)
-		}
 
 		if i.IsK8sApiServerCert() {
 			dns = append(
@@ -85,6 +79,13 @@ func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, cn, sa
 				"kubernetes.default.svc",
 				"kubernetes.default.svc.cluster.local",
 			)
+
+			if len(svcIp) > 0 {
+				ips = append(ips, svcIp)
+			} else if len(defaultSvcIp) > 0 {
+				defaultIp := net.ParseIP(defaultSvcIp)
+				ips = append(ips, defaultIp)
+			}
 		}
 	}
 

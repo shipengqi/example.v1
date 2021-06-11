@@ -15,6 +15,7 @@ const BaseDuration = 24 * 60 * 60 * 1000 * 1000 * 1000
 type Certificate struct {
 	Name          string
 	CN            string
+	Host          string
 	UintTime      string
 	Overwrite     bool
 	IsCA          bool
