@@ -61,6 +61,10 @@ func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, cn, sa
 	if i.IsKubeletClientCert() {
 		cn = fmt.Sprintf("%s%s", KubeletCertCNPrefix, cn)
 	}
+	if i.IsSchedulerClientCert() || i.IsControllerClientCert() {
+		cn = i.CN
+	}
+
 	if i.IsServerCert() {
 		log.Debugf("server cert: %s", i.Name)
 		serverDNSNames, serverIps, svcIp := parseSan(san)
@@ -110,6 +114,13 @@ func (i *CertificateSetItem) IsKubeRegistryCert() bool {
 	return i.Name == CertNameKubeRegistry
 }
 
+func (i *CertificateSetItem) IsSchedulerClientCert() bool {
+	return i.Name == CertNameSchedulerClient
+}
+
+func (i *CertificateSetItem) IsControllerClientCert() bool {
+	return i.Name == CertNameControllerClient
+}
 var CertificateSet = []CertificateSetItem{
 	{
 		Certificate: &certs.Certificate{

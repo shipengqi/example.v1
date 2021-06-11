@@ -40,7 +40,7 @@ func (a *renewSubExternal) Run() error {
 		}
 	}
 
-	log.Info("Renewing certificates ...")
+	log.Info("Renewing external certificates ...")
 
 	var sub Interface
 	if len(a.cfg.Cert) > 0 && len(a.cfg.Key) > 0 {
