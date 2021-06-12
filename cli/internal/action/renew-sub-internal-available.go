@@ -127,7 +127,7 @@ func (a *renewSubInternalAvailable) getNodes() ([]node.Node, error) {
 		if ok {
 			isMaster, err := strconv.ParseBool(m)
 			if err != nil {
-				log.Warnf("ParseBool, Err: %s", err)
+				log.Warnf("strconv.ParseBool(): %s", err)
 			}
 			nodes = append(nodes, node.Node{Address: v.Name, Master: isMaster})
 		} else {

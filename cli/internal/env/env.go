@@ -79,7 +79,7 @@ func New() (*Settings, error) {
 
 	values, err := retrieveEnv(ITOMCDFEnvFile, EnvKeyK8SHome, EnvKeyCDFNamespace)
 	if err != nil {
-		log.Warnf("open %s, %v", ITOMCDFEnvFile, err)
+		log.Warnf("retrieveEnv(): %v", err)
 	}
 	if v, ok := values[EnvKeyCDFNamespace]; ok {
 		log.Debugf("got env: %s, value: %s ", EnvKeyCDFNamespace, v)
@@ -92,7 +92,7 @@ func New() (*Settings, error) {
 		envfile := fmt.Sprintf("%s/bin/env.sh", v)
 		values, err = retrieveEnv(envfile, EnvKeyRuntimeDataHome)
 		if err != nil {
-			log.Warnf("open %s, %v", envfile, err)
+			log.Warnf("retrieveEnv(): %v", err)
 		}
 		if dataHome, ok := values[EnvKeyRuntimeDataHome]; ok {
 			log.Debugf("got env: %s, value: %s ", EnvKeyRuntimeDataHome, dataHome)
@@ -105,12 +105,12 @@ func New() (*Settings, error) {
 
 	version, _, err := command.Exec(fmt.Sprintf("cat %s/version.txt | awk -F . '{print $1$2}'", envs.K8SHome))
 	if err != nil {
-		log.Warnf("open version.txt, %v", err)
+		log.Warnf("open version.txt: %v", err)
 		return envs, err
 	}
 	vi, err := strconv.Atoi(strings.TrimSpace(version))
 	if err != nil {
-		log.Warnf("Atoi version, %v", err)
+		log.Warnf("strconv.Atoi(): %v", err)
 	} else {
 		envs.Version = vi
 	}
