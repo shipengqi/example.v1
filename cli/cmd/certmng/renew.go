@@ -22,7 +22,6 @@ type renewOptions struct {
 	kubeconfig    string
 	caKey         string
 	nodeType      string
-	host          string
 	outputDir     string
 	resource      string
 	resourceField string
@@ -53,9 +52,6 @@ func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 
 	if f.Changed(outputFlagName) {
 		cfg.OutputDir = o.outputDir
-	}
-	if f.Changed(hostFlagName) {
-		cfg.Host = o.host
 	}
 	if f.Changed(namespaceFlagName) {
 		cfg.Namespace = o.namespace
@@ -119,7 +115,6 @@ func addRenewFlags(f *pflag.FlagSet, o *renewOptions) {
 	f.StringVar(&o.caKey, caKeyFlagName, "", "CA key file path.")
 	f.StringVar(&o.nodeType, nodeTypeFlagName, types.NodeTypeControlPlane, nodeTypeFlagDesc)
 	f.StringVarP(&o.outputDir, outputFlagName, "d", "", "The output directory of certificates.")
-	f.StringVar(&o.host, hostFlagName, "", "The host FQDN or IP address.")
 	f.StringVarP(&o.namespace, namespaceFlagName, "n", "", "Specifies the namespace.")
 	f.StringVar(&o.cdfNamespace, cdfnsFlagName, "", "Specifies the CDF service namespace.")
 	f.BoolVar(&o.local, localFlagName, false, "Renew local internal certificates.")

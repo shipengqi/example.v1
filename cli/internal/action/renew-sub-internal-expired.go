@@ -73,7 +73,9 @@ func (a *renewSubInternalExpired) PreRun() error {
 
 	hostname, err := sysc.Hostname()
 	if err != nil {
-		return errors.Wrap(err, "get hostname")
+		log.Warnf("sysc.Hostname(): %v", err)
+	} else {
+		a.cfg.Host = hostname
 	}
 	a.cfg.Host = hostname
 	log.Debugf("get local hostname: %s", hostname)

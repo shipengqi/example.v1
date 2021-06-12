@@ -63,6 +63,7 @@ you understand and agree to assume all associated risks and hold Micro Focus har
 type rootOptions struct {
 	*renewOptions
 
+	host          string
 	serverCertSan string
 	remote        bool
 	install       bool
@@ -73,9 +74,13 @@ type rootOptions struct {
 func (o *rootOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 	o.renewOptions.combine(f, cfg)
 
+	if f.Changed(hostFlagName) {
+		cfg.Host = o.host
+	}
 	if f.Changed(serverCertSanFlagName) {
 		cfg.ServerCertSan = o.serverCertSan
 	}
+
 }
 
 func New(cfg *action.Configuration) *cobra.Command {
@@ -169,7 +174,7 @@ func addRootFlags(f *pflag.FlagSet, o *rootOptions) {
 	_ = f.MarkHidden(serverCertSanFlagName)
 	_ = f.MarkHidden(unitFlagName)
 
-	_ = f.MarkDeprecated(renewFlagName, "'renew' flag will be removed in a future version.")
-	_ = f.MarkDeprecated(applyFlagName, "'apply' flag will be removed in a future version.")
-	_ = f.MarkDeprecated(installFlagName, "'install' flag will be removed in a future version.")
+	_ = f.MarkDeprecated(renewFlagName, "Please use the 'renew' subcommand instead")
+	_ = f.MarkDeprecated(applyFlagName, "Please use the 'apply' subcommand instead")
+	_ = f.MarkDeprecated(installFlagName, "Please use the 'create' subcommand instead")
 }

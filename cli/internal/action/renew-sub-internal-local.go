@@ -3,8 +3,6 @@ package action
 import (
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 	"github.com/shipengqi/example.v1/cli/internal/sysc"
@@ -57,9 +55,10 @@ func (a *renewSubInternalLocal) PreRun() error {
 	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
 	hostname, err := sysc.Hostname()
 	if err != nil {
-		return errors.Wrap(err, "get hostname")
+		log.Warnf("sysc.Hostname(): %v", err)
+	} else {
+		a.cfg.Host = hostname
 	}
-	a.cfg.Host = hostname
 	log.Debugf("get local hostname: %s", hostname)
 
 	a.cfg.Debug()

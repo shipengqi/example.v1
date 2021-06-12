@@ -297,7 +297,7 @@ func (a *renewSubInternalAvailable) applyOnNodes(nodes []node.Node) error {
 	for _, v := range nodes {
 		err := v.Exec(path.Join(a.cfg.Env.K8SHome, "scripts/renewCert --apply --remote"))
 		if err != nil {
-			log.Errorf("Apply certificates on %s, ERR: %s", v.Address, err)
+			log.Errorf("Apply certificates on %s, ERR: %v", v.Address, err)
 			log.Error("")
 		} else {
 			log.Infof("Apply certificates on %s successfully.", v.Address)
