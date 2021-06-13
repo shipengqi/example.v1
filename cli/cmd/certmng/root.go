@@ -174,7 +174,7 @@ func addRootFlags(f *pflag.FlagSet, o *rootOptions) {
 	_ = f.MarkHidden(serverCertSanFlagName)
 	_ = f.MarkHidden(unitFlagName)
 
-	_ = f.MarkDeprecated(renewFlagName, "Please use the 'renew' subcommand instead")
-	_ = f.MarkDeprecated(applyFlagName, "Please use the 'apply' subcommand instead")
-	_ = f.MarkDeprecated(installFlagName, "Please use the 'create' subcommand instead")
+	_ = f.MarkDeprecated(renewFlagName, "use the 'renew' subcommand instead")
+	_ = f.MarkDeprecated(applyFlagName, "use the 'apply' subcommand instead")
+	_ = f.MarkDeprecated(installFlagName, "use the 'create' subcommand instead")
 }
