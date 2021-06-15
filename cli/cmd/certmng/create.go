@@ -15,7 +15,6 @@ type createOptions struct {
 	host          string
 	serverCertSan string
 	outputDir     string
-	cdfNamespace  string
 	validity      int
 }
 
@@ -34,9 +33,6 @@ func (o *createOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 	}
 	if f.Changed(outputFlagName) {
 		cfg.OutputDir = o.outputDir
-	}
-	if f.Changed(cdfnsFlagName) {
-		cfg.Env.CDFNamespace = o.cdfNamespace
 	}
 
 	// default value
@@ -68,7 +64,6 @@ func newCreateCmd(cfg *action.Configuration) *cobra.Command {
 	f.StringVar(&o.nodeType, nodeTypeFlagName, types.NodeTypeControlPlane, nodeTypeFlagDesc)
 	f.StringVar(&o.host, hostFlagName, "", "The host FQDN or IP address.")
 	f.StringVar(&o.serverCertSan, serverCertSanFlagName, "", "server-cert-san for node.")
-	f.StringVar(&o.cdfNamespace, cdfnsFlagName, "", "Specifies the CDF service namespace.")
 	f.IntVarP(&o.validity, validityFlagName, "V", 365, validityFlagDesc)
 
 	return c

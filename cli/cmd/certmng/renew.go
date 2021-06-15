@@ -27,6 +27,7 @@ type renewOptions struct {
 	resourceField string
 	skipConfirm   bool
 	local         bool
+	primary       bool
 	validity      int
 }
 
@@ -63,7 +64,9 @@ func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 	if f.Changed(kubeconfigFlagName) {
 		cfg.Kube.Kubeconfig = o.kubeconfig
 	}
-
+	if f.Changed(primaryFlagName) {
+		cfg.Cluster.IsPrimary = o.primary
+	}
 	if len(cfg.Namespace) == 0 {
 		cfg.Namespace = cfg.Env.CDFNamespace
 	}
@@ -118,6 +121,7 @@ func addRenewFlags(f *pflag.FlagSet, o *renewOptions) {
 	f.StringVarP(&o.namespace, namespaceFlagName, "n", "", "Specifies the namespace.")
 	f.StringVar(&o.cdfNamespace, cdfnsFlagName, "", "Specifies the CDF service namespace.")
 	f.BoolVar(&o.local, localFlagName, false, "Renew local internal certificates.")
+	f.BoolVar(&o.primary, primaryFlagName, false, "Primary deployment.")
 	f.StringVar(&o.unit, unitFlagName, "d", "unit of time (d/m), For testing.")
 	f.StringVar(&o.kubeconfig, kubeconfigFlagName, "", "Specifies kube config file.")
 	f.StringVar(&o.resource, sourceFlagName, action.SecretNameNginxDefault, "Specifies the resource name(s). Format: <name>,<name>. e.g. '--resource secret1,secret2'")
@@ -125,4 +129,5 @@ func addRenewFlags(f *pflag.FlagSet, o *renewOptions) {
 		"Specifies the certificate field of the source data.")
 
 	_ = f.MarkHidden(unitFlagName)
+	_ = f.MarkHidden(cdfnsFlagName)
 }

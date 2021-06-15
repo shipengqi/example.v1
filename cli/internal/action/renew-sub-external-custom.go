@@ -33,17 +33,25 @@ func (a *renewSubExternalCustom) Run() error {
 	data[a.cfg.ResourceField+".crt"] = string(a.customCrt)
 	data[a.cfg.ResourceField+".key"] = string(a.customKey)
 
-	// apply secret
+	tmp := []string{
+		a.cfg.Namespace,
+	}
+	if a.cfg.Cluster.IsPrimary {
+		tmp = append(tmp, a.cfg.Env.CDFNamespace)
+	}
 	secrets := strings.Split(a.cfg.Resource, ",")
 	for k := range secrets {
 		secret := strings.TrimSpace(secrets[k])
 		if len(secret) == 0 {
 			continue
 		}
-		log.Debugf("Apply %s in %s", secret, a.cfg.Namespace)
-		_, err := a.kube.ApplySecret(a.cfg.Namespace, secret, data)
-		if err != nil {
-			return errors.Wrapf(err, "apply %s, namespace: %s", secret, a.cfg.Namespace)
+		// apply secret
+		for j := range tmp {
+			log.Infof("Apply %s in %s", secret, tmp[j])
+			_, err := a.kube.ApplySecret(tmp[j], secret, data)
+			if err != nil {
+				return errors.Wrapf(err, "apply %s, namespace: %s", secret, tmp[j])
+			}
 		}
 	}
 
@@ -54,13 +62,15 @@ func (a *renewSubExternalCustom) Run() error {
 		if err != nil {
 			return err
 		}
-		log.Debugf("Apply %s in %v", ConfigMapNamePublicCA, a.cfg.Namespace)
 		newData := make(map[string]string)
-		newData["CUS_ca.crt"] = string(cacertData)
+		newData[ResourceKeyCUSCert] = string(cacertData)
 
-		_, err = a.kube.ApplyConfigMap(a.cfg.Namespace, ConfigMapNamePublicCA, newData)
-		if err != nil {
-			return errors.Wrapf(err, "apply %s, namespace: %s", ConfigMapNamePublicCA, a.cfg.Namespace)
+		for j := range tmp {
+			log.Infof("Apply %s in %v", ConfigMapNamePublicCA, tmp[j])
+			_, err = a.kube.ApplyConfigMap(tmp[j], ConfigMapNamePublicCA, newData)
+			if err != nil {
+				return errors.Wrapf(err, "apply %s, namespace: %s", ConfigMapNamePublicCA, tmp[j])
+			}
 		}
 	}
 

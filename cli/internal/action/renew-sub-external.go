@@ -1,6 +1,7 @@
 package action
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -8,6 +9,11 @@ import (
 	"github.com/shipengqi/example.v1/cli/internal/utils"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/prompt"
+)
+
+const (
+	LabelPrefixDeploymentUuid = "deployments.microfocus.com/deployment-uuid:"
+	LabelPrefixDeploymentName = "deployments.microfocus.com/deployment-name:"
 )
 
 type renewSubExternal struct {
@@ -93,6 +99,32 @@ func (a *renewSubExternal) PreRun() error {
 		a.isCustom = true
 	} else {
 		log.Warn("This command will overwrite the external certificates with self-singed certificates.")
+	}
+
+	cm, err := a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDF)
+	if err != nil {
+		log.Warnf("kube.GetConfigMap(): %v", err)
+	} else {
+		a.cfg.Cluster.ExternalHost = cm.Data[ResourceKeyExternalHost]
+		if v, ok := cm.Data[ResourceKeyDeploymentUuid]; !ok {
+			return errors.Errorf("%s is nil", ResourceKeyDeploymentUuid)
+		} else {
+			log.Debug("Checking if the current deployment is PRIMARY ...")
+			ns, err := a.kube.GetNamespacesWithLabel(fmt.Sprintf("%s %s", LabelPrefixDeploymentUuid, v))
+			if err != nil {
+				return err
+			}
+
+			if len(ns.Items) == 0 {
+				return errors.Errorf("namespaces with uuid: %s not found", ResourceKeyDeploymentUuid)
+			}
+			for i := range ns.Items {
+				if ns.Items[i].Name == a.cfg.Env.CDFNamespace {
+					a.cfg.Cluster.IsPrimary = true
+					break
+				}
+			}
+		}
 	}
 
 	return nil

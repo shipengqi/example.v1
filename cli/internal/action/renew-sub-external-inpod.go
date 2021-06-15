@@ -28,7 +28,12 @@ func NewRenewSubExternalInPod(cfg *Configuration) Interface {
 	}
 	cfg.Vault.CAs = cas
 
-	g, err := deployment.New(cfg.Env.CDFNamespace, cfg.Kube, cfg.Vault)
+	g, err := deployment.New(
+		cfg.Namespace,
+		cfg.Env.CDFNamespace,
+		cfg.Cluster.IsPrimary,
+		cfg.Kube,
+		cfg.Vault)
 	if err != nil {
 		panic(err)
 	}
@@ -48,8 +53,9 @@ func (a *renewSubExternalInPod) Run() error {
 		log.Debugf("add secret %s ro resource", SecretNameNginxFrontend)
 		a.cfg.Resource = fmt.Sprintf("%s,%s", a.cfg.Resource, SecretNameNginxFrontend)
 	}
+
 	return a.generator.GenAndDump(&certs.Certificate{
-		CN:       a.cfg.Host,
+		CN:       a.cfg.Cluster.ExternalHost,
 		UintTime: a.cfg.Unit,
 		Validity: a.cfg.Validity,
 	}, fmt.Sprintf("%s %s", a.cfg.Resource, a.cfg.ResourceField))
@@ -58,14 +64,14 @@ func (a *renewSubExternalInPod) Run() error {
 
 func (a *renewSubExternalInPod) PreRun() error {
 	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
-	a.cfg.Debug()
-
 	cm, err := a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDF)
 	if err != nil {
 		log.Warnf("kube.GetConfigMap(): %v", err)
 	} else {
-		a.cfg.Cluster.ExternalHost = cm.Data["EXTERNAL_ACCESS_HOST"]
+		a.cfg.Cluster.ExternalHost = cm.Data[ResourceKeyExternalHost]
 	}
+
+	a.cfg.Debug()
 
 	return nil
 }

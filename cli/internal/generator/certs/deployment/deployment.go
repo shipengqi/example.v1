@@ -16,17 +16,23 @@ import (
 )
 
 type generator struct {
-	namespace string
-	vault     *vault.Client
-	kube      *kube.Client
+	namespace    string
+	cdfNamespace string
+	primary      bool
+	vault        *vault.Client
+	kube         *kube.Client
 }
 
 const (
-	SecretNameVaultPass     = "vault-passphrase"
-	SecretNameVaultCred     = "vault-credential"
+	SecretNameVaultPass    = "vault-passphrase"
+	SecretNameVaultCred    = "vault-credential"
+	ResourceKeyPassphrase  = "passphrase"
+	ResourceKeyRootToken   = "root.token"
+	ResourceKeyTokenEncIv  = "root.token.enc_iv"
+	ResourceKeyTokenEncKey = "root.token.enc_key"
 )
 
-func New(ns string, k *kube.Config, v *vault.Config) (certs.Generator, error) {
+func New(ns, cdfns string, primary bool, k *kube.Config, v *vault.Config) (certs.Generator, error) {
 	kclient, err := kube.New(k)
 	if err != nil {
 		return nil, err
@@ -36,9 +42,11 @@ func New(ns string, k *kube.Config, v *vault.Config) (certs.Generator, error) {
 		return nil, err
 	}
 	return &generator{
-		namespace: ns,
-		vault:     vclient,
-		kube:      kclient,
+		namespace:    ns,
+		cdfNamespace: cdfns,
+		primary:      primary,
+		vault:        vclient,
+		kube:         kclient,
 	}, nil
 }
 
@@ -71,15 +79,23 @@ func (g *generator) GenAndDump(c *certs.Certificate, resources string) (err erro
 	data[field+".crt"] = cert
 	data[field+".key"] = key
 
+	tmp := []string{
+		g.namespace,
+	}
+	if g.primary {
+		tmp = append(tmp, g.cdfNamespace)
+	}
+
 	for k := range secrets {
 		secret := strings.TrimSpace(secrets[k])
 		if len(secret) == 0 {
 			continue
 		}
-
-		_, err = g.kube.ApplySecretBytes(g.namespace, secret, data)
-		if err != nil {
-			return err
+		for j := range tmp {
+			_, err = g.kube.ApplySecretBytes(tmp[j], secret, data)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -96,11 +112,11 @@ func (g *generator) setToken() error {
 		return err
 	}
 
-	passphrase := vaultPassphrase.Data["passphrase"]
-	encryptedToken := vaultCredential.Data["root.token"]
+	passphrase := vaultPassphrase.Data[ResourceKeyPassphrase]
+	encryptedToken := vaultCredential.Data[ResourceKeyRootToken]
 	encryptedStr := base64.StdEncoding.EncodeToString(encryptedToken)
-	tokenEncIv := vaultCredential.Data["root.token.enc_iv"]
-	tokenEncKey := vaultCredential.Data["root.token.enc_key"]
+	tokenEncIv := vaultCredential.Data[ResourceKeyTokenEncIv]
+	tokenEncKey := vaultCredential.Data[ResourceKeyTokenEncKey]
 
 	token, err := sysc.ParseVaultToken(encryptedStr, string(passphrase), string(tokenEncKey), string(tokenEncIv))
 	if err != nil {
@@ -110,12 +126,12 @@ func (g *generator) setToken() error {
 	return nil
 }
 
-func parseResources(resources string) ([]string, string, error) {
+func parseResources(resources string) (names []string, field string, err error) {
 	rs := strings.Split(resources, " ")
 	if len(rs) < 2 {
 		return nil, "", errors.New("invalid resources")
 	}
-	names := strings.Split(rs[0], ",")
-	field := rs[1]
+	names = strings.Split(rs[0], ",")
+	field = rs[1]
 	return names, field, nil
 }

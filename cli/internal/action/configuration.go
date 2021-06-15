@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	DefaultVaultAddr       = "https://127.0.0.1:8200"
+	DefaultVaultAddr = "https://127.0.0.1:8200"
 )
 
 type Options struct {
@@ -50,6 +50,7 @@ type ClusterInfo struct {
 	ExternalHost    string
 	FirstMasterNode string
 	EtcdEndpoint    string
+	IsPrimary       bool
 }
 
 type Configuration struct {

@@ -32,6 +32,7 @@ const (
 	typeFlagName          = "type"
 	cdfnsFlagName         = "cdf-namespace"
 	localFlagName         = "local"
+	primaryFlagName       = "primary"
 	kubeconfigFlagName    = "kubeconfig"
 	sourceFlagName        = "resource"
 	sourceFieldFlagName   = "field"
@@ -165,6 +166,7 @@ func addRootFlags(f *pflag.FlagSet, o *rootOptions) {
 	f.BoolVar(&o.local, localFlagName, false, "Renew local internal certificates.")
 	f.BoolVar(&o.remote, remoteFlagName, false, "Apply certificates in ssh mode.")
 	f.BoolVar(&o.install, installFlagName, false, "Install first master node.")
+	f.BoolVar(&o.primary, primaryFlagName, false, "Primary deployment.")
 	f.StringVar(&o.serverCertSan, serverCertSanFlagName, "", "server-cert-san for installing first master node.")
 	f.StringVar(&o.unit, unitFlagName, "d", "unit of time (d/m), For testing.")
 	f.StringVar(&o.kubeconfig, kubeconfigFlagName, "", "Specifies kube config file.")
@@ -173,6 +175,7 @@ func addRootFlags(f *pflag.FlagSet, o *rootOptions) {
 	_ = f.MarkHidden(installFlagName)
 	_ = f.MarkHidden(serverCertSanFlagName)
 	_ = f.MarkHidden(unitFlagName)
+	_ = f.MarkHidden(cdfnsFlagName)
 
 	_ = f.MarkDeprecated(renewFlagName, "use the 'renew' subcommand instead")
 	_ = f.MarkDeprecated(applyFlagName, "use the 'apply' subcommand instead")

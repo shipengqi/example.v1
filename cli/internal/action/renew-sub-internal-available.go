@@ -104,11 +104,11 @@ func (a *renewSubInternalAvailable) PreRun() error {
 	if err != nil {
 		log.Warnf("kube.GetConfigMap(): %v", err)
 	} else {
-		a.cfg.Cluster.VirtualIP = cm.Data["HA_VIRTUAL_IP"]
-		a.cfg.Cluster.LoadBalanceIP = cm.Data["LOAD_BALANCER_HOST"]
-		a.cfg.Cluster.KubeServiceIP = cm.Data["K8S_DEFAULT_SVC_IP"]
-		a.cfg.Cluster.FirstMasterNode = cm.Data["FIRST_MASTER_NODE"]
-		a.cfg.Cluster.EtcdEndpoint = cm.Data["ETCD_ENDPOINT"]
+		a.cfg.Cluster.VirtualIP = cm.Data[ResourceKeyHAVirtualIp]
+		a.cfg.Cluster.LoadBalanceIP = cm.Data[ResourceKeyLBHost]
+		a.cfg.Cluster.KubeServiceIP = cm.Data[ResourceKeyK8SDefaultSVCIp]
+		a.cfg.Cluster.FirstMasterNode = cm.Data[ResourceKeyFirstMaster]
+		a.cfg.Cluster.EtcdEndpoint = cm.Data[ResourceKeyETCDEndpoint]
 	}
 
 	a.cfg.Debug()

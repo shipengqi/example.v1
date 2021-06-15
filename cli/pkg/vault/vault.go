@@ -11,6 +11,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	ResourceKeyCertificate = "certificate"
+	ResourceKeyIssuingCA   = "issuing_ca"
+	ResourceKeyPrivateKey  = "private_key"
+)
+
 type Client struct {
 	client *api.Client
 	config *Config
@@ -85,29 +91,29 @@ func (c *Client) GenerateCert(ttl string, hostname string, pki string) (*CrtData
 		return nil, err
 	}
 	crt := &CrtData{}
-	if _, ok := res.Data["certificate"]; !ok {
+	if _, ok := res.Data[ResourceKeyCertificate]; !ok {
 		return nil, errors.New("certificate nil")
 	}
-	if _, ok := res.Data["issuing_ca"]; !ok {
+	if _, ok := res.Data[ResourceKeyIssuingCA]; !ok {
 		return nil, errors.New("issuing_ca nil")
 	}
-	if _, ok := res.Data["private_key"]; !ok {
+	if _, ok := res.Data[ResourceKeyPrivateKey]; !ok {
 		return nil, errors.New("private_key nil")
 	}
 
-	if v, ok := res.Data["certificate"].(string); !ok {
+	if v, ok := res.Data[ResourceKeyCertificate].(string); !ok {
 		return nil, errors.New("certificate type error")
 	} else {
 		crt.Certificate = v
 	}
 
-	if v, ok := res.Data["issuing_ca"].(string); !ok {
+	if v, ok := res.Data[ResourceKeyIssuingCA].(string); !ok {
 		return nil, errors.New("issuing_ca type error")
 	} else {
 		crt.IssuingCa = v
 	}
 
-	if v, ok := res.Data["private_key"].(string); !ok {
+	if v, ok := res.Data[ResourceKeyPrivateKey].(string); !ok {
 		return nil, errors.New("private_key type error")
 	} else {
 		crt.PrivateKey = v

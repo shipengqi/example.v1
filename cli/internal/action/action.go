@@ -15,17 +15,24 @@ import (
 )
 
 const (
-	ConfigMapNameCDFCluster = "cdf-cluster-host"
-	ConfigMapNameCDF        = "cdf"
-	ConfigMapNamePublicCA   = "public-ca-certificates"
-	SecretNameNginxDefault  = "nginx-default-secret"
-	SecretNameNginxFrontend = "nginx-frontend-secret"
-	SecretNameK8SRootCert   = "k8s-root-cert"
-	ResourceKeyRECert       = "RE_ca.crt"
-	ResourceKeyRICCert      = "RIC_ca.crt"
-	ResourceKeyRIDCert      = "RID_ca.crt"
-	ResourceKeyCUSCert      = "CUS_ca.crt"
-	ResourceKeyCAKey        = "ca.key"
+	ConfigMapNameCDFCluster    = "cdf-cluster-host"
+	ConfigMapNameCDF           = "cdf"
+	ConfigMapNamePublicCA      = "public-ca-certificates"
+	SecretNameNginxDefault     = "nginx-default-secret"
+	SecretNameNginxFrontend    = "nginx-frontend-secret"
+	SecretNameK8SRootCert      = "k8s-root-cert"
+	ResourceKeyRECert          = "RE_ca.crt"
+	ResourceKeyRICCert         = "RIC_ca.crt"
+	ResourceKeyRIDCert         = "RID_ca.crt"
+	ResourceKeyCUSCert         = "CUS_ca.crt"
+	ResourceKeyCAKey           = "ca.key"
+	ResourceKeyHAVirtualIp     = "HA_VIRTUAL_IP"
+	ResourceKeyLBHost          = "LOAD_BALANCER_HOST"
+	ResourceKeyK8SDefaultSVCIp = "K8S_DEFAULT_SVC_IP"
+	ResourceKeyExternalHost    = "EXTERNAL_ACCESS_HOST"
+	ResourceKeyFirstMaster     = "FIRST_MASTER_NODE"
+	ResourceKeyETCDEndpoint    = "ETCD_ENDPOINT"
+	ResourceKeyDeploymentUuid  = "DEPLOYMENT_UUID"
 )
 
 const (
