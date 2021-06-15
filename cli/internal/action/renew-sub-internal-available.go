@@ -78,8 +78,6 @@ func (a *renewSubInternalAvailable) Run() error {
 			return err
 		}
 	}
-	log.Debug("gen cert for all nodes")
-
 	for _, v := range nodes {
 		if v.Address == a.cfg.Cluster.FirstMasterNode {
 			v.First = true

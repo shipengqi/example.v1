@@ -57,9 +57,9 @@ func (i *CertificateSetItem) CanDep(isMaster bool) bool {
 	return false
 }
 
-func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, cn, san, defaultSvcIp string) {
+func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, address, cn, san, defaultSvcIp string) {
 	if i.IsKubeletClientCert() {
-		cn = fmt.Sprintf("%s%s", KubeletCertCNPrefix, cn)
+		cn = fmt.Sprintf("%s%s", KubeletCertCNPrefix, address)
 	}
 	if i.IsSchedulerClientCert() || i.IsControllerClientCert() {
 		cn = i.CN
@@ -91,11 +91,12 @@ func (i *CertificateSetItem) CombineServerSan(dns []string, ips []net.IP, cn, sa
 				ips = append(ips, defaultIp)
 			}
 		}
+		// set dns ips for server crt
+		i.DNSNames = dns
+		i.IPs = ips
 	}
 
 	i.CN = cn
-	i.DNSNames = dns
-	i.IPs = ips
 }
 
 func (i *CertificateSetItem) IsServerCert() bool {

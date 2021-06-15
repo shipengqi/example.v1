@@ -101,7 +101,8 @@ func Execute(a Interface) error {
 }
 
 func (a *action) iterate(address string, master, overwrite bool, generator certs.Generator) error {
-	dnsnames, ipaddrs, cn := a.combineSubject(address, master)
+	dnsnames, ipaddrs, cn := a.combineSubject(address)
+	log.Debugf("gen cert for host: %s", address)
 	log.Debugf("initial cert DNS: %s", dnsnames)
 	log.Debugf("initial cert IPs: %s", ipaddrs)
 	log.Debugf("initial cert CN: %s", cn)
@@ -122,7 +123,7 @@ func (a *action) iterate(address string, master, overwrite bool, generator certs
 		copy(dns, dnsnames)
 		copy(ips, ipaddrs)
 
-		v.CombineServerSan(dns, ips, cn, a.cfg.ServerCertSan, a.cfg.Cluster.KubeServiceIP)
+		v.CombineServerSan(dns, ips, address, cn, a.cfg.ServerCertSan, a.cfg.Cluster.KubeServiceIP)
 
 		log.Debugf("cert DNS: %s", v.DNSNames)
 		log.Debugf("cert IPs: %s", v.IPs)
@@ -180,18 +181,10 @@ func (a *action) iterateSecrets(generator certs.Generator) error {
 	return nil
 }
 
-func (a *action) combineSubject(address string, master bool) ([]string, []net.IP, string) {
+func (a *action) combineSubject(address string) ([]string, []net.IP, string) {
 	cn := address
 	var dnsNames []string
 	var ips []net.IP
-
-	if !master {
-		if utils.IsIPV4(address) {
-			cn = fmt.Sprintf("host-%s", address)
-		}
-
-		return dnsNames, ips, cn
-	}
 
 	if a.cfg.Cluster.VirtualIP != "" {
 		ips = append(ips, net.ParseIP(a.cfg.Cluster.VirtualIP))
