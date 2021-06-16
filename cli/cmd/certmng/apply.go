@@ -26,6 +26,7 @@ func newApplyCmd(cfg *action.Configuration) *cobra.Command {
 		},
 	}
 
+	c.DisableFlagsInUseLine = true
 	f := c.Flags()
 	f.BoolVar(&remote, remoteFlagName, false, "apply certificates in ssh mode")
 	_ = f.MarkHidden(remoteFlagName)

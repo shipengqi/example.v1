@@ -44,6 +44,7 @@ func newCheckCmd(cfg *action.Configuration) *cobra.Command {
 		},
 	}
 	c.Flags().SortFlags = false
+	c.DisableFlagsInUseLine = true
 	f := c.Flags()
 	f.StringVar(&o.cert, certFlagName, "", "Certificate file path.")
 	f.StringVar(&o.resource, sourceFlagName, "", sourceFlagDesc)

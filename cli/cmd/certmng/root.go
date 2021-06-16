@@ -1,6 +1,11 @@
 package certmng
 
 import (
+	"bytes"
+	"os"
+	"path/filepath"
+	"text/template"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -42,6 +47,18 @@ Examples:
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
 `
 
+var examplesTemplate = `
+  SubCommands Mode:
+  ./{{.}} renew -t internal -V 365         Renew the internal certificates.
+  ./{{.}} renew -t external -V 365         Renew the external certificates.
+  ./{{.}} create -t internal -V 365        Create the internal certificates.
+  ./{{.}} apply                            Apply the certificates.
+
+  Flags Mode (To be compatible with older versions, will be deprecated in a future version.):
+  ./{{.}} --renew -t internal -V 365       Renew the internal certificates.
+  ./{{.}} --renew -t external -V 365       Renew the external certificates.
+  ./{{.}} --apply                          Apply the certificates.`
+
 const (
 	caCertFlagName        = "tls-cacert"
 	caKeyFlagName         = "tls-cakey"
@@ -81,17 +98,6 @@ you understand and agree to assume all associated risks and hold Micro Focus har
 	typeFlagDesc     = "Specifies the type (internal/external) of the server certificates."
 	sourceFlagDesc   = "Specifies the resource type (cm/secret), name. Format: <type>.<name>. e.g. 'cm.tls-cas'"
 	validityFlagDesc = "Specifies the validity period (days) of server certificate."
-	examplesDesc     = `
-  SubCommands Mode:
-  ./cert-manager renew -t internal -V 365         Renew the internal certificates.
-  ./cert-manager renew -t external -V 365         Renew the external certificates.
-  ./cert-manager create -t internal -V 365        Create the internal certificates.
-  ./cert-manager apply                            Apply the certificates.
-
-  Flags Mode (To be compatible with older versions, will be deprecated in a future version.):
-  ./cert-manager --renew -t internal -V 365       Renew the internal certificates.
-  ./cert-manager --renew -t external -V 365       Renew the external certificates.
-  ./cert-manager --apply                          Apply the certificates.`
 )
 
 type rootOptions struct {
@@ -122,11 +128,17 @@ func New(cfg *action.Configuration) *cobra.Command {
 		renewOptions: &renewOptions{},
 	}
 
+	var buf bytes.Buffer
+	baseName := filepath.Base(os.Args[0])
+	tmpl, _ := template.New(baseName).Parse(examplesTemplate)
+
+	_ = tmpl.Execute(&buf, baseName)
+
 	c := &cobra.Command{
-		Use:     "cert-manager",
+		Use:     baseName + " [options]",
 		Short:   "Manages TLS certificates in CDF clusters.",
 		Long:    rootDesc,
-		Example: examplesDesc,
+		Example: buf.String(),
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
 			if cmd.Name() == "help" {
 				return
@@ -176,6 +188,8 @@ func New(cfg *action.Configuration) *cobra.Command {
 	addRootFlags(c.Flags(), o)
 
 	c.SetUsageTemplate(usageTemplate)
+	// Use:     baseName + " [options]",
+	// [options] has been added here, by default, cobra will add [flag] after useline
 	c.DisableFlagsInUseLine = true
 	return c
 }

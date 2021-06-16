@@ -57,7 +57,7 @@ func newCreateCmd(cfg *action.Configuration) *cobra.Command {
 	}
 
 	c.Flags().SortFlags = false
-
+	c.DisableFlagsInUseLine = true
 	f := c.Flags()
 	f.StringVar(&o.caCert, caCertFlagName, "", "CA certificate file path.")
 	f.StringVar(&o.caKey, caKeyFlagName, "", "CA key file path.")

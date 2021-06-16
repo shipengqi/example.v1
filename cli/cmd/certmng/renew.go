@@ -99,7 +99,7 @@ func newRenewCmd(cfg *action.Configuration) *cobra.Command {
 	}
 
 	c.Flags().SortFlags = false
-
+	c.DisableFlagsInUseLine = true
 	addRenewFlags(c.Flags(), o)
 
 	return c
