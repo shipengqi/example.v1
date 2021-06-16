@@ -86,7 +86,7 @@ func (o *renewOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 func newRenewCmd(cfg *action.Configuration) *cobra.Command {
 	o := &renewOptions{}
 	c := &cobra.Command{
-		Use:   renewFlagName,
+		Use:   renewFlagName + " [options]",
 		Short: "Renew the internal/external certificates in CDF clusters.",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			f := cmd.Flags()

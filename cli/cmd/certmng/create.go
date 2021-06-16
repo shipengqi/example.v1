@@ -44,7 +44,7 @@ func (o *createOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 func newCreateCmd(cfg *action.Configuration) *cobra.Command {
 	o := &createOptions{}
 	c := &cobra.Command{
-		Use:   "create",
+		Use:   "create [options]",
 		Short: "Create the internal certificates in CDF clusters.",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			f := cmd.Flags()

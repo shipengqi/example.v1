@@ -32,7 +32,7 @@ func (o *checkOptions) combine(f *pflag.FlagSet, cfg *action.Configuration) {
 func newCheckCmd(cfg *action.Configuration) *cobra.Command {
 	o := &checkOptions{}
 	c := &cobra.Command{
-		Use:   "check",
+		Use:   "check [options]",
 		Short: "Check the internal/external certificates in CDF clusters.",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			f := cmd.Flags()
