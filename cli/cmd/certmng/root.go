@@ -9,6 +9,39 @@ import (
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 
+// HelpTemplate is the help template for cert-manager commands
+// This uses the short and long options.
+// command should not use this.
+// const helpTemplate = `{{.Short}}
+// Description:
+//   {{.Long}}
+// {{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`
+
+// UsageTemplate is the usage template for cert-manager commands
+// This blocks the displaying of the global options. The main cert-manager
+// command should not use this.
+const usageTemplate = `Usage:{{if (and .Runnable (not .HasAvailableSubCommands))}}
+  {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
+  {{.UseLine}} [command]{{end}}{{if gt (len .Aliases) 0}}
+
+Aliases:
+  {{.NameAndAliases}}{{end}}{{if .HasAvailableSubCommands}}
+
+Available Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+
+Options:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
+
+Global Options:
+{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasExample}}
+
+Examples:
+  {{.Example}}{{end}}{{if .HasAvailableSubCommands}}
+
+Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
+`
+
 const (
 	caCertFlagName        = "tls-cacert"
 	caKeyFlagName         = "tls-cakey"
@@ -142,6 +175,8 @@ func New(cfg *action.Configuration) *cobra.Command {
 
 	addRootFlags(c.Flags(), o)
 
+	c.SetUsageTemplate(usageTemplate)
+	c.DisableFlagsInUseLine = true
 	return c
 }
 
