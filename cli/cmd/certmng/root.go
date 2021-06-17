@@ -219,12 +219,18 @@ func addRootFlags(f *pflag.FlagSet, o *rootOptions) {
 	f.StringVar(&o.serverCertSan, serverCertSanFlagName, "", "server-cert-san for installing first master node.")
 	f.StringVar(&o.unit, unitFlagName, "d", "unit of time (d/m), For testing.")
 	f.StringVar(&o.kubeconfig, kubeconfigFlagName, "", "Specifies kube config file.")
+	f.StringVar(&o.resource, sourceFlagName, action.SecretNameNginxDefault, "Specifies the resource name(s). Format: <name>,<name>. e.g. '--resource secret1,secret2'")
+	f.StringVar(&o.resourceField, sourceFieldFlagName, action.DefaultResourceKeyTls,
+		"Specifies the certificate field of the source data.")
 
 	_ = f.MarkHidden(remoteFlagName)
 	_ = f.MarkHidden(installFlagName)
 	_ = f.MarkHidden(serverCertSanFlagName)
 	_ = f.MarkHidden(unitFlagName)
 	_ = f.MarkHidden(cdfnsFlagName)
+	_ = f.MarkHidden(primaryFlagName)
+	_ = f.MarkHidden(sourceFlagName)
+	_ = f.MarkHidden(sourceFieldFlagName)
 
 	_ = f.MarkDeprecated(renewFlagName, "use the 'renew' subcommand instead")
 	_ = f.MarkDeprecated(applyFlagName, "use the 'apply' subcommand instead")

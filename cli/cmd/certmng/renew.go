@@ -130,4 +130,5 @@ func addRenewFlags(f *pflag.FlagSet, o *renewOptions) {
 
 	_ = f.MarkHidden(unitFlagName)
 	_ = f.MarkHidden(cdfnsFlagName)
+	_ = f.MarkHidden(primaryFlagName)
 }

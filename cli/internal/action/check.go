@@ -18,15 +18,9 @@ type check struct {
 }
 
 func NewCheck(cfg *Configuration) Interface {
-	c := &check{}
-
-	if len(cfg.Resource) > 0 {
-		c.action = newAction("check", cfg)
-	} else {
-		c.action = newAction("check", cfg)
+	return &check{
+		action: newAction("check", cfg),
 	}
-
-	return c
 }
 
 func (a *check) Name() string {

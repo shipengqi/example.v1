@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	LabelPrefixDeploymentUuid = "deployments.microfocus.com/deployment-uuid:"
-	LabelPrefixDeploymentName = "deployments.microfocus.com/deployment-name:"
+	LabelPrefixDeploymentUuid = "deployments.microfocus.com/deployment-uuid"
+	LabelPrefixDeploymentName = "deployments.microfocus.com/deployment-name"
 )
 
 type renewSubExternal struct {
@@ -110,7 +110,7 @@ func (a *renewSubExternal) PreRun() error {
 			return errors.Errorf("%s is nil", ResourceKeyDeploymentUuid)
 		} else {
 			log.Debug("Checking if the current deployment is PRIMARY ...")
-			ns, err := a.kube.GetNamespacesWithLabel(fmt.Sprintf("%s %s", LabelPrefixDeploymentUuid, v))
+			ns, err := a.kube.GetNamespacesWithLabel(fmt.Sprintf("%s=%s", LabelPrefixDeploymentUuid, v))
 			if err != nil {
 				return err
 			}
