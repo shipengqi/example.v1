@@ -37,6 +37,8 @@ func (a *renew) Name() string {
 func (a *renew) PreRun() error {
 	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
 
+	// TODO remove all filter conditions and wrap pre-check as helper functions.
+	//  migrate them to sub pre-run functions
 	// ignore checks, if running in a pod
 	if a.cfg.Env.RunInPod {
 		return nil

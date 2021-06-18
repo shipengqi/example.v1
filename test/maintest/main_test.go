@@ -12,6 +12,7 @@ import (
 var w *httptest.ResponseRecorder
 
 func TestMain(m *testing.M) {
+	// flag.Parse()
 	http.DefaultServeMux.HandleFunc("/topic/", handleRequest)
 
 	w = httptest.NewRecorder()

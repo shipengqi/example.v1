@@ -68,6 +68,13 @@ func newAction(name string, cfg *Configuration) *action {
 	return c
 }
 
+func newActionWithoutKube(name string, cfg *Configuration) *action {
+	return &action{
+		name: name,
+		cfg:  cfg,
+	}
+}
+
 func (a *action) Name() string {
 	return "[action]"
 }
@@ -229,7 +236,7 @@ func (a *action) parseCAKey() (crypto.PrivateKey, error) {
 	if len(a.cfg.CAKey) > 0 && utils.IsExist(a.cfg.CAKey) {
 		log.Debugf("ParseKey(): %s", a.cfg.CAKey)
 		return utils.ParseKey(a.cfg.CAKey)
-	} else {
+	} else if a.kube != nil {
 		secret, err := a.kube.GetSecret(NamespaceKubeSystem, SecretNameK8SRootCert)
 		if err != nil {
 			return nil, err

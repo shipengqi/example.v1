@@ -18,6 +18,8 @@ require (
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/hashicorp/vault/api v1.1.0
 	github.com/json-iterator/go v1.1.10
+	github.com/onsi/ginkgo v1.12.0
+	github.com/onsi/gomega v1.7.1
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/openzipkin-contrib/zipkin-go-opentracing v0.4.5
 	github.com/openzipkin/zipkin-go v0.2.1
@@ -25,6 +27,7 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/rs/zerolog v1.20.0
 	github.com/satori/go.uuid v1.2.0
+	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1
@@ -35,7 +38,6 @@ require (
 	github.com/unknwon/com v1.0.1
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
-	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
 	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/ini.v1 v1.62.0 // indirect

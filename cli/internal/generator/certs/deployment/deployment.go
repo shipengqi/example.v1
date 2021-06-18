@@ -92,6 +92,8 @@ func (g *generator) GenAndDump(c *certs.Certificate, resources string) (err erro
 			continue
 		}
 		for j := range tmp {
+			// Todo skip apply frontend secret in suite namespace
+			log.Infof("Applying secret: %s in %s ...", secret, tmp[j])
 			_, err = g.kube.ApplySecretBytes(tmp[j], secret, data)
 			if err != nil {
 				return err

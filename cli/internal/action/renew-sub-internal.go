@@ -64,10 +64,13 @@ func (a *renewSubInternal) PreRun() error {
 		log.Warnf("The certificate validity period must less than %d.", days)
 	}
 
-	if a.iValidity.server <= 0 {
-		log.Info("The internal certificates have already expired.")
-	} else {
-		log.Infof("The internal certificates will expire in %d hour(s).", a.iValidity.server)
+	// Ignore the following checks, if the --local is true
+	if !a.cfg.Local {
+		if a.iValidity.server <= 0 {
+			log.Info("The internal certificates have already expired.")
+		} else {
+			log.Infof("The internal certificates will expire in %d hour(s).", a.iValidity.server)
+		}
 	}
 
 	// create new-certs folder for internal cert

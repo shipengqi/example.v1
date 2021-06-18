@@ -21,7 +21,7 @@ type create struct {
 
 func NewCreate(cfg *Configuration) Interface {
 	c := &create{
-		action: newAction("create", cfg),
+		action: newActionWithoutKube("create", cfg),
 	}
 
 	key, err := c.parseCAKey()
@@ -62,6 +62,7 @@ func (a *create) Run() error {
 
 func (a *create) PreRun() error {
 	log.Debugf("***** %s PreRun *****", strings.ToUpper(a.name))
+	a.cfg.Debug()
 
 	log.Debugf("Checking %s ...", a.cfg.CACert)
 	crt, err := utils.ParseCrt(a.cfg.CACert)
@@ -80,17 +81,6 @@ func (a *create) PreRun() error {
 			"will expire in %d day(s).", days)
 		log.Warnf("The certificate validity period must less than %d.", days)
 	}
-
-	cm, err := a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDFCluster)
-	if err != nil {
-		log.Warnf("kube.GetConfigMap(): %v", err)
-	} else {
-		a.cfg.Cluster.VirtualIP = cm.Data[ResourceKeyHAVirtualIp]
-		a.cfg.Cluster.LoadBalanceIP = cm.Data[ResourceKeyLBHost]
-		a.cfg.Cluster.KubeServiceIP = cm.Data[ResourceKeyK8SDefaultSVCIp]
-	}
-
-	a.cfg.Debug()
 
 	// create new-certs folder for internal cert
 	return os.MkdirAll(a.cfg.OutputDir, 0744)
