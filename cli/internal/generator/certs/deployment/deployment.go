@@ -3,14 +3,14 @@ package deployment
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/shipengqi/example.v1/cli/internal/sysc"
-	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"strings"
 
 	"github.com/pkg/errors"
 
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
+	"github.com/shipengqi/example.v1/cli/internal/sysc"
 	"github.com/shipengqi/example.v1/cli/internal/types"
+	"github.com/shipengqi/example.v1/cli/pkg/kube"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 	"github.com/shipengqi/example.v1/cli/pkg/vault"
 )
@@ -57,6 +57,10 @@ func (g *generator) Gen(c *certs.Certificate) (cert, key []byte, err error) {
 	}
 
 	log.Debugf("generate external certificates for host: %s", c.CN)
+	err = g.setToken()
+	if err != nil {
+		return nil, nil, err
+	}
 	data, err := g.vault.GenerateCert(ttl, c.CN, types.VaultPkiPathRE)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "issue cert")
@@ -79,11 +83,11 @@ func (g *generator) GenAndDump(c *certs.Certificate, resources string) (err erro
 	data[field+".crt"] = cert
 	data[field+".key"] = key
 
-	tmp := []string{
-		g.namespace,
-	}
-	if g.primary {
-		tmp = append(tmp, g.cdfNamespace)
+
+	ns := g.namespace
+
+	if g.primary && g.namespace != g.cdfNamespace {
+		ns = g.cdfNamespace
 	}
 
 	for k := range secrets {
@@ -91,13 +95,10 @@ func (g *generator) GenAndDump(c *certs.Certificate, resources string) (err erro
 		if len(secret) == 0 {
 			continue
 		}
-		for j := range tmp {
-			// Todo skip apply frontend secret in suite namespace
-			log.Infof("Applying secret: %s in %s ...", secret, tmp[j])
-			_, err = g.kube.ApplySecretBytes(tmp[j], secret, data)
-			if err != nil {
-				return err
-			}
+		log.Infof("Applying secret: %s in %s ...", secret, ns)
+		_, err = g.kube.ApplySecretBytes(ns, secret, data)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -105,11 +106,16 @@ func (g *generator) GenAndDump(c *certs.Certificate, resources string) (err erro
 }
 
 func (g *generator) setToken() error {
-	vaultPassphrase, err := g.kube.GetSecret(SecretNameVaultPass, g.namespace)
+	ns := g.namespace
+	if g.primary {
+		ns = g.cdfNamespace
+	}
+
+	vaultPassphrase, err := g.kube.GetSecret(ns, SecretNameVaultPass)
 	if err != nil {
 		return err
 	}
-	vaultCredential, err := g.kube.GetSecret(SecretNameVaultCred, g.namespace)
+	vaultCredential, err := g.kube.GetSecret(ns, SecretNameVaultCred)
 	if err != nil {
 		return err
 	}

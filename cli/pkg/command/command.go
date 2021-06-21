@@ -22,7 +22,10 @@ func Exec(command string) (string, string, error) {
 }
 
 func ExecSync(command string) error {
+	var stderr bytes.Buffer
 	cmd := exec.Command("/bin/sh", "-c", command)
+	cmd.Stderr = &stderr
+
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -32,16 +35,21 @@ func ExecSync(command string) error {
 		return err
 	}
 	reader := bufio.NewReader(stdout)
+	var lines int
 	for {
 		line, _, err2 := reader.ReadLine()
 		if err2 != nil || io.EOF == err2 {
 			break
 		}
+		lines ++
 		log.Info(string(line))
 	}
 	err = cmd.Wait()
 	if err != nil {
 		return err
+	}
+	if lines == 0 {
+		log.Info(string(stderr.Bytes()))
 	}
 	return nil
 }

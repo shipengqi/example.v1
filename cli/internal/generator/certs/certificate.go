@@ -3,11 +3,12 @@ package certs
 import (
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"github.com/shipengqi/example.v1/cli/internal/types"
 	"math/big"
 	rd "math/rand"
 	"net"
 	"time"
+
+	"github.com/shipengqi/example.v1/cli/internal/types"
 )
 
 const BaseDuration = 24 * 60 * 60 * 1000 * 1000 * 1000
@@ -15,9 +16,9 @@ const BaseDuration = 24 * 60 * 60 * 1000 * 1000 * 1000
 type Certificate struct {
 	Name          string
 	CN            string
-	Host          string  // node host, used when distributing certificates
-	UintTime      string  // used for testing
-	Overwrite     bool    // local or expired certificates need to overwrite
+	Host          string // node host, used when distributing certificates
+	UintTime      string // used for testing
+	Overwrite     bool   // local or expired certificates need to overwrite
 	IsCA          bool
 	Validity      int
 	KeyUsage      x509.KeyUsage

@@ -36,7 +36,7 @@ func (a *renewSubExternalCustom) Run() error {
 	tmp := []string{
 		a.cfg.Namespace,
 	}
-	if a.cfg.Cluster.IsPrimary {
+	if a.cfg.Cluster.IsPrimary && a.cfg.Namespace != a.cfg.Env.CDFNamespace {
 		tmp = append(tmp, a.cfg.Env.CDFNamespace)
 	}
 	secrets := strings.Split(a.cfg.Resource, ",")

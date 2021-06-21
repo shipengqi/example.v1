@@ -1,7 +1,6 @@
 package action
 
 import (
-	"github.com/shipengqi/example.v1/cli/internal/utils"
 	"os"
 	"strings"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs"
 	"github.com/shipengqi/example.v1/cli/internal/generator/certs/infra"
 	"github.com/shipengqi/example.v1/cli/internal/types"
+	"github.com/shipengqi/example.v1/cli/internal/utils"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
 )
 

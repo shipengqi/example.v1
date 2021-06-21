@@ -46,16 +46,17 @@ func (a *renewSubExternal) Run() error {
 		}
 	}
 
-	log.Info("Renewing external certificates ...")
-
 	var sub Interface
 	if len(a.cfg.Cert) > 0 && len(a.cfg.Key) > 0 {
+		log.Info("Renewing custom external certificates ...")
 		sub = NewRenewSubExternalCustom(a.cfg)
 	}
 
 	if !a.cfg.Env.RunInPod {
+		log.Info("Renewing external certificates locally ...")
 		sub = NewRenewSubExternalNotInPod(a.cfg)
 	} else {
+		log.Info("Renewing external certificates in Pod ...")
 		sub = NewRenewSubExternalInPod(a.cfg)
 	}
 	return Execute(sub)
@@ -101,29 +102,30 @@ func (a *renewSubExternal) PreRun() error {
 		log.Warn("This command will overwrite the external certificates with self-singed certificates.")
 	}
 
-	cm, err := a.kube.GetConfigMap(a.cfg.Env.CDFNamespace, ConfigMapNameCDF)
+	ns, err := a.kube.GetNamespace(a.cfg.Namespace)
 	if err != nil {
-		log.Warnf("kube.GetConfigMap(): %v", err)
-	} else {
-		a.cfg.Cluster.ExternalHost = cm.Data[ResourceKeyExternalHost]
-		if v, ok := cm.Data[ResourceKeyDeploymentUuid]; !ok {
-			return errors.Errorf("%s is nil", ResourceKeyDeploymentUuid)
-		} else {
-			log.Debug("Checking if the current deployment is PRIMARY ...")
-			ns, err := a.kube.GetNamespacesWithLabel(fmt.Sprintf("%s=%s", LabelPrefixDeploymentUuid, v))
-			if err != nil {
-				return err
-			}
+		return err
+	}
+	uuid, ok := ns.Labels[LabelPrefixDeploymentUuid]
+	if !ok {
+		log.Warn("DEPLOYMENT UUID not found")
+		return nil
+	}
 
-			if len(ns.Items) == 0 {
-				return errors.Errorf("namespaces with uuid: %s not found", ResourceKeyDeploymentUuid)
-			}
-			for i := range ns.Items {
-				if ns.Items[i].Name == a.cfg.Env.CDFNamespace {
-					a.cfg.Cluster.IsPrimary = true
-					break
-				}
-			}
+	log.Debug("Checking if the current deployment is PRIMARY ...")
+	log.Debugf("DEPLOYMENT UUID: %s", uuid)
+	list, err := a.kube.GetNamespacesWithLabel(fmt.Sprintf("%s=%s", LabelPrefixDeploymentUuid, uuid))
+	if err != nil {
+		return err
+	}
+
+	if len(list.Items) == 0 {
+		return errors.Errorf("namespaces with uuid: %s not found", uuid)
+	}
+	for i := range list.Items {
+		if list.Items[i].Name == a.cfg.Env.CDFNamespace {
+			a.cfg.Cluster.IsPrimary = true
+			break
 		}
 	}
 

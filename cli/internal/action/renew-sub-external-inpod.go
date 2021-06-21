@@ -22,6 +22,12 @@ func NewRenewSubExternalInPod(cfg *Configuration) Interface {
 		action: newAction("renew-sub-external-inpod", cfg),
 	}
 
+	ns := cfg.Namespace
+	if cfg.Cluster.IsPrimary {
+		ns = cfg.Env.CDFNamespace
+	}
+	cfg.Vault.Address = fmt.Sprintf("https://%s.%s:8200", DefaultVaultSvcName, ns)
+
 	cas, err := c.getCAs(cfg.Env.CDFNamespace)
 	if err != nil {
 		panic(err)
@@ -70,7 +76,6 @@ func (a *renewSubExternalInPod) PreRun() error {
 	} else {
 		a.cfg.Cluster.ExternalHost = cm.Data[ResourceKeyExternalHost]
 	}
-
 	a.cfg.Debug()
 
 	return nil

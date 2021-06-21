@@ -37,19 +37,20 @@ func (a *renewSubInternal) Run() error {
 		}
 	}
 
-	log.Info("Renewing internal certificates ...")
-
 	if a.cfg.Local {
+		log.Info("Renewing internal certificates locally ...")
 		sub := NewRenewSubInternalLocal(a.cfg)
 		return Execute(sub)
 	}
 	if a.iValidity.server <= 0 {
+		log.Info("Renewing expired internal certificates ...")
 		sub := NewRenewSubInternalExpired(a.cfg)
 		err := Execute(sub)
 		if err != nil {
 			return err
 		}
 	}
+	log.Info("Renewing available internal certificates ...")
 	sub := NewRenewSubInternalAvailable(a.cfg)
 	return Execute(sub)
 }

@@ -37,6 +37,7 @@ const (
 
 const (
 	DefaultResourceKeyTls = "tls"
+	DefaultVaultSvcName   = "itom-vault"
 )
 
 type Interface interface {

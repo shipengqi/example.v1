@@ -74,6 +74,7 @@ func RestartContainers(namespace string, version int) error {
 	restartCMD = fmt.Sprintf("docker restart $(docker ps | grep %s | " +
 		"sed '/\\/pause/d' | awk '{print $1}')", namespace)
 	if version > DockerSupportVersion {
+		// TODO if ps command does not fetch any resources, skip
 		restartCMD = fmt.Sprintf("crictl stop $(crictl ps --label io.kubernetes.pod.namespace=%s | " +
 			"grep '^[^CONTAINER]' | awk '{print $1}')", namespace)
 	}
@@ -106,15 +107,18 @@ func ParseVaultToken(encryptedToken, passphrase, tokenEncKey, tokenEncIv string)
 }
 
 func RenewRERemoteExecution(cdfNamespace, namespace, unit, resource, field string, primary bool, V int) error {
-	primaryNs := namespace
-	if primary {
-		primaryNs = cdfNamespace
-	}
-	cmd := fmt.Sprintf(`kubectl exec -n %s $(kubectl get po -n %s ` +
+	// Todo filter the running pod
+	template := `kubectl exec -n %s $(kubectl get po -n %s ` +
 		`-l 'deployments.microfocus.com/component=itom-vault' ` +
 		`-o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}') ` +
 		`-- /renewCert --renew -t external -V %d --unit-time %s -n %s --cdf-namespace %s ` +
-		`--resource %s --field %s -y --primary %v`,
+		`--resource %s --field %s -y`
+	primaryNs := namespace
+	if primary {
+		primaryNs = cdfNamespace
+		template += " --primary"
+	}
+	cmd := fmt.Sprintf(template,
 		primaryNs,
 		primaryNs,
 		V,
@@ -122,8 +126,7 @@ func RenewRERemoteExecution(cdfNamespace, namespace, unit, resource, field strin
 		namespace,
 		cdfNamespace,
 		resource,
-		field,
-		primary)
+		field)
 	log.Debugf("exec: %s", cmd)
 	err := command.ExecSync(cmd)
 	if err != nil {

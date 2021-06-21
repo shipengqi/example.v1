@@ -44,7 +44,6 @@ func (a *renewSubInternalExpired) Name() string {
 func (a *renewSubInternalExpired) Run() error {
 	log.Debugf("***** %s Run *****", strings.ToUpper(a.name))
 	var err error
-	log.Info("The certificates have already expired.")
 	log.Info("Renew current node certificates")
 	err = a.iterate(a.cfg.Host, true, true, a.generator)
 	if err != nil {

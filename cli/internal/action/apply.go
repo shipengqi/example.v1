@@ -1,9 +1,10 @@
 package action
 
 import (
+	"strings"
+
 	"github.com/shipengqi/example.v1/cli/internal/sysc"
 	"github.com/shipengqi/example.v1/cli/pkg/log"
-	"strings"
 )
 
 const (
