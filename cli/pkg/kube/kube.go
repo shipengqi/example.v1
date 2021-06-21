@@ -56,6 +56,10 @@ func (c *Client) GetNodes() (*corev1.NodeList, error) {
 	return c.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 }
 
+func (c *Client) GetNamespace(name string) (*corev1.Namespace, error) {
+	return c.CoreV1().Namespaces().Get(context.TODO(), name, metav1.GetOptions{})
+}
+
 func (c *Client) GetNamespacesWithLabel(label string) (*corev1.NamespaceList, error) {
 	return c.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{
 		LabelSelector: label,
