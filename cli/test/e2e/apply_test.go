@@ -12,10 +12,10 @@ var _ = t.Describe("apply", func() {
 	AfterEach(func() {})
 
 	It("should succeed with `apply` subcommand", func() {
-		t.CertManagerExpectSuccess("apply", "")
+		t.ExecuteExpectSuccess("apply", "")
 	})
 
 	It("should succeed with `--apply` flag", func() {
-		t.CertManagerExpectSuccess("--apply", "")
+		t.ExecuteExpectSuccess("--apply", "")
 	})
 })

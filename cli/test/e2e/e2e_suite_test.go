@@ -17,7 +17,7 @@ func TestE2e(t *testing.T) {
 var t *TestFramework
 
 var _ = BeforeSuite(func() {
-	t = NewTestFramework()
+	t = NewTestFramework("")
 })
 
 var _ = AfterSuite(func() {

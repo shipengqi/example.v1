@@ -11,11 +11,15 @@ import (
 	"strings"
 )
 
-type TestFramework struct {}
+type TestFramework struct {
+	executable string
+}
 
 // NewTestFramework creates a new test framework instance
-func NewTestFramework() *TestFramework {
-	return &TestFramework{}
+func NewTestFramework(executable string) *TestFramework {
+	return &TestFramework{
+		executable: executable,
+	}
 }
 
 // Setup is the global initialization function which runs before each test
@@ -55,15 +59,15 @@ func lcmd(format string, args ...interface{}) *Session {
 	return cmd("", format, args...)
 }
 
-// Run cert-manager and return the resulting session
-func (t *TestFramework) CertManager(args string) *Session {
-	return lcmd("cert-manager %s", args).Wait()
+// Run and return the resulting session
+func (t *TestFramework) Execute(args string) *Session {
+	return lcmd("%s %s", t.executable, args).Wait()
 }
 
-// Run cert-manager and expect success containing the specified output
-func (t *TestFramework) CertManagerExpectSuccess(args, expectedOut string) {
+// Run and expect success containing the specified output
+func (t *TestFramework) ExecuteExpectSuccess(args, expectedOut string) {
 	// When
-	res := t.CertManager(args)
+	res := t.Execute(args)
 
 	// Then
 	Expect(res).To(Exit(0))
@@ -71,12 +75,12 @@ func (t *TestFramework) CertManagerExpectSuccess(args, expectedOut string) {
 	Expect(string(res.Err.Contents())).To(BeEmpty())
 }
 
-// Run cert-manager and expect error containing the specified outputs
-func (t *TestFramework) CertManagerExpectFailure(
+// Run and expect error containing the specified outputs
+func (t *TestFramework) ExecuteExpectFailure(
 	args string, expectedOut, expectedErr string,
 ) {
 	// When
-	res := t.CertManager(args)
+	res := t.Execute(args)
 
 	// Then
 	Expect(res).To(Exit(1))
