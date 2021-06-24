@@ -50,6 +50,7 @@ func (a *renewSubExternal) Run() error {
 	if len(a.cfg.Cert) > 0 && len(a.cfg.Key) > 0 {
 		log.Info("Renewing custom external certificates ...")
 		sub = NewRenewSubExternalCustom(a.cfg)
+		return Execute(sub)
 	}
 
 	if !a.cfg.Env.RunInPod {
