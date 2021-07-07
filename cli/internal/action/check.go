@@ -102,7 +102,7 @@ func (a *check) Run() error {
 }
 
 func parseSourceName(source string) (sType, sName string) {
-	names := strings.SplitN(source, ".", 2)
+	names := strings.SplitN(source, "/", 2)
 	if len(names) >= 2 {
 		return names[0], names[1]
 	}
@@ -132,9 +132,10 @@ func printCrtInfo(cert *x509.Certificate) {
 	}
 	log.Infof("  DNSNames: %s", dnsStr)
 	log.Infof("  IPAddresses: %s", ipBuf.String())
-	log.Infof("  KeyUsage: %v", cert.KeyUsage)
-	log.Infof("  ExtKeyUsage: %v", cert.ExtKeyUsage)
-	log.Infof("  IsCA: %v", cert.IsCA)
+	log.Infof("  KeyUsage: %s", keyUsageToString(cert.KeyUsage))
+	log.Infof("  ExtKeyUsage: %s", extKeyUsageToString(cert.ExtKeyUsage))
+	log.Infof("  SignatureAlgorithm: %s", cert.SignatureAlgorithm.String())
+	log.Infof("  PublicKeyAlgorithm: %s", cert.PublicKeyAlgorithm.String())
 	log.Info("")
 	log.Info("Certificate Validity:")
 	available := utils.CheckCrtValidity(cert)
@@ -144,4 +145,67 @@ func printCrtInfo(cert *x509.Certificate) {
 		log.Infof("  The certificate will expire in %d hour(s).", available)
 	}
 	log.Info("")
+}
+
+type keyUsageDetail struct {
+	keyUsage x509.KeyUsage
+	name     string
+}
+
+type extKeyUsageDetail struct {
+	extKeyUsage x509.ExtKeyUsage
+	name        string
+}
+
+var keyUsageDetails = [...]keyUsageDetail{
+	{x509.KeyUsageDigitalSignature, "DigitalSignature"},
+	{x509.KeyUsageContentCommitment, "ContentCommitment"},
+	{x509.KeyUsageKeyEncipherment, "KeyEncipherment"},
+	{x509.KeyUsageDataEncipherment, "DataEncipherment"},
+	{x509.KeyUsageKeyAgreement, "KeyAgreement"},
+	{x509.KeyUsageCertSign, "CertSign"},
+	{x509.KeyUsageCRLSign, "CRLSign"},
+	{x509.KeyUsageEncipherOnly, "EncipherOnly"},
+	{x509.KeyUsageDecipherOnly, "DecipherOnly"},
+}
+
+var extKeyUsageDetails = [...]extKeyUsageDetail{
+	{x509.ExtKeyUsageAny, "Any"},
+	{x509.ExtKeyUsageServerAuth, "ServerAuth"},
+	{x509.ExtKeyUsageClientAuth, "ClientAuth"},
+	{x509.ExtKeyUsageCodeSigning, "CodeSigning"},
+	{x509.ExtKeyUsageEmailProtection, "EmailProtection"},
+	{x509.ExtKeyUsageIPSECEndSystem, "IPSECEndSystem"},
+	{x509.ExtKeyUsageIPSECTunnel, "IPSECTunnel"},
+	{x509.ExtKeyUsageIPSECUser, "IPSECUser"},
+	{x509.ExtKeyUsageTimeStamping, "TimeStamping"},
+	{x509.ExtKeyUsageOCSPSigning, "OCSPSigning"},
+	{x509.ExtKeyUsageMicrosoftServerGatedCrypto, "MicrosoftServerGatedCrypto"},
+	{x509.ExtKeyUsageNetscapeServerGatedCrypto, "NetscapeServerGatedCrypto"},
+	{x509.ExtKeyUsageMicrosoftCommercialCodeSigning, "MicrosoftCommercialCodeSigning"},
+	{x509.ExtKeyUsageMicrosoftKernelCodeSigning, "MicrosoftKernelCodeSigning"},
+}
+
+func keyUsageToString(keyUsage x509.KeyUsage) string {
+	for _, details := range keyUsageDetails {
+		if details.keyUsage == keyUsage {
+			return details.name
+		}
+	}
+	return ""
+}
+
+func extKeyUsageToString(extKeyUsages []x509.ExtKeyUsage) string {
+	var tmp []string
+	for _, details := range extKeyUsageDetails {
+		for k := range extKeyUsages {
+			if details.extKeyUsage == extKeyUsages[k] {
+				tmp = append(tmp, details.name)
+			}
+		}
+	}
+	if len(tmp) == 0 {
+		return ""
+	}
+	return strings.Join(tmp, ",")
 }
