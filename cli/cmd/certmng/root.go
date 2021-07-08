@@ -167,6 +167,7 @@ func New(cfg *action.Configuration) *cobra.Command {
 			}
 
 			log.Debugf("Matched action: %s", c.Name())
+			// Cannot call the c.Execute method, Because in go, parent cannot call the child method.
 			return action.Execute(c)
 		},
 	}
