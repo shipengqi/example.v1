@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/spf13/cobra"
@@ -139,6 +140,9 @@ func New(cfg *action.Configuration) *cobra.Command {
 		Short:   "Manages TLS certificates in CDF clusters.",
 		Long:    rootDesc,
 		Example: buf.String(),
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			log.Debugf("Command: %s", strings.Join(os.Args, " "))
+		},
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
 			if cmd.Name() == "help" {
 				return
