@@ -22,7 +22,7 @@ type Part2 struct {
 }
 
 func main()  {
-	fmt.Printf("bool size: %d\n", unsafe.Sizeof(bool(true)))
+	fmt.Printf("bool size: %d\n", unsafe.Sizeof(true))
 	fmt.Printf("int32 size: %d\n", unsafe.Sizeof(int32(0)))
 	fmt.Printf("int8 size: %d\n", unsafe.Sizeof(int8(0)))
 	fmt.Printf("int64 size: %d\n", unsafe.Sizeof(int64(0)))
