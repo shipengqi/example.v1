@@ -19,3 +19,4 @@ var _ = t.Describe("apply", func() {
 		t.ExecuteExpectSuccess("--apply", "")
 	})
 })
+unsafe.Sizeof
