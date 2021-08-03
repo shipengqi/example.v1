@@ -27,7 +27,8 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/rs/zerolog v1.20.0
 	github.com/satori/go.uuid v1.2.0
-	github.com/smartystreets/goconvey v1.6.4 // indirect
+	github.com/sirupsen/logrus v1.4.2
+	github.com/smartystreets/goconvey v1.6.4
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1
@@ -36,11 +37,13 @@ require (
 	github.com/tealeg/xlsx v1.0.5
 	github.com/thinkeridea/go-extend v1.3.2
 	github.com/unknwon/com v1.0.1
+	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
 	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/ini.v1 v1.62.0 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/driver/postgres v1.0.7
 	gorm.io/gorm v1.20.12
