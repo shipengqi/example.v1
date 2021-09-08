@@ -32,7 +32,7 @@ func main() {
 	fmt.Printf("%q\n", "dedede") // 双引号括起来的字符串
 	fmt.Printf("%x\n", "abczxc") // 每个字节用两字节十六进制表示，a-f 表示
 	fmt.Printf("%X\n", "asdzxc") // 每个字节用两字节十六进制表示，A-F 表示
-	fmt.Printf("%p\n", &u)       // 0x 开头的十六进制数表示，指针
+	fmt.Printf("%p\n", &u)           // 0x 开头的十六进制数表示，指针
 	fmt.Println(&u)
 	fmt.Println(u)
 	widthIdentifierDemo()
@@ -89,6 +89,13 @@ func widthIdentifierDemo()  {
 	fmt.Printf("%.10f\n", n)
 	fmt.Printf("%10.10f\n", n)
 	fmt.Printf("%10.f\n", n)
+	fmt.Printf("%10s\n", "a")                    // 字符串最小宽度为 10
+	fmt.Printf("%-10s\n", "a")                   // 字符串最小宽度为 10（左对齐）
+	fmt.Printf("%.5s\n", "0123456789")           // 字符串最大宽度为 5
+	fmt.Printf("%5.7s\n","01234567890123")       // 最小宽度为5，最大宽度为7
+	fmt.Printf("%-5.7s\n","01234567890123")      // 最小宽度为5，最大宽度为7（左对齐）
+	fmt.Printf("%.3s\n","01234567890123")       // 如果宽度大于3，则截断
+	fmt.Printf("%05s\n","aa")                    // 如果宽度小于5，就会在字符串前面补零
 }
 
 // Output:
@@ -101,7 +108,13 @@ func widthIdentifierDemo()  {
 //12.3400000000
 //12.3400000000
 //        12
-
+//          a
+// a
+// 01234
+// 0123456
+// 0123456
+//  012
+// 000aa
 
 // + 总打印数值的正负号； 对于 %q（%+q）保证只输出 ASCII 编码的字符	Printf("%+q", "中文")	"\u4e2d\u6587"
 //
