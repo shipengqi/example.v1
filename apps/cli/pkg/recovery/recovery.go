@@ -36,12 +36,12 @@ func Recovery(code int) {
 // /usr/local/go/src/runtime/signal_unix.go:734 (0x44e492)
 //        sigpanic: signalstack(&_g_.m.gsignal.stack)
 // /root/gowork/src/cli/internal/action/configuration.go:83 (0x1237546)
-// /root/gowork/src/cli/main.go:27 (0x123bef2)
+// /root/gowork/src/cli/yamls.go:27 (0x123bef2)
 // /root/gowork/pkg/mod/github.com/spf13/cobra@v1.1.3/command.go:882 (0x5b2128)
 // /root/gowork/pkg/mod/github.com/spf13/cobra@v1.1.3/command.go:818 (0x5b172e)
 // /root/gowork/pkg/mod/github.com/spf13/cobra@v1.1.3/command.go:960 (0x5b25d4)
 // /root/gowork/pkg/mod/github.com/spf13/cobra@v1.1.3/command.go:897 (0x123bd64)
-// /root/gowork/src/cli/main.go:37 (0x123bd52)
+// /root/gowork/src/cli/yamls.go:37 (0x123bd52)
 // /usr/local/go/src/runtime/proc.go:225 (0x43a615)
 //        main: exit(0)
 // /usr/local/go/src/runtime/asm_amd64.s:1371 (0x46d740)
@@ -79,12 +79,12 @@ func stack(skip int) []byte {
 //        runtime.panicmem: /usr/local/go/src/runtime/panic.go:212
 //        runtime.sigpanic: /usr/local/go/src/runtime/signal_unix.go:734
 //        github.com/shipengqi/example.v1/cli/internal/action.(*Configuration).Init: /root/gowork/src/cli/internal/action/configuration.go:83
-//        main.main.func1: /root/gowork/src/cli/main.go:27
+//        main.main.func1: /root/gowork/src/cli/yamls.go:27
 //        github.com/spf13/cobra.(*Command).preRun: /root/gowork/pkg/mod/github.com/spf13/cobra@v1.1.3/command.go:882
 //        github.com/spf13/cobra.(*Command).execute: /root/gowork/pkg/mod/github.com/spf13/cobra@v1.1.3/command.go:818
 //        github.com/spf13/cobra.(*Command).ExecuteC: /root/gowork/pkg/mod/github.com/spf13/cobra@v1.1.3/command.go:960
 //        : /root/gowork/pkg/mod/github.com/spf13/cobra@v1.1.3/command.go:897
-//        main.main: /root/gowork/src/cli/main.go:37
+//        main.main: /root/gowork/src/cli/yamls.go:37
 //        runtime.main: /usr/local/go/src/runtime/proc.go:225
 func stack2(skip int) []byte {
 	buf := new(bytes.Buffer) // the returned data

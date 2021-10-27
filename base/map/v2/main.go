@@ -22,7 +22,7 @@ func main() {
 //
 // goroutine 1 [running]:
 // main.main()
-//	C:/Code/example.v1/syntax/map/v2/main.go:12 +0x269
+//	C:/Code/example.v1/syntax/map/v2/yamls.go:12 +0x269
 
 
 // Output:
