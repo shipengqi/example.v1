@@ -3,8 +3,8 @@ module github.com/shipengqi/example.v1
 go 1.14
 
 require (
-	github.com/360EntSecGroup-Skylar/excelize v1.4.1
 	github.com/AlecAivazis/survey/v2 v2.2.12
+	github.com/Shopify/sarama v1.19.0
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/astaxie/beego v1.12.3
 	github.com/boombuler/barcode v1.0.1
@@ -37,9 +37,9 @@ require (
 	github.com/tealeg/xlsx v1.0.5
 	github.com/thinkeridea/go-extend v1.3.2
 	github.com/unknwon/com v1.0.1
+	github.com/xuri/excelize/v2 v2.4.1
 	go.uber.org/zap v1.10.0
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/ini.v1 v1.62.0 // indirect

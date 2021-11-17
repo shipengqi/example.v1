@@ -15,7 +15,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/shipengqi/example.v1/blog/docs"
+	_ "github.com/shipengqi/example.v1/apps/blog/docs"
 	"github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 )

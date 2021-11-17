@@ -1,17 +1,17 @@
 package cmap
 
-import "github.com/shipengqi/example.v1/errors"
+import "github.com/pkg/errors"
 
 const (
-	ERROR_PACKAGE_CMAP errors.ErrorPackage = "cmap"
-	ERROR_TYPE_ILLEGAL_PARAMS errors.ErrorType = "illegal parameter"
-	ERROR_TYPE_ILLEGAL_PAIR errors.ErrorType = "illegal pair type"
+	ERROR_PACKAGE_CMAP  = "cmap"
+	ERROR_TYPE_ILLEGAL_PARAMS  = "illegal parameter"
+	ERROR_TYPE_ILLEGAL_PAIR  = "illegal pair type"
 )
 
-func newParamError(msg string) errors.V1Error {
-	return errors.NewV1ErrorWithPkg(ERROR_PACKAGE_CMAP, ERROR_TYPE_ILLEGAL_PARAMS, msg)
+func newParamError(msg string) error {
+	return errors.New(ERROR_TYPE_ILLEGAL_PARAMS)
 }
 
-func newPairError(pair Pair) errors.V1Error {
-	return errors.NewV1ErrorWithPkg(ERROR_PACKAGE_CMAP, ERROR_TYPE_ILLEGAL_PAIR, pair.String())
+func newPairError(pair Pair) error {
+	return errors.New(ERROR_TYPE_ILLEGAL_PAIR)
 }

@@ -2,6 +2,13 @@ package tag
 
 import (
 	"fmt"
+	"io"
+	"strconv"
+	"time"
+
+	"github.com/tealeg/xlsx"
+	"github.com/xuri/excelize/v2"
+
 	"github.com/shipengqi/example.v1/apps/blog/dao"
 	"github.com/shipengqi/example.v1/apps/blog/model"
 	e2 "github.com/shipengqi/example.v1/apps/blog/pkg/e"
@@ -10,12 +17,6 @@ import (
 	"github.com/shipengqi/example.v1/apps/blog/pkg/setting"
 	"github.com/shipengqi/example.v1/apps/blog/pkg/utils"
 	"github.com/shipengqi/example.v1/apps/blog/service/cache"
-	"io"
-	"strconv"
-	"time"
-
-	"github.com/360EntSecGroup-Skylar/excelize"
-	"github.com/tealeg/xlsx"
 )
 
 const EXPORT_EXT = "xlsx"
@@ -195,7 +196,7 @@ func (t *tag) Import(r io.Reader) error {
 		return err
 	}
 
-	rows := file.GetRows("Tag Information")
+	rows, _ := file.GetRows("Tag Information")
 	// remove duplicate name from file and database
 	for i, row := range rows {
 		if i > 0 {
