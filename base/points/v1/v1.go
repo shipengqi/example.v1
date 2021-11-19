@@ -7,6 +7,7 @@ type TestPoint struct {
 	Age  int
 }
 
+var global *TestPoint
 func main() {
 	t := &TestPoint{
 		Name: "pooky",
@@ -20,6 +21,8 @@ func main() {
 	}
 	merge2(t2)
 	fmt.Printf("%+v\n", t2)
+	merge3()
+	fmt.Printf("%+v\n", global)
 }
 
 func merge(t *TestPoint) {
@@ -32,6 +35,14 @@ func merge2(t *TestPoint) {
 		Age:  18,
 	}
 	t = newT
+}
+
+func merge3() {
+	newT := &TestPoint{
+		Name: "xiaoqiang",
+		Age:  18,
+	}
+	global = newT
 }
 
 

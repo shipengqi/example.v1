@@ -36,6 +36,14 @@ func main()  {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	bytesstr := []byte(`{"file": "test", "info": {"url": "testurl"}}`)
+	s2 := &State{}
+	err = json.Unmarshal(bytesstr, s2)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%+v\n", s2)
 }
 
 func (s *State) Save() error {
