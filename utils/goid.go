@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// GoID
 // 利用 runtime.Stack 的堆栈信息。`runtime.Stack(buf []byte, all bool) int` 将当前的堆栈信息写入到一个 slice 中，
 // 堆栈的第一行为 `goroutine #### […` (如 goroutine 51 [running]:), 其中 `####` 就是当前的 goroutine ID。
 // 获取堆栈信息会影响性能，所以建议在 debug 的时候才用

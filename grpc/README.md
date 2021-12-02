@@ -740,6 +740,14 @@ const (
 	conn, err := grpc.Dial(fmt.Sprintf(":%s", PORT), grpc.WithTransportCredentials(c))
 ```
 
+简单流程：
+
+1. Client 通过请求得到 Server 端的证书
+2. 使用 CA 认证的根证书对 Server 端的证书进行可靠性、有效性等校验
+3. 校验 ServerName 是否可用、有效
+
+在设置了 `tls.RequireAndVerifyClientCert` 模式的情况下，Server 也会使用 CA 认证的根证书对 Client 端的证书进行可靠性、有效性等校验。
+也就是两边都会进行校验。
 
 ## 拦截器
 gRPC 中，可分为两种 RPC 方法，与拦截器的对应关系是：
