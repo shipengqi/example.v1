@@ -91,9 +91,7 @@ const (
 const (
 	rootDesc = `To securely deploy the kubernetes, we recommend that you use the TLS/SSL communication protocol.
 We uses internal certificates and external certificates to secure its deployment.`
-	passwordFlagDesc = `VM password (By providing the password with this option, you are disabling or bypassing 
-security features, thereby exposing the system to increased security risks. By using this option, 
-you understand and agree to assume all associated risks and hold Micro Focus harmless for the same.)`
+	passwordFlagDesc = `VM password`
 	nodeTypeFlagDesc = "Node type (controlplane/worker) of the host which certificates are generated for."
 	typeFlagDesc     = "Specifies the type (internal/external) of the server certificates."
 	sourceFlagDesc   = "Specifies the resource type (cm/secret), name. Format: <type>.<name>. e.g. 'cm.tls-cas'"

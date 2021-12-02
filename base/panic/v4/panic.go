@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func main()  {
+func main() {
 	defer fmt.Println("in main")
 	defer func() {
 		if err := recover(); err != nil {
