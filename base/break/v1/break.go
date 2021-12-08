@@ -21,9 +21,9 @@ Loop:
 }
 
 // Output:
-//loop1 0
-//loop2 0
-//loop2 1
-//loop2 2
-//loop2 3
-//loop2 4
+// loop1 0
+// loop2 0
+// loop2 1
+// loop2 2
+// loop2 3
+// loop2 4
