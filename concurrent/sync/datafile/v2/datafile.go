@@ -31,7 +31,7 @@ type DataFile interface {
 type dataFile struct {
 	f       *os.File     // 文件
 	fmutex  sync.RWMutex // 被用于文件的读写锁
-	rcond   *sync.Cond   //读操作需要用到的条件变量
+	rcond   *sync.Cond   // 读操作需要用到的条件变量
 	woffset int64        // 写操作需要用到的偏移量
 	roffset int64        // 读操作需要用到的偏移量
 	wmutex  sync.Mutex   // 写操作需要用到的互斥锁
@@ -94,7 +94,7 @@ func (df *dataFile) Write(d Data) (wsn int64, err error) {
 	df.woffset += int64(df.dataLen)
 	df.wmutex.Unlock()
 
-	//写入一个数据块。
+	// 写入一个数据块。
 	wsn = offset / int64(df.dataLen)
 	var bytes []byte
 	if len(d) > int(df.dataLen) {
