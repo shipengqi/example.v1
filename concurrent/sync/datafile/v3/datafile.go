@@ -53,7 +53,6 @@ func NewDataFile(path string, dataLen uint32) (DataFile, error) {
 
 func (df *dataFile) Read() (rsn int64, d Data, err error) {
 	// 读取并更新读偏移量。
-	// 读取并更新读偏移量
 	var offset int64
 	for {
 		offset = atomic.LoadInt64(&df.roffset)
