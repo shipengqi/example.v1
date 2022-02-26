@@ -66,6 +66,8 @@ import (
 // 给一个函数方法传递 Context 的时候，不要传递 nil，如果不知道传递什么，就使用 `context.TODO`
 // Context 的 Value 相关方法应该传递必须的数据，不要什么数据都使用这个传递
 // Context 是线程安全的，可以放心的在多个 goroutine 中传递
+// CancelFunc 是主动让下游结束，而 Done 是被上游通知结束
+
 
 type myKey int
 

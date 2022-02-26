@@ -1,0 +1,5 @@
+p, role::data2::read, data2, read
+p, role::data2::write, data2, write
+p, user::alice, data2, write
+g, group::data2::admin, role::data2::read
+g, group::data2::admin, role::data2::write
