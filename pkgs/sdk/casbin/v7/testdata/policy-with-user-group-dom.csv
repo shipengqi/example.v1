@@ -1,0 +1,18 @@
+p, role::data::read, tenant::dom1, data1, read
+p, role::data::write, tenant::dom1, data1, write
+p, role::data::read, tenant::dom2, data2, read
+p, role::data::write, tenant::dom2, data2, write
+
+g, group::data::admin, role::data::read, tenant::dom1
+g, group::data::admin, role::data::write, tenant::dom1
+g, group::data::admin, role::data::read, tenant::dom2
+g, group::data::admin, role::data::write, tenant::dom2
+g, group::data::admin::dom1, role::data::read, tenant::dom1
+g, group::data::admin::dom2, role::data::write, tenant::dom2
+
+g, user::pooky, group::data::admin, tenant::dom1
+g, user::pooky, group::data::admin, tenant::dom2
+g, user::alice, group::data::admin, tenant::dom1
+g, user::bob, group::data::admin, tenant::dom2
+g, user::ed, group::data::admin::dom1, tenant::dom1
+g, user::ray, group::data::admin::dom2, tenant::dom2

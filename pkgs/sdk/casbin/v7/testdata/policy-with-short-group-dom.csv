@@ -1,0 +1,18 @@
+p, r::read, tenant::dom1, data1, read
+p, r::write, tenant::dom1, data1, write
+p, r::read, tenant::dom2, data2, read
+p, r::write, tenant::dom2, data2, write
+
+g, g::admin, r::read, tenant::dom1
+g, g::admin, r::write, tenant::dom1
+g, g::admin, r::read, tenant::dom2
+g, g::admin, r::write, tenant::dom2
+g, g::admin::dom1, r::read, tenant::dom1
+g, g::admin::dom2, r::write, tenant::dom2
+
+g, pooky, g::admin, tenant::dom1
+g, pooky, g::admin, tenant::dom2
+g, alice, g::admin, tenant::dom1
+g, bob, g::admin, tenant::dom2
+g, ed, g::admin::dom1, tenant::dom1
+g, ray, g::admin::dom2, tenant::dom2
