@@ -2,7 +2,7 @@ package orm
 
 import (
 	"context"
-	log "github.com/shipengqi/example.v1/apps/blog/pkg/logger"
+	"log"
 	"time"
 
 	// database driver
@@ -33,15 +33,15 @@ func (o *ormLogger) LogMode(ol.LogLevel) ol.Interface {
 }
 
 func (o *ormLogger) Info(ctx context.Context, str string, args ...interface{}) {
-	log.Info().Msgf(str, args)
+	log.Printf(str, args)
 }
 
 func (o *ormLogger) Warn(ctx context.Context, str string, args ...interface{}) {
-	log.Warn().Msgf(str, args)
+	log.Printf(str, args)
 }
 
 func (o *ormLogger) Error(ctx context.Context, str string, args ...interface{}) {
-	log.Error().Msgf(str, args)
+	log.Printf(str, args)
 }
 
 func (o *ormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
@@ -50,9 +50,9 @@ func (o *ormLogger) Trace(ctx context.Context, begin time.Time, fc func() (strin
 	isSlow := false
 	if elapsed > o.slowThreshold {
 		isSlow = true
-		log.Warn().Msgf("SLOW: %t, Elapsed: %.f ms, SQL: %s", isSlow, float64(elapsed.Nanoseconds())/1e6, sql)
+		log.Printf("SLOW: %t, Elapsed: %.f ms, SQL: %s", isSlow, float64(elapsed.Nanoseconds())/1e6, sql)
 	} else {
-		log.Trace().Msgf("SLOW: %t, Elapsed: %.f ms, SQL: %s", isSlow, float64(elapsed.Nanoseconds())/1e6, sql)
+		log.Printf("SLOW: %t, Elapsed: %.f ms, SQL: %s", isSlow, float64(elapsed.Nanoseconds())/1e6, sql)
 	}
 }
 
@@ -72,13 +72,13 @@ func New(c *Config) (db *gorm.DB) {
 	}
 
 	if err != nil {
-		log.Error().Msgf("db dsn(%s) error: %v", c.DSN, err)
+		log.Printf("db dsn(%s) error: %v", c.DSN, err)
 		panic(err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		log.Error().Msgf("db.DB() error: %v", err)
+		log.Printf("db.DB() error: %v", err)
 		panic(err)
 	}
 
