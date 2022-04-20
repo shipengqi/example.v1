@@ -1,0 +1,6 @@
+p, r.sub.Role=='Teacher', School Gate, In, r.env.IsSchoolTime()
+p, r.sub.Role=='Teacher', School Gate, Out, r.env.IsSchoolTime()
+p, r.sub.Role=='Teacher', School Gate, In, !r.env.IsSchoolTime()
+p, r.sub.Role=='Teacher', School Gate, Out, !r.env.IsSchoolTime()
+p, r.sub.Role=='Student', School Gate, In, r.env.IsSchoolTime()
+p, r.sub.Role=='Student', School Gate, Out, !r.env.IsSchoolTime()
