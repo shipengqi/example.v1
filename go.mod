@@ -1,6 +1,6 @@
 module github.com/shipengqi/example.v1
 
-go 1.14
+go 1.17
 
 require (
 	github.com/Shopify/sarama v1.19.0
