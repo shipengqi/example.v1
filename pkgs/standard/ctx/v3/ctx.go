@@ -21,6 +21,19 @@ func main() {
 		}
 	}(ctx)
 
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("monitor 2 end...")
+				return
+			default:
+				fmt.Println("goroutine 2 monitoring ...")
+				time.Sleep(2 * time.Second)
+			}
+		}
+	}(ctx)
+
 	time.Sleep(10 * time.Second)
 	fmt.Println("stop monitor")
 	cancel()
