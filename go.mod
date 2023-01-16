@@ -25,6 +25,7 @@ require (
 	github.com/rs/zerolog v1.28.0
 	github.com/samber/lo v1.37.0
 	github.com/smartystreets/goconvey v1.7.2
+	github.com/sourcegraph/conc v0.1.0
 	github.com/stretchr/testify v1.8.1
 	github.com/thinkeridea/go-extend v1.3.2
 	go.uber.org/zap v1.24.0
