@@ -30,9 +30,11 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/thinkeridea/go-extend v1.3.2
 	go.uber.org/atomic v1.7.0
+	go.uber.org/dig v1.16.1
 	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
+	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.4.4
 	gorm.io/driver/postgres v1.4.5
