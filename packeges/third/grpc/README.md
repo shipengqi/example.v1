@@ -931,3 +931,139 @@ docker run -d -p 9411:9411 openzipkin/zipkin
 ```bash
 go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 ```
+
+## reflection
+
+`reflection` 包中只有一个 `Register` 函数，用于将 `grpc.Server` 注册到反射服务中：
+
+```go
+import (
+    "google.golang.org/grpc/reflection"
+)
+
+func main() {
+    s := grpc.NewServer()
+    pb.RegisterYourOwnServer(s, &server{})
+
+    // Register reflection service on gRPC server.
+    reflection.Register(s)
+
+    s.Serve(lis)
+}
+
+```
+
+如果启动了 gprc 反射服务，那么就可以通过 reflection 包提供的反射服务查询 gRPC 服务或调用 gRPC 方法。
+
+### grpcurl
+
+grpcurl 是 Go 语言开源社区开发的工具。
+
+安装：
+```bash
+$ go install github.com/fullstorydev/grpcurl/cmd/grpcurl
+```
+
+grpcurl 中最常使用的是 list 命令，用于获取服务或服务方法的列表。
+
+例如 proto 文件：
+```bash
+syntax = "proto3";
+
+package HelloService;
+
+message String {
+	string value = 1;
+}
+
+service HelloService {
+	rpc Hello (String) returns (String);
+	rpc Channel (stream String) returns (stream String);
+}
+```
+
+```bash
+$ grpcurl -plaintext localhost:1234 list
+HelloService.HelloService
+grpc.reflection.v1alpha.ServerReflection
+```
+
+其中 `HelloService.HelloService` 是在 protobuf 文件定义的服务。而 `ServerReflection` 服务则是 reflection 包注册的反射服务。
+通过 `ServerReflection` 服务可以查询包括本身在内的全部 gRPC 服务信息。
+
+查看 HelloService 服务的方法列表：
+```bash
+$ grpcurl -plaintext localhost:1234 list HelloService.HelloService
+Channel
+Hello
+```
+
+用 describe 命令查看参数 `HelloService.String` 类型的信息：
+
+```bash
+$ grpcurl -plaintext localhost:1234 describe HelloService.String
+HelloService.String is a message:
+{
+  "name": "String",
+  "field": [
+    {
+      "name": "value",
+      "number": 1,
+      "label": "LABEL_OPTIONAL",
+      "type": "TYPE_STRING",
+      "options": {
+
+      },
+      "jsonName": "value"
+    }
+  ],
+  "options": {
+
+  }
+}
+```
+
+调用的是 `HelloService` 服务的 `Hello` 方法，通过 `-d` 参数传入一个 json 字符串作为输入参数：
+
+```bash
+$ grpcurl -plaintext -d '{"value":"gopher"}' \
+    localhost:1234 HelloService.HelloService/Hello
+{
+  "value": "hello:gopher"
+}
+
+```
+
+如果 `-d` 参数是 `@` 则表示从标准输入读取 json 输入参数，这一般用于比较输入复杂的 json 数据：
+
+```bash
+$ grpcurl -plaintext -d @ localhost:1234 HelloService.HelloService/Channel
+{"value": "gopher"}
+{
+  "value": "hello:gopher"
+}
+
+{"value": "wasm"}
+{
+  "value": "hello:wasm"
+}
+```
+
+#### 常见错误
+
+
+```bash
+$ grpcurl localhost:1234 list
+Failed to dial target host "localhost:1234": tls: first record does not \
+look like a TLS handshake
+```
+
+上面的错误是因为配置公钥和私钥文件有问题，或者是没有忽略证书的验证过程。
+
+
+```bash
+$ grpcurl -plaintext localhost:1234 list
+Failed to list services: server does not support the reflection API
+```
+
+上面的错误是因为没有启动 reflection 反射服务。
