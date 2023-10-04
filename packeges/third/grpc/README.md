@@ -121,6 +121,8 @@ Protocol Buffers Libraries 的默认安装路径在 `/usr/local/lib`。而我们
 
 ### Protoc Plugin
 
+安装了 protoc 编译器之后，针对不同的语言，还需要不同的插件，对应 Go 语言的就是 protoc-gen-go 插件。
+
 ```bash
 go get -u github.com/golang/protobuf/protoc-gen-go
 ```

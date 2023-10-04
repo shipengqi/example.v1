@@ -7,11 +7,11 @@ import (
 
 func main() {
 	tests := []struct {
-		raw string
+		raw    string
 		change string
 	}{
 		{
-			raw: "http://127.0.0.1:8080/url/123",
+			raw:    "http://127.0.0.1:8080/url/123",
 			change: "192.168.1.1",
 		},
 		{
@@ -37,9 +37,9 @@ func main() {
 }
 
 func parse(uri struct {
-	raw string
+	raw    string
 	change string
-})  {
+}) {
 	parsed, _ := url.Parse(uri.raw)
 
 	// Host
@@ -49,8 +49,6 @@ func parse(uri struct {
 	// Path
 	parsedPath := parsed.Path
 	parsedUrl := parsed.String()
-
-
 
 	fmt.Println("Parsed Host: ", parsedHost)
 	fmt.Println("Parsed Port: ", parsedPort)

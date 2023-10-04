@@ -3,25 +3,28 @@ package main
 import (
 	"crypto/x509"
 	"fmt"
+	"log"
 	"strconv"
 )
 
 var keyUsageName = [...]string{
-	x509.KeyUsageDigitalSignature: "DigitalSignature",
+	x509.KeyUsageDigitalSignature:  "DigitalSignature",
 	x509.KeyUsageContentCommitment: "ContentCommitment",
-	x509.KeyUsageKeyEncipherment: "KeyEncipherment",
-	x509.KeyUsageDataEncipherment: "DataEncipherment",
-	x509.KeyUsageKeyAgreement: "KeyAgreement",
-	x509.KeyUsageCertSign: "CertSign",
-	x509.KeyUsageCRLSign: "CRLSign",
-	x509.KeyUsageEncipherOnly: "EncipherOnly",
-	x509.KeyUsageDecipherOnly: "DecipherOnly",
+	x509.KeyUsageKeyEncipherment:   "KeyEncipherment",
+	x509.KeyUsageDataEncipherment:  "DataEncipherment",
+	x509.KeyUsageKeyAgreement:      "KeyAgreement",
+	x509.KeyUsageCertSign:          "CertSign",
+	x509.KeyUsageCRLSign:           "CRLSign",
+	x509.KeyUsageEncipherOnly:      "EncipherOnly",
+	x509.KeyUsageDecipherOnly:      "DecipherOnly",
 }
 
 func main() {
 	fmt.Println("length: ", len(keyUsageName))
 	for k, v := range keyUsageName {
 		fmt.Println("key: ", k, "value: ", v)
+		log.Printf("================>: %d\n", k)
+		fmt.Printf("---------------->: %d", k)
 	}
 	fmt.Println("keyUsageToString: ", keyUsageToString(x509.KeyUsageCertSign))
 }
