@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
-	"log"
-
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
+	"log"
+	"os"
 )
 
 type InputModel struct {
@@ -46,6 +47,10 @@ func (m InputModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
+func (m InputModel) Value() string {
+	return m.ti.Value()
+}
+
 func (m InputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -53,10 +58,14 @@ func (m InputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEnter:
-			if !m.validations.Validate(m.ti.Value()) {
+			if !m.validations.Validate(m.Value()) {
 				return m, m.ti.Focus()
 			}
 			m.done = true
+			return m, tea.Quit
+		case tea.KeyCtrlC:
+			quit <- struct{}{}
+			m.ti.Blur()
 			return m, tea.Quit
 		}
 	}
@@ -70,18 +79,31 @@ func (m InputModel) View() string {
 		return fmt.Sprintf(
 			"%s %s\n",
 			m.label,
-			lipgloss.NewStyle().Foreground(lipgloss.Color("43")).Render(m.ti.Value()),
+			lipgloss.NewStyle().Foreground(lipgloss.Color("43")).Render(m.Value()),
 		)
 	}
 	return fmt.Sprintf(
 		"%s\n%s\n%s\n",
 		m.label,
 		m.ti.View(),
-		m.validations.String(m.ti.Value()),
+		m.validations.String(m.Value()),
 	)
 }
 
+var quit = make(chan struct{})
+
 func main() {
+	go func() {
+		for {
+			select {
+			case <-quit:
+				termenv.DefaultOutput().ShowCursor()
+				os.Exit(0)
+				return
+			}
+		}
+	}()
+
 	p := tea.NewProgram(NewInputModel("What's your name?", ""))
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
