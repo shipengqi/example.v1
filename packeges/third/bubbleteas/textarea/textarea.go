@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
 	"log"
 
 	"github.com/charmbracelet/bubbles/textarea"
@@ -11,6 +12,7 @@ import (
 type TextAreaModel struct {
 	textarea textarea.Model
 	label    string
+	done     bool
 }
 
 func NewTextAreaModel(label string, height int) TextAreaModel {
@@ -44,7 +46,11 @@ func (m TextAreaModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.textarea.Focused() {
 				m.textarea.Blur()
 			}
-		case tea.KeyCtrlC:
+		case tea.KeyCtrlS, tea.KeyCtrlC:
+			if m.textarea.Focused() {
+				m.textarea.Blur()
+			}
+			m.done = true
 			return m, tea.Quit
 		default:
 			if !m.textarea.Focused() {
@@ -60,16 +66,29 @@ func (m TextAreaModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m TextAreaModel) View() string {
+	if m.done {
+		return fmt.Sprintf(
+			"%s\n%s\n",
+			m.label,
+			lipgloss.NewStyle().Foreground(lipgloss.Color("43")).Render(m.Value()),
+		)
+	}
 	return fmt.Sprintf(
 		"%s\n\n%s\n\n%s",
 		m.label,
 		m.textarea.View(),
-		"(ctrl+c to quit)",
+		"(ctrl+s to save)",
 	) + "\n\n"
 }
 
 func main() {
 	p := tea.NewProgram(NewTextAreaModel("Tell me a story.", 5))
+
+	if _, err := p.Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	p = tea.NewProgram(NewTextAreaModel("Tell me another story.", 5))
 
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
